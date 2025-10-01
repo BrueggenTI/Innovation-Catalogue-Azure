@@ -14,6 +14,7 @@ The application uses a Flask-based web architecture with server-side rendering a
 - **Backend**: Python Flask with SQLAlchemy ORM
 - **Frontend**: HTML templates with Bootstrap 5, vanilla JavaScript, custom CSS
 - **Database**: SQLite (development) with PostgreSQL support
+- **Authentication**: Microsoft Azure AD Single Sign-On (MSAL Python, Flask-Session)
 - **Email**: Flask-Mail for PDF delivery
 - **PDF Generation**: ReportLab
 - **Styling**: Bootstrap framework, custom CSS, Montserrat font, 8px-based spacing grid
@@ -34,7 +35,15 @@ The application uses a Flask-based web architecture with server-side rendering a
 - **Data Flow**: Structured flows for product exploration, trend discovery, and multi-step co-creation.
 - **Data Models**: Comprehensive schemas for `Product`, `Trend`, and `ConceptSession` including flexible JSON-stored attributes for ingredients, claims, nutritional info, and session configurations.
 - **Deployment**: Environment configuration for development (SQLite) and production (PostgreSQL), secure session management, and local file system storage for static assets and generated PDFs.
-- **Security**: CSRF protection, file upload validation, size restrictions, environment-based credential configuration, and ProxyFix middleware.
+- **Security**: CSRF protection, file upload validation, size restrictions, environment-based credential configuration, ProxyFix middleware, and Microsoft Azure AD authentication.
+- **Authentication**: Optional Microsoft SSO with tenant-specific Azure AD integration. Features include:
+  - Secure OAuth 2.0 flow with MSAL for Python
+  - CSRF protection via state token validation
+  - Session-based user authentication tracking
+  - Integration with Microsoft Graph API for user profile data
+  - Automatic Azure AD logout for complete session termination
+  - Route protection decorator (`@login_required`) for sensitive endpoints
+  - Visual authentication status indicators in UI
 
 ## External Dependencies
 
@@ -42,3 +51,4 @@ The application uses a Flask-based web architecture with server-side rendering a
 - **Image Assets**: Unsplash CDN for product and trend imagery.
 - **Frontend Libraries**: Bootstrap 5 for UI framework, Font Awesome for icons.
 - **AI/Document Processing**: OpenAI GPT-4 API for document analysis, PyPDF2, python-docx, python-pptx for authentic document parsing.
+- **Microsoft Azure AD**: Enterprise authentication via Azure Active Directory. Requires Azure AD tenant configuration and environment variables (CLIENT_ID, CLIENT_SECRET, TENANT_ID, AUTHORITY, REDIRECT_URI). See `AZURE_SSO_SETUP.md` for detailed setup instructions.
