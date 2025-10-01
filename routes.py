@@ -212,6 +212,24 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def master_required(f):
+    """
+    Decorator to restrict access to master user only
+    Usage: @master_required
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('authenticated'):
+            flash('Please sign in to access this page.', 'warning')
+            return redirect(url_for('login', next=request.url))
+        
+        if not session.get('is_master_user'):
+            flash('Access denied. This feature is only available to administrators.', 'danger')
+            return redirect(url_for('index'))
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/login')
 def login():
     """
