@@ -302,13 +302,43 @@ def auth_callback():
     
     # Store user information in session
     account = result.get('id_token_claims', {})
+    user_email = account.get('preferred_username', account.get('email', ''))
+    user_name = account.get('name', 'Unknown User')
+    microsoft_id = account.get('oid')
+    
+    # Get or create user in database
+    from models import User
+    user = User.query.filter_by(email=user_email).first()
+    
+    if not user:
+        # Create new user
+        user = User(
+            email=user_email,
+            name=user_name,
+            microsoft_id=microsoft_id,
+            is_master_user=False
+        )
+        db.session.add(user)
+        db.session.commit()
+        logging.info(f"Created new user in database: {user_email}")
+    else:
+        # Update Microsoft ID if not set
+        if not user.microsoft_id and microsoft_id:
+            user.microsoft_id = microsoft_id
+            db.session.commit()
+    
+    # Store user data in session from database
     session['authenticated'] = True
-    session['user_name'] = account.get('name', 'Unknown User')
-    session['user_email'] = account.get('preferred_username', account.get('email', ''))
+    session['user_id'] = user.id
+    session['user_name'] = user.name or user_name
+    session['user_email'] = user.email
+    session['user_position'] = user.position
+    session['user_department'] = user.department
+    session['is_master_user'] = user.is_master_user
     session['microsoft_account'] = {
         'name': account.get('name'),
-        'email': account.get('preferred_username', account.get('email')),
-        'id': account.get('oid'),
+        'email': user_email,
+        'id': microsoft_id,
         'tenant_id': account.get('tid')
     }
     
@@ -319,7 +349,7 @@ def auth_callback():
     next_url = session.pop('next_url', url_for('index'))
     
     flash(f'Welcome, {session["user_name"]}! You are now signed in with Microsoft.', 'success')
-    logging.info(f"User {session['user_email']} successfully authenticated")
+    logging.info(f"User {user_email} successfully authenticated")
     
     return redirect(next_url)
 
