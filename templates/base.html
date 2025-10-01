@@ -65,6 +65,7 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             {% endif %}
+                            {% if session.get('is_master_user') %}
                             <li><a class="dropdown-item" href="{{ url_for('add_recipe') }}">
                                 <i class="fas fa-plus-circle me-2"></i>Add Recipe
                             </a></li>
@@ -72,6 +73,7 @@
                                 <i class="fas fa-file-alt me-2"></i>Manage Reports
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="{{ url_for('profile') }}">
                                 <i class="fas fa-user-edit me-2"></i>{{ get_text('edit_profile', lang) if lang else 'Profile' }}
                             </a></li>
