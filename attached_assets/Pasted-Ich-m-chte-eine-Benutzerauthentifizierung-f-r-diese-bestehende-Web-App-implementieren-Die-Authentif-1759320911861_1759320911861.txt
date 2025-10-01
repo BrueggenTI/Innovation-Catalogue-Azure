@@ -1,0 +1,50 @@
+Ich möchte eine Benutzerauthentifizierung für diese bestehende Web-App implementieren. Die Authentifizierung soll ausschließlich über Microsoft Single Sign-On (SSO) erfolgen und nur für Benutzer freigegeben sein, die sich in meinem spezifischen Azure Active Directory (Azure AD) Tenant befinden.
+Ziel: Eine sichere Web-App, bei der sich Benutzer über ihren Microsoft-Account anmelden, um auf geschützte Bereiche (z.B. ein persönliches Profil) zugreifen zu können.
+Bitte stelle den Code als modulares, lauffähiges Beispiel bereit, das die unten beschriebenen Schritte exakt umsetzt. Die Logik soll klar von der UI getrennt sein, sodass ich sie leicht in mein bestehendes Projekt integrieren kann.
+Teil 1: Anleitung zur Azure-Konfiguration
+Bitte gib zuerst eine kurze, klare Anleitung für die notwendigen Schritte im Azure Portal:
+App-Registrierung: Wie eine neue App registriert wird.
+Zertifikate & Geheimnisse: Wie ein neuer "Client Secret" erstellt und sicher kopiert wird.
+API-Berechtigungen: Welche Berechtigungen (z.B. User.Read) standardmäßig ausreichen.
+Authentifizierung: Wie die "Redirect URI" für eine Web-App konfiguriert wird (z.B. https://<REPLIT_APP_URL>/auth/callback).
+Benötigte IDs: Wo die Application (client) ID und die Directory (tenant) ID zu finden sind.
+Teil 2: Genaue Implementierungsschritte für den Code
+Erstelle eine Node.js/Express-App, die die folgenden Schritte präzise umsetzt.
+Schritt 1: Projekt-Setup und Konfiguration
+Abhängigkeiten: Nutze express, @azure/msal-node und express-session.
+MSAL-Konfiguration:
+Erstelle ein Konfigurationsobjekt für MSAL.
+Die auth-Optionen müssen clientId, clientSecret und authority enthalten.
+Die authority muss so aufgebaut sein, dass sie nur meinen Tenant zulässt: https://login.microsoftonline.com/DEINE_TENANT_ID.
+Lies alle geheimen Werte (CLIENT_ID, TENANT_ID, CLIENT_SECRET, APP_SESSION_SECRET) aus den Replit "Secrets" (Umgebungsvariablen).
+MSAL-Initialisierung: Initialisiere eine ConfidentialClientApplication-Instanz mit dieser Konfiguration.
+Schritt 2: Express-Server und Session-Management
+Setze einen einfachen Express-Server auf.
+Konfiguriere express-session mit einem secret aus den Replit Secrets, resave: false, saveUninitialized: false und setze cookie.secure auf true (für HTTPS).
+Schritt 3: Implementierung des Authentifizierungs-Flows
+Login-Route (/login):
+Diese Route soll msalInstance.getAuthCodeUrl() aufrufen, um die einzigartige Anmelde-URL von Microsoft zu generieren.
+Leite den Benutzer per res.redirect() an diese URL weiter.
+Callback-Route (/auth/callback):
+Dies ist die "Redirect URI", die in Azure konfiguriert wurde.
+Sie empfängt einen code von Microsoft als Query-Parameter.
+Rufe msalInstance.acquireTokenByCode() mit diesem code auf.
+Speichere nach erfolgreichem Token-Abruf die Account-Informationen (z.B. response.account) und einen Authentifizierungsstatus in der Benutzer-Session: req.session.account = response.account; req.session.isAuthenticated = true;.
+Leite den Benutzer anschließend auf eine geschützte Seite wie /profile weiter.
+Logout-Route (/logout):
+Beende die lokale Sitzung mit req.session.destroy().
+Leite den Benutzer zur postLogoutRedirectUri weiter, die in der MSAL-Konfiguration definiert ist, um auch die Microsoft-Sitzung zu beenden.
+Schritt 4: Schutz von Routen (Middleware)
+Erstelle eine Middleware-Funktion isAuthenticated(req, res, next).
+Diese Funktion prüft, ob req.session.isAuthenticated true ist.
+Wenn ja, ruft sie next() auf.
+Wenn nein, leitet sie den Benutzer zur Homepage (/) oder zur Login-Seite um.
+Schritt 5: Beispiel-Seiten
+Homepage (/): Zeigt einen "Login"-Button an, wenn der Benutzer nicht angemeldet ist, und einen "Logout"-Button sowie einen Link zum Profil, wenn er angemeldet ist.
+Profilseite (/profile):
+Wende die isAuthenticated-Middleware auf diese Route an.
+Zeige Basis-Informationen des angemeldeten Benutzers aus der Session an, z.B. req.session.account.name und req.session.account.username.
+Zusammenfassend: Ich benötige ein komplettes, lauffähiges "Starter-Kit" für eine Node.js/Express-App auf Replit, die eine Tenant-beschränkte Microsoft SSO-Authentifizierung exakt nach diesen Schritten implementiert und ausführlich kommentiert ist.
+ 
+ 
+Achte darauf, dass nichts an der bestehenden Funktionalität und Beschaffenheit der Web App beschädigt oder verändert wird!
