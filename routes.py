@@ -351,12 +351,14 @@ def set_language(language):
     return redirect(request.referrer or url_for('index'))
 
 @app.route('/')
+@login_required
 def index():
     init_user_session()
     lang = session.get('language', 'en')
     return render_template('index.html', get_text=get_text, lang=lang)
 
 @app.route('/catalog')
+@login_required
 def catalog():
     init_user_session()
     # Initialize products if none exist
@@ -492,6 +494,7 @@ def catalog():
                          selected_recipe=final_recipe)
 
 @app.route('/product/<int:id>', methods=['GET', 'POST'])
+@login_required
 def product_detail(id):
     init_user_session()
     product = Product.query.get_or_404(id)
@@ -533,6 +536,7 @@ def product_detail(id):
                          claims=claims)
 
 @app.route('/trends')
+@login_required
 def trends():
     init_user_session()
     # Initialize trends if none exist
@@ -577,6 +581,7 @@ def trends():
                          search_query=search_query)
 
 @app.route('/trend/<int:trend_id>/pdf')
+@login_required
 def trend_pdf_viewer(trend_id):
     """Display PDF report for specific trends"""
     trend = Trend.query.get_or_404(trend_id)
@@ -596,6 +601,7 @@ def trend_pdf_viewer(trend_id):
                              pdf_title="Detailed Report Not Available")
 
 @app.route('/cocreation')
+@login_required
 def cocreation():
     init_user_session()
     # Check if a base product is selected
@@ -620,6 +626,7 @@ def cocreation():
 
 @app.route('/cocreation/save_concept', methods=['POST'])
 @csrf.exempt
+@login_required
 def save_concept():
     try:
         data = request.get_json()
@@ -669,6 +676,7 @@ def save_concept():
 
 @app.route('/cocreation/send_email', methods=['POST'])
 @csrf.exempt
+@login_required
 def send_concept_email_route():
     try:
         data = request.get_json()
@@ -709,6 +717,7 @@ def send_concept_email_route():
         }), 500
 
 @app.route('/download_pdf/<session_id>')
+@login_required
 def download_pdf(session_id):
     concept = ConceptSession.query.filter_by(session_id=session_id).first()
     if not concept or not concept.pdf_path:
@@ -725,6 +734,7 @@ def download_pdf(session_id):
 
 @app.route('/api/search', methods=['POST'])
 @csrf.exempt
+@login_required
 def search_api():
     """Global search API endpoint"""
     try:
@@ -885,6 +895,7 @@ def search_api():
         }), 500
 
 @app.route('/api/trends/search')
+@login_required
 def search_trends():
     """API endpoint for searching trends"""
     try:
@@ -943,6 +954,7 @@ def search_trends():
 
 @app.route('/api/trends/analyze', methods=['POST'])
 @csrf.exempt
+@login_required
 def analyze_trend_files():
     """API endpoint for analyzing uploaded files and generating trend suggestions"""
     try:
@@ -1051,6 +1063,7 @@ def analyze_trend_files():
 
 @app.route('/api/trends/create', methods=['POST'])
 @csrf.exempt
+@login_required
 def create_custom_trend():
     """API endpoint for creating custom trends from AI analysis"""
     try:
@@ -1180,6 +1193,7 @@ def create_custom_trend():
         }), 500
 
 @app.route('/api/trends/<int:trend_id>', methods=['GET'])
+@login_required
 def get_trend_details(trend_id):
     """API endpoint to get trend details by ID"""
     try:
@@ -1212,6 +1226,7 @@ def get_trend_details(trend_id):
 
 @app.route('/api/generate-image', methods=['POST'])
 @csrf.exempt
+@login_required
 def generate_image():
     """API endpoint for generating AI images for trends"""
     try:
@@ -1242,6 +1257,7 @@ def generate_image():
         }), 500
 
 @app.route('/add-recipe')
+@login_required
 def add_recipe():
     init_user_session()
     # Get all recipes to display in the list at the bottom
@@ -1250,6 +1266,7 @@ def add_recipe():
 
 @app.route('/api/analyze-recipe', methods=['POST'])
 @csrf.exempt
+@login_required
 def analyze_recipe():
     # Check for file in request - handle both field names
     file = None
@@ -1659,6 +1676,7 @@ def analyze_recipe():
 
 @app.route('/api/upload-recipe-image', methods=['POST'])
 @csrf.exempt
+@login_required
 def upload_recipe_image():
     """Upload recipe images (product image or nutri-score image) with fallback to local storage"""
     try:
@@ -1722,6 +1740,7 @@ def upload_recipe_image():
 
 @app.route('/api/publish-recipe', methods=['POST'])
 @csrf.exempt
+@login_required
 def publish_recipe():
     """Create a new recipe in the database - never overwrite existing ones"""
     try:
@@ -1807,6 +1826,7 @@ def publish_recipe():
 
 @app.route('/api/delete-recipe/<int:recipe_id>', methods=['DELETE'])
 @csrf.exempt
+@login_required
 def delete_recipe(recipe_id):
     """Delete a recipe completely from the database"""
     try:
@@ -1924,6 +1944,7 @@ def serve_image(filename):
     return render_template('profile.html', user=user_data)
 
 @app.route('/profile', methods=['POST'])
+@login_required
 def profile_update():
     # Update session data with form values
     session['user_name'] = request.form.get('name', '')
@@ -1938,6 +1959,7 @@ def profile_update():
     return redirect(url_for('profile'))
 
 @app.route('/api/product/<int:product_id>/ingredients', methods=['GET'])
+@login_required
 def get_product_ingredients(product_id):
     """API endpoint to fetch real ingredients for a specific product"""
     try:
@@ -1970,6 +1992,7 @@ def get_product_ingredients(product_id):
         }), 500
 
 @app.route('/api/recipe-number/<recipe_number>/product', methods=['GET'])
+@login_required
 def get_product_by_recipe_number(recipe_number):
     """API endpoint to fetch product data by recipe number"""
     try:
@@ -2054,6 +2077,7 @@ def get_product_by_recipe_number(recipe_number):
         }), 500
 
 @app.route('/manage-reports')
+@login_required
 def manage_reports():
     """Page for managing and deleting trends/reports"""
     # Simple protection: require session to be explicitly set as admin
@@ -2072,6 +2096,7 @@ def manage_reports():
 
 @csrf.exempt
 @app.route('/api/trends/<int:trend_id>/delete', methods=['DELETE'])
+@login_required
 def delete_trend(trend_id):
     """API endpoint for deleting a trend/report"""
     try:
