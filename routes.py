@@ -392,15 +392,38 @@ def master_login():
         
         # Validate credentials
         if username == MASTER_USERNAME and password == MASTER_PASSWORD:
-            # Set session as authenticated
-            session['authenticated'] = True
-            session['user_name'] = 'Master User'
-            session['user_email'] = 'master@brueggen.com'
-            session['user_position'] = 'System Administrator'
-            session['user_department'] = 'IT & Innovation'
-            session['is_master_user'] = True  # Flag to identify master user
+            # Get or create master user in database
+            from models import User
+            master_email = 'master@brueggen.com'
+            user = User.query.filter_by(email=master_email).first()
             
-            flash(f'Welcome, Master User! You are now signed in.', 'success')
+            if not user:
+                # Create master user
+                user = User(
+                    email=master_email,
+                    name='Master User',
+                    position='System Administrator',
+                    department='IT & Innovation',
+                    is_master_user=True
+                )
+                db.session.add(user)
+                db.session.commit()
+                logging.info(f"Created master user in database")
+            elif not user.is_master_user:
+                # Ensure is_master_user flag is set
+                user.is_master_user = True
+                db.session.commit()
+            
+            # Set session from database
+            session['authenticated'] = True
+            session['user_id'] = user.id
+            session['user_name'] = user.name
+            session['user_email'] = user.email
+            session['user_position'] = user.position
+            session['user_department'] = user.department
+            session['is_master_user'] = user.is_master_user
+            
+            flash(f'Welcome, {user.name}! You are now signed in.', 'success')
             logging.info(f"Master user successfully authenticated from IP: {request.remote_addr}")
             
             # Redirect to index/home page
