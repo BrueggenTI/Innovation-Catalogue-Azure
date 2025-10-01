@@ -1,0 +1,93 @@
+EGIN PROMPT]
+
+Act as a senior Product Innovation Strategist and UI/UX Designer.
+
+Your task is to generate a detailed concept and a visual layout for a digital "Innovation Catalogue". This tool is for the B2B sales team of H. & J. Brüggen KG, a leading European private-label manufacturer of cereals, muesli, and cereal bars.
+
+The tool will be used by sales representatives on a tablet during meetings with clients (e.g., retail buyers, product managers of supermarket chains) to facilitate collaborative and forward-looking discussions.
+
+The core objective is to create an interactive, visually engaging experience that achieves three main goals:
+
+Showcase existing product formulations and capabilities with concrete examples.
+
+Inspire clients by presenting current and future market trends.
+
+Capture client-specific needs, ideas, and potential new product configurations in real-time.
+
+Please design the concept with the following three key modules:
+
+Module 1: "Our Competence" - The Core Portfolio Explorer
+
+This module provides a dynamic overview of Brüggen's proven products and manufacturing capabilities. It should be more than a static list.
+
+Functionality:
+
+A searchable and filterable database of base recipes (e.g., crunchy muesli, porridge, baked granola, various cereal bars).
+
+Filters should include: product category, key ingredients (oats, spelt, quinoa), nutritional claims (high-protein, high-fiber, low-sugar, organic, gluten-free), and production technologies.
+
+For each product, show high-quality images/videos, a list of key ingredients, available certifications, and a short "case study" example of how a similar product was successfully launched with another client (anonymized if necessary).
+
+Visualization: A clean, grid-based layout with high-quality visuals. Clicking on a product opens a detailed "fact sheet" overlay.
+
+Module 2: "The Future of Breakfast" - Trends & Insights Hub
+
+This module acts as a conversation starter, positioning Brüggen as an innovation partner. It should present trends in a digestible, infographic style.
+
+Functionality:
+
+Dedicated sections for key consumer trends:
+
+Health & Wellness: (e.g., functional ingredients like probiotics, adaptogens; protein fortification; sugar reduction).
+
+Sustainability: (e.g., sourcing stories, new sustainable packaging options, upcycled ingredients).
+
+Flavor & Texture Innovation: (e.g., emerging flavor pairings, new texture experiences like ultra-crunchy clusters or soft-baked bars).
+
+Each trend should be backed by short market data points, consumer insights, and conceptual product images that bring the trend to life.
+
+Visualization: A visually rich, interactive section. Think of it like a digital magazine or a Prezi-style presentation where the sales rep can zoom into different trend areas.
+
+Module 3: "The Co-Creation Lab" - Interactive Product Builder
+
+This is the most critical, interactive module. It allows the sales rep and the client to build a new product concept together during the meeting.
+
+Functionality:
+
+A step-by-step guided process:
+
+Choose a Base: Select a base recipe from Module 1 (e.g., "Crunchy Oat Granola").
+
+Add & Refine Ingredients: A drag-and-drop interface to add or substitute ingredients (e.g., add freeze-dried raspberries, pecans, chocolate chunks). The system should flag potential conflicts or cost implications.
+
+Select Claims & Certifications: Choose from a list of available nutritional claims or certifications (e.g., "Organic", "High-Fiber").
+
+Configure Packaging: Select from different packaging types (e.g., stand-up pouch, box, single-serve pot) and show mock-ups.
+
+As the product is built, a "live" mock-up of the product/packaging visually updates.
+
+A running summary of the configuration (ingredients, claims, packaging) is always visible.
+
+Output: At the end of the process, the tool must be able to generate a "Concept Summary PDF" that includes the visual mock-up and all specifications. This PDF can be emailed directly to the client from the app. This is the primary function for "collecting customer wishes."
+
+Overall UI/UX and Visual Design:
+
+Interface: Design a clean, premium, and modern dashboard-style interface. It should be intuitive for a touch-based tablet. The main screen could feature prominent entry points to the three modules.
+
+Branding: The design should reflect Brüggen's corporate identity but with a modern, innovative twist.
+
+User Flow: A typical user flow would be:
+
+Sales rep opens the app and briefly presents trends from Module 2 to inspire the client.
+
+Based on the client's interest, they explore related base products in Module 1.
+
+They then move to Module 3 to customize a selected base product according to the client's specific wishes.
+
+The session concludes with generating and sending the PDF summary.
+
+Requested Output:
+
+Please provide a detailed description of this concept, outlining the user flow and the features of each module. Accompany this with a description of the visual layout and key screens, as if you were describing a wireframe or mock-up to a development team.
+
+[END PROMPT]

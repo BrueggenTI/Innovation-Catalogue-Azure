@@ -1,0 +1,69 @@
+modules = ["python-3.11", "postgresql-16"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["freetype", "glibcLocales", "gumbo", "harfbuzz", "jbig2dec", "lcms2", "libimagequant", "libjpeg", "libjpeg_turbo", "libtiff", "libwebp", "libxcrypt", "mupdf", "openjpeg", "openssl", "postgresql", "swig", "tcl", "tk", "xcbuild", "zlib"]
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
+waitForPort = 5000
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 34867
+externalPort = 3003
+
+[[ports]]
+localPort = 35163
+externalPort = 3002
+
+[[ports]]
+localPort = 35965
+externalPort = 4200
+
+[[ports]]
+localPort = 36425
+externalPort = 6800
+
+[[ports]]
+localPort = 40341
+externalPort = 3000
+
+[[ports]]
+localPort = 42105
+externalPort = 3001
+
+[[ports]]
+localPort = 44869
+externalPort = 5000
+
+[[ports]]
+localPort = 45609
+externalPort = 5173
+
+[agent]
+integrations = ["python_openai:1.0.0"]

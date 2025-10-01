@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <defs>
+    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a7c59;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2c5234;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f39c12;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e67e22;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="30" cy="30" r="25" fill="url(#greenGradient)" opacity="0.1"/>
+  
+  <!-- Stylized grain/wheat icon -->
+  <g transform="translate(15, 10)">
+    <!-- Main stem -->
+    <line x1="15" y1="40" x2="15" y2="10" stroke="url(#greenGradient)" stroke-width="2"/>
+    
+    <!-- Grain kernels -->
+    <ellipse cx="12" cy="12" rx="2" ry="4" fill="url(#goldGradient)" transform="rotate(-20 12 12)"/>
+    <ellipse cx="18" cy="14" rx="2" ry="4" fill="url(#goldGradient)" transform="rotate(20 18 14)"/>
+    <ellipse cx="10" cy="16" rx="2" ry="4" fill="url(#goldGradient)" transform="rotate(-25 10 16)"/>
+    <ellipse cx="20" cy="18" rx="2" ry="4" fill="url(#goldGradient)" transform="rotate(25 20 18)"/>
+    <ellipse cx="12" cy="20" rx="2" ry="4" fill="url(#goldGradient)" transform="rotate(-15 12 20)"/>
+    <ellipse cx="18" cy="22" rx="2" ry="4" fill="url(#goldGradient)" transform="rotate(15 18 22)"/>
+    <ellipse cx="11" cy="24" rx="2" ry="4" fill="url(#goldGradient)" transform="rotate(-20 11 24)"/>
+    <ellipse cx="19" cy="26" rx="2" ry="4" fill="url(#goldGradient)" transform="rotate(20 19 26)"/>
+    
+    <!-- Leaves -->
+    <path d="M8 28 Q5 25 8 22" stroke="url(#greenGradient)" stroke-width="1.5" fill="none"/>
+    <path d="M22 30 Q25 27 22 24" stroke="url(#greenGradient)" stroke-width="1.5" fill="none"/>
+  </g>
+  
+  <!-- Company name -->
+  <text x="65" y="25" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="url(#greenGradient)">
+    H. &amp; J. Brüggen
+  </text>
+  
+  <!-- Tagline -->
+  <text x="65" y="42" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#666" font-style="italic">
+    Naturally Innovative
+  </text>
+  
+  <!-- Decorative elements -->
+  <circle cx="190" cy="15" r="2" fill="url(#goldGradient)" opacity="0.6"/>
+  <circle cx="185" cy="20" r="1.5" fill="url(#goldGradient)" opacity="0.4"/>
+  <circle cx="192" cy="25" r="1" fill="url(#goldGradient)" opacity="0.3"/>
+  
+  <!-- Quality symbol -->
+  <g transform="translate(170, 35)">
+    <circle cx="10" cy="10" r="8" stroke="url(#greenGradient)" stroke-width="1" fill="none"/>
+    <path d="M6 10 L9 13 L14 7" stroke="url(#greenGradient)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

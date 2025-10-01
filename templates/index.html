@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container-fluid px-4 py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <!-- Header Section -->
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold mb-4">
+                        {{ get_text('welcome_message', lang) }}
+                    </h1>
+                    <p class="lead mb-4 text-secondary">
+                        {{ get_text('welcome_subtitle', lang) }}
+                    </p>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-section mb-5">
+                    <div class="search-container">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0" placeholder="{{ get_text('search_placeholder', lang) }}" id="globalSearch">
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Main Navigation Cards -->
+                <div class="row g-4">
+                    <!-- Our Competence Card -->
+                    <div class="col-lg-4">
+                        <a href="{{ url_for('catalog') }}" class="card nav-card h-100 text-decoration-none">
+                            <div class="card-body p-4">
+                                <div class="nav-card-icon mb-4">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <h3 class="card-title mb-3">{{ get_text('innovation_catalog', lang) }}</h3>
+                                <p class="card-text text-muted mb-4">
+                                    {{ get_text('innovation_catalog_desc', lang) }}
+                                </p>
+                                <div class="nav-card-image mb-4">
+                                    <img src="{{ url_for('static', filename='images/competence-showcase.jpg') }}" alt="Product Portfolio" class="img-fluid rounded">
+                                </div>
+                                <div class="nav-card-features">
+                                    <div class="feature-tags">
+                                        <span class="badge bg-light text-dark">250+ Recipes</span>
+                                        <span class="badge bg-light text-dark">15 Categories</span>
+                                    </div>
+                                    <div class="feature-item mt-2">
+                                        <small class="text-muted">All Certifications</small>
+                                    </div>
+                                </div>
+                                <div class="nav-card-action mt-4">
+                                    <span class="btn btn-outline-primary">{{ get_text('explore_now', lang) }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Trends & Insights Card -->
+                    <div class="col-lg-4">
+                        <a href="{{ url_for('trends') }}" class="card nav-card h-100 text-decoration-none">
+                            <div class="card-body p-4">
+                                <div class="nav-card-icon mb-4">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h3 class="card-title mb-3">{{ get_text('food_trends', lang) }}</h3>
+                                <p class="card-text text-muted mb-4">
+                                    {{ get_text('food_trends_desc', lang) }}
+                                </p>
+                                <div class="nav-card-image mb-4">
+                                    <img src="{{ url_for('static', filename='images/trends-breakfast.jpg') }}" alt="Market Trends" class="img-fluid rounded">
+                                </div>
+                                <div class="nav-card-features">
+                                    <div class="feature-tags">
+                                        <span class="badge bg-light text-dark">Health & Wellness</span>
+                                        <span class="badge bg-light text-dark">Sustainability</span>
+                                        <span class="badge bg-light text-dark">Innovation</span>
+                                    </div>
+                                </div>
+                                <div class="nav-card-action mt-4">
+                                    <span class="btn btn-outline-primary">{{ get_text('explore_now', lang) }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Co-Creation Lab Card -->
+                    <div class="col-lg-4">
+                        <a href="{{ url_for('cocreation') }}" class="card nav-card h-100 text-decoration-none">
+                            <div class="card-body p-4">
+                                <div class="nav-card-icon mb-4">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <h3 class="card-title mb-3">{{ get_text('co_creation', lang) }}</h3>
+                                <p class="card-text text-muted mb-4">
+                                    {{ get_text('co_creation_desc', lang) }}
+                                </p>
+                                <div class="nav-card-image mb-4">
+                                    <img src="{{ url_for('static', filename='images/cocreation-mascot.png') }}" alt="Co-Creation Lab" class="img-fluid rounded cocreation-mascot">
+                                </div>
+                                <div class="nav-card-features">
+                                    <div class="feature-tags">
+                                        <span class="badge bg-light text-dark">Drag & Drop</span>
+                                        <span class="badge bg-light text-dark">Real-time Preview</span>
+                                        <span class="badge bg-light text-dark">PDF Export</span>
+                                    </div>
+                                </div>
+                                <div class="nav-card-action mt-4">
+                                    <span class="btn btn-primary">{{ get_text('explore_now', lang) }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

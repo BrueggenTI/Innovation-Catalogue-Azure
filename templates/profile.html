@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - Brüggen Innovation Catalogue{% endblock %}
+
+{% block content %}
+<div class="page-header py-5">
+    <div class="container-fluid px-4">
+        <h1 class="page-title">Edit Profile</h1>
+    </div>
+</div>
+
+<div class="container-fluid px-4 py-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background-color: #661c31;">
+                    <h3 class="card-title mb-0 text-white">
+                        <i class="fas fa-user-cog me-2"></i>Personal Information
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="row g-3">
+                            <!-- Persönliche Daten -->
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-user me-2"></i>Personal Details
+                                </h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-semibold">Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ user.name }}" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="email" class="form-label fw-semibold">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="position" class="form-label fw-semibold">Position</label>
+                                <input type="text" class="form-control" id="position" name="position" 
+                                       value="{{ user.position }}">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="department" class="form-label fw-semibold">Department</label>
+                                <input type="text" class="form-control" id="department" name="department" 
+                                       value="{{ user.department }}">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ user.phone }}">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="location" class="form-label fw-semibold">Location</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       value="{{ user.location }}">
+                            </div>
+                            
+
+                            
+                            <!-- Aktionen -->
+                            <div class="col-12 mt-4">
+                                <hr>
+                                <div class="d-flex gap-3">
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary px-4">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Passwort-Sektion -->
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-header" style="background-color: #661c31;">
+                    <h3 class="card-title mb-0 text-white">
+                        <i class="fas fa-key me-2"></i>Security
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="fw-semibold mb-2">Change Password</h6>
+                            <p class="text-muted mb-3">For security reasons, we recommend changing your password regularly.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                <i class="fas fa-lock me-2"></i>Change Password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Passwort ändern Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #661c31;">
+                <h5 class="modal-title text-white" id="changePasswordModalLabel">
+                    <i class="fas fa-key me-2"></i>Change Password
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Save Password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-save draft functionality (optional)
+    const form = document.querySelector('form');
+    if (form) {
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // Could implement auto-save to localStorage here
+                console.log('Profile field changed:', this.name, this.value);
+            });
+        });
+    }
+    
+    // Password change form validation
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('Die Passwörter stimmen nicht überein.');
+                return false;
+            }
+            
+            if (newPassword.length < 8) {
+                alert('Das Passwort muss mindestens 8 Zeichen lang sein.');
+                return false;
+            }
+            
+            // Here you would typically send the password change request
+            alert('Passwort wurde erfolgreich geändert!');
+            bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+        });
+    }
+});
+</script>
+{% endblock %}

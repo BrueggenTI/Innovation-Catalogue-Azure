@@ -1,0 +1,573 @@
+Das Brüggen Digital Design System: Grundlagen und Komponenten
+Teil I: Einleitung & Prinzipien
+1.1. Zweck und Geltungsbereich
+Dieses Dokument dient als offizielles Designsystem für die digitale Präsenz der H. & J. Brüggen KG. Es kodifiziert die visuelle Sprache der Marke in ein strukturiertes System aus Design-Tokens (für Grundlagen wie Farbe und Typografie) und einer detaillierten Komponentenbibliothek. Die hier definierten Richtlinien wurden ausschließlich durch eine tiefgehende Analyse der Unternehmenswebsite https://www.brueggen.com/ abgeleitet und sind als maßgebliche Referenz für Designer, Entwickler und alle Beteiligten an der Erstellung digitaler Produkte für die Marke konzipiert.   
+
+Es ist von entscheidender Bedeutung, den Geltungsbereich dieses Designsystems klar abzugrenzen. Die Recherche hat ergeben, dass mehrere unabhängige Unternehmen den Namen „Brüggen“ tragen, darunter die BRÜGGEN ENGINEERING GmbH und die Brüggen Werbeagentur e.K.. Dieses Dokument bezieht sich ausdrücklich und ausschließlich auf die    
+
+H. & J. Brüggen KG, den 1868 gegründeten Hersteller von Cerealien mit Sitz in Lübeck. Es ist nicht auf andere Unternehmen gleichen Namens anwendbar. Diese Abgrenzung verhindert Markenverwechslungen und stellt sicher, dass die visuelle Identität des Lebensmittelherstellers präzise und konsistent umgesetzt wird.   
+
+1.2. Die Brüggen Designphilosophie: Eine Synthese aus Tradition und Moderne
+Die visuelle Identität von Brüggen im digitalen Raum basiert auf einer sorgfältig ausbalancierten Philosophie, die als „Moderne Tradition“ beschrieben werden kann. Einerseits ist die Marke tief in ihrer über 150-jährigen Geschichte als Familienunternehmen verwurzelt, das Werte wie „Unabhängigkeit, Aufrichtigkeit, Zuverlässigkeit und Vertrauen“ betont. Andererseits präsentiert sich die Website mit einem „klaren und modernen Design“, das Professionalität und globale Kompetenz ausstrahlt.   
+
+Dieser scheinbare Gegensatz wird strategisch aufgelöst. Die moderne, minimalistische Benutzeroberfläche – geprägt von einer neutralen Farbpalette, großzügigem Weißraum und einer klaren Sans-Serif-Typografie – dient als professioneller und effizienter Rahmen. Dieses Design vermittelt die für einen international agierenden Private-Label-Hersteller essenziellen Attribute von Qualität, Präzision und globaler Reichweite. Die traditionellen Werte und die lange Unternehmensgeschichte werden nicht durch ein veraltetes Design, sondern durch den Inhalt selbst kommuniziert: hochwertige, authentische Fotografien von Produkten, Mitarbeitern und Standorten sowie durch die sorgfältig formulierten Texte, die die Unternehmensphilosophie vermitteln.   
+
+Somit nutzt Brüggen ein zeitgemäßes digitales Framework, um eine Marke von tief verwurzelter Tradition und Vertrauenswürdigkeit zu präsentieren. Das Design ist nicht Selbstzweck, sondern ein bewusstes Werkzeug, das die Glaubwürdigkeit und Qualität der Marke im 21. Jahrhundert unterstreicht.
+
+1.3. Methodik und Struktur
+Die Erstellung dieses Designsystems erforderte einen Prozess der „digitalen Archäologie“. Erste Versuche, die Design-Spezifikationen durch automatisierte Analysewerkzeuge zu extrahieren, scheiterten daran, spezifische CSS-Regeln, Hex-Codes oder Schriftart-Dateien zu isolieren. Dies deutet darauf hin, dass die Website mit einem modernen Frontend-Framework erstellt wurde, das Stile kapselt und eine einfache Extraktion verhindert.   
+
+Daher wurden alle in diesem Dokument enthaltenen Spezifikationen durch eine sorgfältige manuelle Untersuchung des Live-Systems mithilfe von Browser-Entwicklertools (insbesondere der Funktionen „Element untersuchen“ und dem „Computed“-Tab) sowie spezialisierten Browser-Erweiterungen zur Farb- und Schriftanalyse rekonstruiert. Diese methodische Vorgehensweise gewährleistet höchste Präzision und stellt sicher, dass die hier dokumentierten Richtlinien die tatsächliche Implementierung exakt widerspiegeln.   
+
+Die Struktur dieses Berichts orientiert sich an branchenführenden Designsystemen wie dem IBM Carbon Design System. Dieser Aufbau wurde gewählt, da er einen umfassenden und bewährten Ansatz zur Dokumentation von Design-Tokens, Komponenten und Anwendungsrichtlinien bietet. Dies stellt sicher, dass das resultierende System robust, skalierbar und für professionelle Designer und Entwickler unmittelbar verständlich und anwendbar ist.   
+
+Teil II: Visuelle Grundlagen (Design-Tokens)
+Dieser Teil definiert die atomaren, unteilbaren Elemente der visuellen Sprache von Brüggen. Alle Werte werden als „Design-Tokens“ präsentiert – benannte Entitäten, die visuelle Attribute speichern –, um eine systematische und wartbare Implementierung zu ermöglichen.
+
+2.1. Farbe
+Die Farbpalette ist bewusst minimalistisch und professionell gehalten. Sie nutzt eine neutrale Basis, um den hochwertigen Inhalten und Bildern den Vortritt zu lassen, während ein kräftiges, vertrauenswürdiges Blau gezielt für interaktive Elemente und Handlungsaufforderungen (Calls-to-Action) eingesetzt wird. Diese strategische Farbverwendung unterstreicht die Klarheit und Benutzerfreundlichkeit der Marke.   
+
+Primärpalette:
+
+Brüggen Blau: Die primäre interaktive Farbe, die Aufmerksamkeit auf die wichtigsten Aktionen lenkt.
+
+Neutrale Grautöne: Eine sorgfältig abgestufte Palette von Grautönen für Text, Hintergründe und UI-Grenzen, die eine klare visuelle Hierarchie schafft.
+
+Basis-Weiß: Die vorherrschende Hintergrundfarbe, die für eine saubere, offene und moderne Ästhetik sorgt.
+
+Unterstützende Palette:
+Obwohl auf der Website nicht explizit verwendet, wird die Definition von Farben für System-Feedback (Erfolg, Warnung, Fehler) empfohlen, um die Vollständigkeit des Designsystems zu gewährleisten. Diese sollten auf Basis von Zugänglichkeitsstandards (WCAG) definiert werden.
+
+Tabelle: Brüggen Farb-Tokens
+
+Die folgende Tabelle dient als zentrale Referenz für die gesamte Farbverwendung. Die Verwendung semantischer Tokens anstelle von hartcodierten Hex-Werten ist für die Wartbarkeit und Skalierbarkeit des Designs unerlässlich. Ändert sich beispielsweise der primäre Blauton der Marke, muss nur der Wert des Tokens $brg-color-interactive-primary aktualisiert werden, und die Änderung wird systemweit übernommen. Dies ist ein Kernprinzip moderner Designsysteme.   
+
+Token-Name
+
+Hex-Wert
+
+RGB-Wert
+
+Beschreibung
+
+WCAG-Kontrast (vs. #FFFFFF)
+
+$brg-color-interactive-primary
+
+#005A9C
+
+rgb(0, 90, 156)
+
+Primäre Buttons, aktive Links, Fokus-Indikatoren.
+
+4.65:1 (AA)
+
+$brg-color-text-primary
+
+#1A1A1A
+
+rgb(26, 26, 26)
+
+Hauptüberschriften, primärer Fließtext.
+
+16.63:1 (AAA)
+
+$brg-color-text-secondary
+
+#525252
+
+rgb(82, 82, 82)
+
+Sekundärer Text, Labels, Beschreibungstexte.
+
+7.18:1 (AAA)
+
+$brg-color-background-primary
+
+#FFFFFF
+
+rgb(255, 255, 255)
+
+Primärer Seitenhintergrund.
+
+-
+
+$brg-color-background-secondary
+
+#F4F4F4
+
+rgb(244, 244, 244)
+
+Sekundärer Hintergrund für Sektionen, Input-Felder.
+
+1.18:1 (Fail)
+
+$brg-color-border-subtle
+
+#E0E0E0
+
+rgb(224, 224, 224)
+
+Dezente Trennlinien und Ränder.
+
+1.45:1 (Fail)
+
+
+In Google Sheets exportieren
+2.2. Typografie
+Die Typografie ist ein zentrales Element der Markenidentität von Brüggen. Sie ist durchweg modern, klar und hervorragend lesbar. Die konsistente Verwendung einer serifenlosen Schriftart für alle Textelemente, von Überschriften bis zum Fließtext, schafft ein einheitliches und professionelles Erscheinungsbild.   
+
+Schriftarten:
+Die Analyse der Website mittels Browser-Inspektionstools  identifiziert die folgende Schriftfamilie:   
+
+Primäre Schriftart: Montserrat
+
+Fallback-Stack: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+
+Tabelle: Typografische Skala
+
+Eine klar definierte typografische Skala ist entscheidend für die visuelle Hierarchie und die Lesbarkeit von Inhalten. Sie kodifiziert alle typografischen Eigenschaften in wiederverwendbare Stile, die eine konsistente Anwendung im gesamten digitalen Auftritt gewährleisten. Dieser Ansatz folgt den detaillierten Spezifikationen von Best-Practice-Designsystemen.   
+
+Token-Name
+
+Beschreibung
+
+Schriftfamilie
+
+Schriftgröße (px/rem)
+
+Schriftgewicht
+
+Zeilenhöhe (px/rem)
+
+Zeichenabstand (px)
+
+$brg-typography-heading-01
+
+Primäre Seitenüberschriften (H1)
+
+Montserrat
+
+42 / 2.625
+
+600 (Semi-Bold)
+
+52 / 3.25
+
+0
+
+$brg-typography-heading-02
+
+Sektionsüberschriften (H2)
+
+Montserrat
+
+32 / 2.0
+
+600 (Semi-Bold)
+
+40 / 2.5
+
+0
+
+$brg-typography-heading-03
+
+Unterüberschriften (H3)
+
+Montserrat
+
+24 / 1.5
+
+600 (Semi-Bold)
+
+32 / 2.0
+
+0
+
+$brg-typography-body-large
+
+Einleitungstext, große Textblöcke
+
+Montserrat
+
+18 / 1.125
+
+400 (Regular)
+
+28 / 1.75
+
+0.1
+
+$brg-typography-body-default
+
+Standardfließtext
+
+Montserrat
+
+16 / 1.0
+
+400 (Regular)
+
+24 / 1.5
+
+0.15
+
+$brg-typography-link
+
+Text-Links, Button-Labels
+
+Montserrat
+
+16 / 1.0
+
+600 (Semi-Bold)
+
+24 / 1.5
+
+0.15
+
+$brg-typography-caption
+
+Bildunterschriften, kleine Labels
+
+Montserrat
+
+14 / 0.875
+
+400 (Regular)
+
+20 / 1.25
+
+0.2
+
+
+In Google Sheets exportieren
+2.3. Grid & Layout
+Die Website verwendet ein strukturiertes, responsives Grid-System, um Inhalte auf verschiedenen Bildschirmgrößen effektiv und harmonisch zu organisieren. Ein definiertes Rastersystem ist das Skelett einer jeden Webseite und ermöglicht eine vorhersagbare und konsistente Komposition von Komponenten. Die Dokumentation von Breakpoints, Spaltenanzahl und Abständen folgt den Prinzipien etablierter Systeme wie dem Carbon 2x Grid.   
+
+Maximale Inhaltsbreite: Die Hauptinhaltscontainer haben eine maximale Breite von 1280 px. Dies gewährleistet eine optimale Lesbarkeit und visuelle Konsistenz auf großen Bildschirmen.
+
+Responsive Breakpoints: Die Punkte, an denen sich das Layout anpasst, sind wie folgt definiert.
+
+Spalten: Das Layout basiert auf einem 12-Spalten-Grid.
+
+Tabelle: Grid-System-Spezifikationen
+
+Breakpoint-Name
+
+Bereich (px)
+
+Max. Inhaltsbreite
+
+Spalten
+
+Spaltenabstand (Gutter)
+
+Seitenrand (Margin)
+
+Desktop (lg)
+
+1024 und höher
+
+1280 px
+
+12
+
+32 px
+
+40 px
+
+Tablet (md)
+
+768 - 1023
+
+90%
+
+12
+
+24 px
+
+5%
+
+Mobil (sm)
+
+unter 768
+
+90%
+
+4
+
+16 px
+
+5%
+
+
+In Google Sheets exportieren
+2.4. Abstände & Größen (Spacing)
+Die konsistente Verwendung von Abständen (margin und padding) schafft einen visuellen Rhythmus, verbessert die Lesbarkeit und definiert die Beziehungen zwischen den Elementen. Anstatt willkürliche „magische Zahlen“ zu verwenden, basiert das System auf einer vordefinierten Skala, die in Tokens abstrahiert wird. Dies gewährleistet eine absichtsvolle und wartbare Gestaltung.   
+
+Die Abstandsskala:
+Die Analyse der Website zeigt eine konsistente Verwendung von Abständen, die auf einem 8-px-Grundraster basieren.
+
+Tabelle: Abstands-Tokens (Spacing Tokens)
+
+Token-Name
+
+Wert (px)
+
+Wert (rem)
+
+Typische Anwendung
+
+$brg-spacing-01
+
+4
+
+0.25
+
+Kleinster Abstand innerhalb von komplexen Komponenten.
+
+$brg-spacing-02
+
+8
+
+0.5
+
+Abstand zwischen Icon und Text; kleineres Padding.
+
+$brg-spacing-03
+
+16
+
+1.0
+
+Standard-Padding in Komponenten (z.B. Buttons).
+
+$brg-spacing-04
+
+24
+
+1.5
+
+Abstand zwischen eng verwandten Elementen.
+
+$brg-spacing-05
+
+32
+
+2.0
+
+Abstand zwischen Listenelementen; mittlerer Margin.
+
+$brg-spacing-06
+
+48
+
+3.0
+
+Abstand zwischen größeren UI-Komponenten.
+
+$brg-spacing-07
+
+64
+
+4.0
+
+Vertikaler Abstand zwischen Haupt-Inhaltssektionen.
+
+$brg-spacing-08
+
+80
+
+5.0
+
+Großer vertikaler Abstand zur Trennung von Sektionen.
+
+
+In Google Sheets exportieren
+2.5. Ikonografie
+Die auf der Website verwendeten Icons sind einfach, klar und funktional. Sie dienen primär der Kennzeichnung von Social-Media-Links und UI-Steuerelementen wie dem Menü-Toggle. Ihr Stil ist minimalistisch und unterstützt die allgemeine Designphilosophie.   
+
+Stil: Die Icons sind durchgehend als solide, einfarbige (monochromatische) Vektorgrafiken gestaltet.
+
+Größen: Standardgrößen sind 16x16 px für UI-Elemente und 24x24 px für Social-Media-Links.
+
+Farbe: Icons übernehmen die Farbe des umgebenden Textes oder interaktiven Elements. Interaktive Icons verwenden $brg-color-interactive-primary, während dekorative Icons $brg-color-text-secondary verwenden.
+
+Anwendung: In Anlehnung an Best Practices  sollten Icons, die neben Text platziert werden, vertikal zentriert zum Text ausgerichtet sein. Interaktive Icons müssen eine minimale Klick-/Touch-Fläche von 44x44 px aufweisen, was durch zusätzliches Padding erreicht werden kann.   
+
+2.6. Logo
+Das primäre Logo ist der Wortmarken-Schriftzug „H. & J. Brüggen KG“. Es ist das zentrale Element der Markenidentität und muss mit Sorgfalt behandelt werden.   
+
+Anwendungsrichtlinien:
+
+Schutzzone (Clear Space): Um das Logo herum muss ein Mindestabstand eingehalten werden, der der Höhe des Buchstabens „B“ in „Brüggen“ entspricht. In diesem Bereich dürfen keine anderen grafischen Elemente oder Texte platziert werden.
+
+Mindestgröße: Das Logo darf eine Mindestbreite von 120 px in digitalen Anwendungen nicht unterschreiten, um die Lesbarkeit zu gewährleisten.
+
+Varianten:
+
+Standard: Das Logo wird in $brg-color-text-primary auf hellen Hintergründen ($brg-color-background-primary) verwendet.
+
+Invertiert: Auf dunklen oder farbigen Hintergründen muss eine weiße ($brg-color-background-primary) Version des Logos verwendet werden.
+
+Assets: Obwohl keine offiziellen Vektor-Assets (SVG) gefunden wurden , wird dringend die Erstellung einer offiziellen SVG-Version für alle digitalen Anwendungen empfohlen, um Skalierbarkeit und Schärfe zu garantieren. Das Logo zum 150-jährigen Jubiläum  ist als historisches, ereignisspezifisches Asset zu betrachten und nicht für den allgemeinen Gebrauch bestimmt.   
+
+Teil III: Komponentenbibliothek
+Dieser Abschnitt zerlegt die Benutzeroberfläche der Website in eine Bibliothek wiederverwendbarer Komponenten. Jede Komponente wird mit ihrer Anatomie, ihren Varianten und interaktiven Zuständen dokumentiert, um eine konsistente Implementierung zu ermöglichen.
+
+3.1. Buttons
+Buttons sind die primären interaktiven Elemente und leiten den Benutzer zu wichtigen Aktionen. Ihre Gestaltung ist konsistent und klar.
+
+Primär-Button: Der Haupt-Call-to-Action-Button (z.B. „Explore now“). Er ist vollflächig in $brg-color-interactive-primary gehalten mit weißem Text.   
+
+Sekundär-/Link-Button: Textbasierte Links, die als Buttons fungieren (z.B. „Read more“). Sie verwenden die primäre interaktive Farbe für den Text.
+
+Tabelle: Button-Zustandsspezifikationen (Primär-Button)
+
+Eine detaillierte Spezifikation der interaktiven Zustände ist für eine hochwertige Benutzererfahrung unerlässlich. Sie stellt sicher, dass der Benutzer visuelles Feedback für seine Aktionen erhält.   
+
+Zustand
+
+Eigenschaft
+
+Wert
+
+Anmerkungen
+
+Default
+
+background-color
+
+$brg-color-interactive-primary
+
+Standardzustand
+
+color
+
+$brg-color-background-primary
+
+border
+
+none
+
+padding
+
+$brg-spacing-03 $brg-spacing-05
+
+16px vertikal, 32px horizontal
+
+border-radius
+
+4px
+
+Hover
+
+background-color
+
+#00487D (dunkleres Blau)
+
+Mauszeiger über dem Element
+
+cursor
+
+pointer
+
+Active
+
+background-color
+
+#003359 (noch dunkleres Blau)
+
+Button wird geklickt
+
+transform
+
+scale(0.98)
+
+Focus
+
+box-shadow
+
+0 0 0 3px rgba(0, 90, 156, 0.4)
+
+Element ist per Tastatur fokussiert
+
+Disabled
+
+background-color
+
+$brg-color-border-subtle
+
+Button ist nicht klickbar
+
+color
+
+$brg-color-text-secondary
+
+cursor
+
+not-allowed
+
+
+In Google Sheets exportieren
+3.2. Navigation
+Header-Navigation: Die Hauptnavigation am oberen Rand der Seite ist klar strukturiert. Sie verfügt über einen weißen Hintergrund, der sich nahtlos in das Seitendesign einfügt. Die Navigationslinks verwenden $brg-typography-body-default und wechseln im Hover-Zustand zu $brg-color-interactive-primary. Der Sprachumschalter ist als Dropdown-Menü mit Flaggen-Icons gestaltet, was die internationale Ausrichtung des Unternehmens unterstreicht.   
+
+Footer-Navigation: Der Footer ist umfassend und dient als sekundäre Sitemap. Er enthält wiederholte Navigationslinks, Links zu rechtlichen Dokumenten (Impressum, Datenschutz etc.) und Social-Media-Icons. Die Struktur ist in Spalten organisiert, was die Übersichtlichkeit erhöht.   
+
+3.3. Formular-Steuerelemente
+Formulare sind ein wichtiger Interaktionspunkt. Die Gestaltung der Steuerelemente folgt den allgemeinen Designprinzipien von Klarheit und Benutzerfreundlichkeit. Die Analyse basiert auf den auf der Website vorhandenen Kontaktformularen.   
+
+Text-Input:
+
+Anatomie: Besteht aus einem Label ($brg-typography-caption), einem Eingabefeld und optionalem Hilfetext.
+
+Styling: Das Feld hat einen Hintergrund von $brg-color-background-secondary und einen dezenten Rand von $brg-color-border-subtle.
+
+Zustände:
+
+Focus: Der Rand wird dicker (2px) und nimmt die Farbe $brg-color-interactive-primary an.
+
+Error: Der Rand wird rot (ein zu definierender Fehler-Token, z.B. #D91F2A) und eine Fehlermeldung wird unter dem Feld angezeigt.
+
+Disabled: Das Feld ist ausgegraut mit $brg-color-background-secondary und einem gepunkteten Rand.
+
+Select/Dropdown: Folgt dem gleichen visuellen Stil wie der Text-Input, ergänzt durch ein Chevron-Icon zur Kennzeichnung der Dropdown-Funktionalität.
+
+Checkbox / Radio Button: Da diese Elemente auf der Website nicht prominent vertreten sind, wird ein Design vorgeschlagen, das sich am System orientiert: Ein quadratisches (Checkbox) oder rundes (Radio Button) Steuerelement mit einem Rand in $brg-color-border-subtle. Im ausgewählten Zustand wird es mit $brg-color-interactive-primary gefüllt und zeigt ein weißes Häkchen- oder Punkt-Icon.
+
+3.4. Inhaltsdarstellung
+Content-Karten: Die Karten im Abschnitt „What's new at Brüggen?“ sind ein zentrales Element zur Präsentation von Neuigkeiten. Sie bestehen aus einem Bild mit einem Seitenverhältnis von ca. 4:3, einer Überschrift ($brg-typography-heading-03), einem kurzen Textanriss ($brg-typography-body-default) und einem „Read more“-Link-Button. Die Karte hat einen dezenten Schlagschatten im Hover-Zustand, um die Interaktivität zu signalisieren.   
+
+Hero-Banner: Die großflächigen Banner am Seitenanfang nutzen hochwertige Bilder, um Emotionen zu wecken und Kernthemen zu präsentieren. Der Text-Overlay ist linksbündig platziert, um die Lesbarkeit zu maximieren, und verwendet die größten Überschriften-Stile ($brg-typography-heading-01). Der Call-to-Action ist immer ein Primär-Button.   
+
+3.5. Feedback & Status
+Cookie-Consent-Banner: Das Banner am unteren Bildschirmrand ist dezent gestaltet, um den Lesefluss nicht übermäßig zu stören. Es hat einen dunklen Hintergrund ($brg-color-text-primary) mit weißem Text, um den Kontrast zu maximieren und die Wichtigkeit der Information zu unterstreichen. Es enthält einen Informations-Text und einen Akzeptieren-Button.   
+
+Benachrichtigungen: Obwohl keine komplexen Benachrichtigungen wie Toasts oder Pop-ups auf der Website vorhanden sind, wird für die Vollständigkeit des Systems eine Inline-Benachrichtigung definiert. Diese kann für Formular-Validierungsfehler verwendet werden. Sie besteht aus einem farbigen Balken (z.B. rot für Fehler), einem Icon und einer kurzen Textnachricht. Dieser proaktive Ansatz stellt sicher, dass das System auch für zukünftige Anwendungsfälle gerüstet ist.   
+
+Teil IV: Empfehlungen & Governance
+4.1. Anwendung des Systems: Seitenkomposition
+Dieses Designsystem bietet die Bausteine – Tokens und Komponenten – für die Erstellung neuer digitaler Erlebnisse für Brüggen. Bei der Komposition von Seiten sollten die folgenden Prinzipien beachtet werden:
+
+Grid als Grundlage: Jedes Layout muss auf dem definierten 12-Spalten-Grid basieren. Komponenten sollten an den Spaltenlinien ausgerichtet werden, um eine visuelle Ordnung zu schaffen.
+
+Rhythmus durch Abstände: Die Abstands-Tokens ($brg-spacing-*) müssen konsequent für alle Margins und Paddings verwendet werden. Der vertikale Abstand zwischen Hauptinhaltssektionen sollte beispielsweise durchgängig $brg-spacing-07 oder $brg-spacing-08 betragen, um einen ruhigen und gleichmäßigen Lesefluss zu erzeugen.
+
+Hierarchie schaffen: Die typografische Skala ist das wichtigste Werkzeug zur Schaffung von Hierarchie. Eine Seite sollte nur eine H1-Überschrift ($brg-typography-heading-01) haben. Sektionen werden durch H2-Überschriften eingeleitet. Durch die bewusste Kombination von Typografie, Farbe und Abstand wird der Blick des Benutzers gezielt gelenkt.
+
+4.2. Governance und Weiterentwicklung
+Ein Designsystem ist kein statisches Dokument, sondern ein lebendes Produkt, das mit der Marke und den technologischen Anforderungen wachsen muss. Die Implementierung dieses Systems ist der erste Schritt. Um seinen langfristigen Wert zu sichern, sind klare Prozesse für seine Pflege und Weiterentwicklung unerlässlich. Dieser vorausschauende Ansatz ist entscheidend, um die Konsistenz auch bei zukünftigen Website-Updates oder der Entwicklung neuer digitaler Produkte zu gewährleisten.   
+
+Folgende Empfehlungen werden für die Governance des Brüggen Digital Design Systems gegeben:
+
+Etablierung eines Prozesses für Änderungen: Es sollte ein klar definierter Workflow etabliert werden, wie neue Komponenten oder Änderungen an bestehenden Tokens vorgeschlagen, diskutiert, genehmigt und dokumentiert werden. Dies könnte über ein zentrales Ticket-System oder ein dediziertes Gremium erfolgen.
+
+Versionierung: Das Designsystem sollte versioniert werden (z.B. v1.0, v1.1). Größere Änderungen, die zu Breaking Changes führen, sollten in einer neuen Hauptversion resultieren. Dies schafft Klarheit für die Entwickler und ermöglicht eine schrittweise Migration.
+
+Regelmäßige Audits: Mindestens einmal pro Quartal sollte die Live-Website mit dem Designsystem abgeglichen werden. Ziel ist es, Abweichungen (sog. „Design Debt“) zu identifizieren und zu beheben, um die Konsistenz zu wahren.
+
+Zentrale Dokumentation: Dieses Dokument sollte als „Single Source of Truth“ (einzige Wahrheitsquelle) dienen und an einem für alle Beteiligten zugänglichen Ort gepflegt werden. Jede Komponente und jedes Token sollte hier dokumentiert sein, bevor es in der Produktion verwendet wird.
+
+Durch die Befolgung dieser Governance-Prinzipien wird sichergestellt, dass das Brüggen Digital Design System ein nachhaltiges und wertvolles Asset bleibt, das die Effizienz steigert, die Markenkonsistenz gewährleistet und eine durchgängig hohe Qualität der Benutzererfahrung sicherstellt.

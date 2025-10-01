@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pdf_title }} - Brüggen Innovation Catalogue{% endblock %}
+
+{% block content %}
+<div class="pdf-viewer-header py-3 bg-gradient-primary text-white">
+    <div class="container-fluid px-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 fw-bold mb-1">{{ trend.title }}</h1>
+                <p class="mb-0 opacity-75">{{ pdf_title }}</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('trends') }}" class="btn btn-outline-light rounded-pill">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Trends
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if pdf_path %}
+<div class="pdf-viewer-container">
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- PDF Controls -->
+            <div class="col-12 bg-light border-bottom">
+                <div class="pdf-controls py-3 px-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="btn-group me-3" role="group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="zoomOut">
+                                    <i class="fas fa-search-minus"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="zoomIn">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="resetZoom">
+                                    <i class="fas fa-expand-arrows-alt"></i> Fit
+                                </button>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="prevPage">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="btn btn-outline-secondary btn-sm" id="pageInfo">
+                                    <span id="currentPage">1</span> / <span id="totalPages">-</span>
+                                </span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="nextPage">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="{{ url_for('static', filename='pdfs/' + pdf_path) }}" 
+                               download="{{ pdf_title }}.pdf" 
+                               class="btn btn-success btn-sm rounded-pill me-2">
+                                <i class="fas fa-download me-2"></i>Download PDF
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="toggleFullscreen">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PDF Display Area -->
+            <div class="col-12">
+                <div class="pdf-display-container" id="pdfContainer">
+                    <div class="d-flex justify-content-center align-items-center" 
+                         style="min-height: 600px; background: #f8f9fa;">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Loading PDF...</span>
+                            </div>
+                            <p class="text-muted">Loading PDF document...</p>
+                        </div>
+                    </div>
+                    <canvas id="pdfCanvas" style="display: none; max-width: 100%; margin: 20px auto; display: block; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Bar -->
+<div class="action-bar py-3 bg-light border-top">
+    <div class="container-fluid px-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h6 class="mb-1 fw-bold text-primary">Ready to explore this trend?</h6>
+                <small class="text-muted">Use our Co-Creation Lab to develop products based on these insights.</small>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('cocreation') }}?trend={{ trend.id }}" 
+                   class="btn btn-apply-trend rounded-pill">
+                    <i class="fas fa-plus me-2"></i>Apply This Trend
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- No PDF Available -->
+<div class="no-pdf-container py-5">
+    <div class="container-fluid px-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <div class="empty-state">
+                    <i class="fas fa-file-pdf fa-4x text-muted mb-4"></i>
+                    <h3 class="text-muted mb-3">Detailed Report Not Available</h3>
+                    <p class="text-muted mb-4">
+                        A comprehensive PDF report for "{{ trend.title }}" is not currently available. 
+                        However, you can still explore this trend and apply it to your product development.
+                    </p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('cocreation') }}?trend={{ trend.id }}" 
+                           class="btn btn-apply-trend rounded-pill">
+                            <i class="fas fa-plus me-2"></i>Apply This Trend
+                        </a>
+                        <a href="{{ url_for('trends') }}" class="btn btn-outline-secondary rounded-pill">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Trends
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if pdf_path %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // PDF.js configuration
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    let pdfDoc = null;
+    let currentPage = 1;
+    let scale = 1.2;
+    let isRendering = false;
+    
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+    const pdfContainer = document.getElementById('pdfContainer');
+    
+    // Load PDF
+    pdfjsLib.getDocument('{{ url_for("static", filename="pdfs/" + pdf_path) }}').promise.then(pdf => {
+        pdfDoc = pdf;
+        document.getElementById('totalPages').textContent = pdf.numPages;
+        
+        // Hide loading spinner and show canvas
+        document.querySelector('.spinner-border').parentElement.style.display = 'none';
+        canvas.style.display = 'block';
+        
+        renderPage(1);
+    }).catch(error => {
+        console.error('Error loading PDF:', error);
+        pdfContainer.innerHTML = `
+            <div class="alert alert-danger text-center m-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Error loading PDF document. Please try again or contact support.
+            </div>
+        `;
+    });
+    
+    function renderPage(pageNum) {
+        if (isRendering) return;
+        isRendering = true;
+        
+        pdfDoc.getPage(pageNum).then(page => {
+            const viewport = page.getViewport({ scale: scale });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+            
+            page.render(renderContext).promise.then(() => {
+                isRendering = false;
+                currentPage = pageNum;
+                document.getElementById('currentPage').textContent = pageNum;
+                
+                // Update button states
+                document.getElementById('prevPage').disabled = (pageNum <= 1);
+                document.getElementById('nextPage').disabled = (pageNum >= pdfDoc.numPages);
+            });
+        });
+    }
+    
+    // Navigation controls
+    document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 1) {
+            renderPage(currentPage - 1);
+        }
+    });
+    
+    document.getElementById('nextPage').addEventListener('click', () => {
+        if (currentPage < pdfDoc.numPages) {
+            renderPage(currentPage + 1);
+        }
+    });
+    
+    // Zoom controls
+    document.getElementById('zoomIn').addEventListener('click', () => {
+        scale = Math.min(scale * 1.2, 3.0);
+        renderPage(currentPage);
+    });
+    
+    document.getElementById('zoomOut').addEventListener('click', () => {
+        scale = Math.max(scale / 1.2, 0.5);
+        renderPage(currentPage);
+    });
+    
+    document.getElementById('resetZoom').addEventListener('click', () => {
+        scale = 1.2;
+        renderPage(currentPage);
+    });
+    
+    // Fullscreen toggle
+    document.getElementById('toggleFullscreen').addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            pdfContainer.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName !== 'INPUT') {
+            switch(e.key) {
+                case 'ArrowLeft':
+                case 'PageUp':
+                    e.preventDefault();
+                    if (currentPage > 1) renderPage(currentPage - 1);
+                    break;
+                case 'ArrowRight':
+                case 'PageDown':
+                    e.preventDefault();
+                    if (currentPage < pdfDoc.numPages) renderPage(currentPage + 1);
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    renderPage(1);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    renderPage(pdfDoc.numPages);
+                    break;
+            }
+        }
+    });
+    
+    // Mouse wheel zoom
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+            scale = Math.min(scale * 1.1, 3.0);
+        } else {
+            scale = Math.max(scale / 1.1, 0.5);
+        }
+        renderPage(currentPage);
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,214 @@
+import os
+import tempfile
+import zipfile
+from pathlib import Path
+import fitz  # PyMuPDF for PDF processing
+from docx import Document  # python-docx for DOCX processing
+import logging
+
+logger = logging.getLogger(__name__)
+
+class DocumentProcessor:
+    """
+    Process various document types and extract text content for AI analysis
+    """
+    
+    def __init__(self):
+        self.supported_types = [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'text/plain'
+        ]
+    
+    def is_supported(self, file_type):
+        """Check if file type is supported"""
+        return file_type in self.supported_types
+    
+    def process_file(self, file_path, file_type):
+        """
+        Process a file and extract text content based on file type
+        
+        Args:
+            file_path (str): Path to the file
+            file_type (str): MIME type of the file
+            
+        Returns:
+            dict: Contains extracted text and metadata
+        """
+        try:
+            if file_type == 'application/pdf':
+                return self._process_pdf(file_path)
+            elif file_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                return self._process_docx(file_path)
+            elif file_type == 'text/plain':
+                return self._process_txt(file_path)
+            else:
+                raise ValueError(f"Unsupported file type: {file_type}")
+                
+        except Exception as e:
+            logger.error(f"Error processing file {file_path}: {str(e)}")
+            raise
+    
+    def _process_pdf(self, file_path):
+        """Extract text from PDF file using PyMuPDF"""
+        try:
+            doc = fitz.open(file_path)
+            text_content = ""
+            page_count = 0
+            
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                text_content += page.get_text("text")  # Updated PyMuPDF API
+                page_count += 1
+            
+            doc.close()
+            
+            return {
+                'text': text_content.strip(),
+                'page_count': page_count,
+                'word_count': len(text_content.split()),
+                'file_type': 'PDF'
+            }
+            
+        except Exception as e:
+            raise Exception(f"Failed to process PDF: {str(e)}")
+    
+    def _process_docx(self, file_path):
+        """Extract text from DOCX file using python-docx"""
+        try:
+            doc = Document(file_path)
+            text_content = ""
+            paragraph_count = 0
+            
+            # Extract text from paragraphs
+            for paragraph in doc.paragraphs:
+                if paragraph.text.strip():
+                    text_content += paragraph.text + "\n"
+                    paragraph_count += 1
+            
+            # Extract text from tables if any
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        if cell.text.strip():
+                            text_content += cell.text + " "
+                    text_content += "\n"
+            
+            return {
+                'text': text_content.strip(),
+                'paragraph_count': paragraph_count,
+                'word_count': len(text_content.split()),
+                'file_type': 'Word Document'
+            }
+            
+        except Exception as e:
+            raise Exception(f"Failed to process DOCX: {str(e)}")
+    
+    def _process_txt(self, file_path):
+        """Extract text from plain text file"""
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
+                text_content = file.read()
+            
+            lines = text_content.split('\n')
+            line_count = len([line for line in lines if line.strip()])
+            
+            return {
+                'text': text_content.strip(),
+                'line_count': line_count,
+                'word_count': len(text_content.split()),
+                'file_type': 'Text File'
+            }
+            
+        except Exception as e:
+            raise Exception(f"Failed to process TXT: {str(e)}")
+    
+    def process_multiple_files(self, files_data):
+        """
+        Process multiple files and combine their content
+        
+        Args:
+            files_data (list): List of tuples (file_path, file_type, original_name)
+            
+        Returns:
+            dict: Combined processing results
+        """
+        combined_text = ""
+        file_summaries = []
+        total_word_count = 0
+        
+        for file_path, file_type, original_name in files_data:
+            try:
+                result = self.process_file(file_path, file_type)
+                
+                # Add file separator
+                combined_text += f"\n\n--- Content from {original_name} ---\n\n"
+                combined_text += result['text']
+                
+                # Track file summary
+                file_summaries.append({
+                    'name': original_name,
+                    'type': result['file_type'],
+                    'word_count': result['word_count'],
+                    'processed_successfully': True
+                })
+                
+                total_word_count += result['word_count']
+                
+            except Exception as e:
+                logger.error(f"Failed to process {original_name}: {str(e)}")
+                file_summaries.append({
+                    'name': original_name,
+                    'type': 'Unknown',
+                    'word_count': 0,
+                    'processed_successfully': False,
+                    'error': str(e)
+                })
+        
+        return {
+            'combined_text': combined_text.strip(),
+            'file_summaries': file_summaries,
+            'total_word_count': total_word_count,
+            'total_files': len(files_data),
+            'successful_files': len([f for f in file_summaries if f['processed_successfully']])
+        }
+    
+    def save_uploaded_file(self, file_storage, upload_dir='/tmp/uploads'):
+        """
+        Save uploaded file to temporary directory
+        
+        Args:
+            file_storage: Flask file storage object
+            upload_dir: Directory to save files
+            
+        Returns:
+            str: Path to saved file
+        """
+        try:
+            # Create upload directory if it doesn't exist
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            # Generate unique filename
+            filename = file_storage.filename
+            temp_filename = f"{tempfile.gettempprefix()}{filename}"
+            file_path = os.path.join(upload_dir, temp_filename)
+            
+            # Save file
+            file_storage.save(file_path)
+            
+            return file_path
+            
+        except Exception as e:
+            raise Exception(f"Failed to save uploaded file: {str(e)}")
+    
+    def cleanup_files(self, file_paths):
+        """Clean up temporary files"""
+        for file_path in file_paths:
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                logger.warning(f"Failed to cleanup file {file_path}: {str(e)}")
+
+# Global instance
+document_processor = DocumentProcessor()

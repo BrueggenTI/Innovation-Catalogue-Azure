@@ -1,0 +1,1769 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Recipe - Brüggen Innovation Catalogue{% endblock %}
+
+{% block head %}
+<style>
+/* Recipe Preview Specific Styles */
+.ingredient-name {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.percentage-cell {
+    text-align: right;
+    font-weight: 600;
+    color: #661c31;
+}
+
+.recipe-preview-modal .table {
+    margin-bottom: 0;
+}
+
+.recipe-preview-modal .table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.recipe-preview-modal .table th {
+    padding: 12px 16px;
+    background-color: #661c31;
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.recipe-preview-modal .card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.recipe-preview-modal .card-header {
+    padding: 16px 20px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    font-weight: 600;
+}
+
+.recipe-preview-modal .card-body {
+    padding: 20px;
+}
+
+.recipe-preview-modal .badge {
+    font-size: 0.875rem;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin: 4px 2px;
+    font-weight: 500;
+}
+
+.modal-xl {
+    max-width: 1200px;
+}
+
+#recipePreviewModal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+/* Recipe List Styles */
+.recipe-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.recipe-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.recipe-image-container img {
+    transition: transform 0.3s ease;
+}
+
+.recipe-card:hover .recipe-image-container img {
+    transform: scale(1.05);
+}
+
+.delete-recipe-btn:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+/* Image upload hover effects */
+.image-preview-wrapper:hover .image-overlay {
+    opacity: 1 !important;
+}
+
+.image-upload-container {
+    transition: transform 0.2s ease;
+}
+
+.image-upload-container:hover {
+    transform: translateY(-2px);
+}
+
+/* Image selection styles */
+.image-selection-card:hover .image-selection-overlay {
+    opacity: 1 !important;
+}
+
+.image-selection-card {
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.image-selection-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header py-5">
+    <div class="container-fluid px-4">
+        <h1 class="page-title">Add New Recipe</h1>
+        <p class="text-muted">Upload a document and let AI analyze it to create a new product entry</p>
+    </div>
+</div>
+
+<div class="container-fluid px-4 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Upload Section -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header" style="background-color: #661c31;">
+                    <h3 class="card-title mb-0 text-white">
+                        <i class="fas fa-upload me-2"></i>Upload Recipe Document
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form id="recipeUploadForm" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="recipeFile" class="form-label fw-bold">Recipe Document</label>
+                            <div class="upload-area border border-2 border-dashed rounded-3 p-4 text-center" 
+                                 ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">
+                                <input type="file" class="form-control d-none" id="recipeFile" name="recipe_file" 
+                                       accept=".pdf,.doc,.docx,.txt,.ppt,.pptx" required>
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                    <h5>Drag & drop your recipe document here</h5>
+                                    <p class="text-muted">or <a href="#" onclick="document.getElementById('recipeFile').click()">browse files</a></p>
+                                    <small class="text-muted">Supported formats: PDF, DOC, DOCX, TXT, PPT, PPTX</small>
+                                </div>
+                                <div class="selected-file d-none">
+                                    <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
+                                    <p class="filename fw-bold mb-1"></p>
+                                    <p class="filesize text-muted mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary px-4" id="analyzeBtn">
+                                <i class="fas fa-magic me-2"></i>Analyze with AI
+                            </button>
+                            <a href="{{ url_for('catalog') }}" class="btn btn-outline-secondary px-4">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Analysis Progress -->
+            <div class="card border-0 shadow-sm d-none" id="analysisProgress">
+                <div class="card-header" style="background-color: #661c31;">
+                    <h3 class="card-title mb-0 text-white">
+                        <i class="fas fa-brain me-2"></i>AI Analysis in Progress
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div class="analysis-steps">
+                        <div class="step" data-step="1">
+                            <i class="fas fa-file-text me-2"></i>Reading document content...
+                        </div>
+                        <div class="step" data-step="2">
+                            <i class="fas fa-brain me-2"></i>AI analyzing recipe with OpenAI GPT-4...
+                        </div>
+                        <div class="step" data-step="3">
+                            <i class="fas fa-search me-2"></i>Extracting ingredients and percentages...
+                        </div>
+                        <div class="step" data-step="4">
+                            <i class="fas fa-calculator me-2"></i>Processing nutritional information...
+                        </div>
+                        <div class="step" data-step="5">
+                            <i class="fas fa-check-circle me-2"></i>Finalizing product analysis...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Recipes Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background-color: #661c31;">
+                    <h3 class="card-title mb-0 text-white">
+                        <i class="fas fa-list me-2"></i>Existing Recipes
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div id="recipesList">
+                        {% if recipes %}
+                        <div class="row g-3" id="recipesGrid">
+                            {% for recipe in recipes %}
+                            <div class="col-lg-3 col-md-4 col-sm-6" id="recipe-{{ recipe.id }}">
+                                <div class="card h-100 recipe-card">
+                                    <div class="recipe-image-container" style="height: 200px; overflow: hidden;">
+                                        <img src="{{ recipe.image_url or 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
+                                             class="card-img-top" alt="{{ recipe.name }}" 
+                                             style="width: 100%; height: 100%; object-fit: cover;">
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
+                                        <h6 class="card-title mb-2 text-truncate">{{ recipe.name }}</h6>
+                                        <small class="text-muted mb-2">{{ recipe.category }}</small>
+                                        <div class="mt-auto">
+                                            <button type="button" class="btn btn-outline-danger btn-sm w-100 delete-recipe-btn" 
+                                                    data-recipe-id="{{ recipe.id }}" data-recipe-name="{{ recipe.name }}">
+                                                <i class="fas fa-trash me-1"></i>Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No recipes found</h5>
+                            <p class="text-muted">Upload your first recipe document to get started!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recipe Preview Modal -->
+<div class="modal fade" id="recipePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #661c31;">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-eye me-2"></i>Recipe Preview
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="recipePreviewContent">
+                    <!-- Preview content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-warning" id="editRecipeBtn">
+                    <i class="fas fa-edit me-2"></i>Edit Data
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-success" id="saveRecipeBtn">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                </button>
+                <button type="button" class="btn btn-primary" id="publishRecipeBtn">
+                    <i class="fas fa-check me-2"></i>Publish Recipe
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.querySelector('.upload-area');
+    const fileInput = document.getElementById('recipeFile');
+    const uploadForm = document.getElementById('recipeUploadForm');
+    const analysisProgress = document.getElementById('analysisProgress');
+
+    function handleFileSelect(file) {
+        if (file) {
+            const uploadContent = uploadArea.querySelector('.upload-content');
+            const selectedFile = uploadArea.querySelector('.selected-file');
+
+            uploadContent.classList.add('d-none');
+            selectedFile.classList.remove('d-none');
+
+            selectedFile.querySelector('.filename').textContent = file.name;
+            selectedFile.querySelector('.filesize').textContent = formatFileSize(file.size);
+        }
+    }
+
+    // File input change handler
+    fileInput.addEventListener('change', function(e) {
+        handleFileSelect(e.target.files[0]);
+    });
+
+    // Form submission handler
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        analyzeRecipe();
+    });
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+
+    function analyzeRecipe() {
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Please select a file first.');
+            return;
+        }
+
+        // Show analysis progress
+        const progressElement = document.getElementById('analysisProgress');
+        if (progressElement) {
+            progressElement.classList.remove('d-none');
+        }
+
+        // Simulate AI analysis progress
+        simulateAnalysis();
+
+        // Create FormData and submit
+        const formData = new FormData();
+        formData.append('recipe_file', file);
+
+        fetch('/api/analyze-recipe', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                setTimeout(() => {
+                    if (progressElement) {
+                        progressElement.classList.add('d-none');
+                    }
+                    showRecipePreview(data.recipe_data);
+                }, 1000); // Small delay to show completion
+            } else {
+                if (progressElement) {
+                    progressElement.classList.add('d-none');
+                }
+                alert('AI Analysis failed: ' + (data.error || 'Unknown error'));
+                console.error('AI Analysis error:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error during AI analysis:', error);
+            if (progressElement) {
+                progressElement.classList.add('d-none');
+            }
+            alert('An error occurred during AI analysis. Please check the console for details.');
+        });
+    }
+
+    function simulateAnalysis() {
+        const steps = document.querySelectorAll('.analysis-steps .step');
+        const progressBar = document.querySelector('.progress-bar');
+        let currentStep = 0;
+
+        if (!steps || steps.length === 0 || !progressBar) {
+            console.warn('Analysis progress elements not found');
+            return;
+        }
+
+        const interval = setInterval(() => {
+            if (currentStep < steps.length) {
+                const step = steps[currentStep];
+                const icon = step.querySelector('i');
+
+                if (step) {
+                    step.style.color = '#28a745';
+                }
+                if (icon) {
+                    icon.className = 'fas fa-check-circle me-2';
+                }
+
+                currentStep++;
+                if (progressBar) {
+                    progressBar.style.width = (currentStep / steps.length * 100) + '%';
+                }
+            } else {
+                clearInterval(interval);
+            }
+        }, 1000);
+    }
+
+    function showRecipePreview(recipeData) {
+        // Generate preview HTML and show modal
+        const previewContent = document.getElementById('recipePreviewContent');
+        previewContent.innerHTML = generatePreviewHTML(recipeData);
+
+        const modal = new bootstrap.Modal(document.getElementById('recipePreviewModal'));
+        modal.show();
+
+        // AUTOMATICALLY START IN EDIT MODE after AI analysis
+        setTimeout(() => {
+            // The form is already in edit mode, but ensure all event listeners are attached
+            attachDragAndDropEventListeners();
+
+            // Store recipe data globally for later use
+            window.currentRecipeData = recipeData;
+        }, 100);
+    }
+
+    function generatePreviewHTML(data) {
+        const ingredientsHTML = data.ingredients.map((ing, index) => 
+            `<tr class="draggable-ingredient" draggable="true">
+                <td>
+                    <div class="input-group">
+                        <span class="input-group-text drag-handle" style="cursor: move; display: inline-flex;">
+                            <i class="fas fa-grip-vertical"></i>
+                        </span>
+                        <input type="text" class="form-control ingredient-name-input" 
+                               value="${ing.name}" data-index="${index}" 
+                               style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input type="number" class="form-control percentage-input text-end" 
+                               value="${ing.percentage}" data-index="${index}" min="0" max="100" step="0.1"
+                               style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem; min-width: 100px; width: 100px;">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-existing-ingredient-btn" data-index="${index}" style="display: inline-block;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`
+        ).join('');
+
+        const allergensHTML = data.allergens.map((allergen, index) => 
+            `<div class="input-group mb-2 me-2 draggable-allergen" draggable="true" style="width: 100%; display: flex; margin-bottom: 8px;">
+                <span class="input-group-text bg-warning text-dark drag-handle" style="cursor: move; display: inline-flex;">
+                    <i class="fas fa-grip-vertical"></i>
+                </span>
+                <span class="input-group-text bg-warning text-dark">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </span>
+                <input type="text" class="form-control allergen-input" 
+                       value="${allergen}" data-index="${index}"
+                       style="flex: 1; white-space: normal; word-wrap: break-word; overflow: visible; border: 1px solid #ced4da; background: #fff; cursor: text; min-height: 38px; height: auto; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-existing-allergen-btn" data-index="${index}" style="display: inline-block;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>`
+        ).join('');
+
+        const claimsHTML = data.claims.map((claim, index) => 
+            `<div class="input-group mb-2 me-2 draggable-claim" draggable="true" style="width: 100%; display: flex; margin-bottom: 8px;">
+                <span class="input-group-text bg-success text-white drag-handle" style="cursor: move; display: inline-flex;">
+                    <i class="fas fa-grip-vertical"></i>
+                </span>
+                <span class="input-group-text bg-success text-white">
+                    <i class="fas fa-check"></i>
+                </span>
+                <input type="text" class="form-control claim-input" 
+                       value="${claim}" data-index="${index}" 
+                       style="flex: 1; white-space: normal; word-wrap: break-word; overflow: visible; border: 1px solid #ced4da; background: #fff; cursor: text; min-height: 38px; height: auto; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-existing-claim-btn" data-index="${index}" style="display: inline-block;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>`
+        ).join('');
+
+        return `
+            <div class="container-fluid p-4 recipe-preview-modal">
+                <div class="row g-4">
+                    <div class="col-lg-12">
+                        <div class="text-center mb-4">
+                            <input type="text" id="recipeName" class="form-control text-center fs-3 fw-bold" 
+                                   value="${data.name}" style="border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
+                            <textarea id="recipeDescription" class="form-control text-center text-muted mt-2" 
+                                     rows="2" style="border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem; resize: none;">${data.description}</textarea>
+                            <select id="recipeCategory" class="form-select mt-3" style="width: 300px; margin: 0 auto; border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
+                                <option value="Flakes" ${data.category === 'Flakes' ? 'selected' : ''}>Flakes</option>
+                                <option value="Multigrain & Branflakes" ${data.category === 'Multigrain & Branflakes' ? 'selected' : ''}>Multigrain & Branflakes</option>
+                                <option value="Puffed Cereals" ${data.category === 'Puffed Cereals' ? 'selected' : ''}>Puffed Cereals</option>
+                                <option value="Extrudates & Co-Extrudates" ${data.category === 'Extrudates & Co-Extrudates' ? 'selected' : ''}>Extrudates & Co-Extrudates</option>
+                                <option value="Traditional Muesli" ${data.category === 'Traditional Muesli' ? 'selected' : ''}>Traditional Muesli</option>
+                                <option value="Crunchy Muesli" ${data.category === 'Crunchy Muesli' ? 'selected' : ''}>Crunchy Muesli</option>
+                                <option value="Bio & Fair-Trade Muesli" ${data.category === 'Bio & Fair-Trade Muesli' ? 'selected' : ''}>Bio & Fair-Trade Muesli</option>
+                                <option value="Oat Flakes" ${data.category === 'Oat Flakes' ? 'selected' : ''}>Oat Flakes</option>
+                                <option value="Wheat, Rye & Barley Flakes" ${data.category === 'Wheat, Rye & Barley Flakes' ? 'selected' : ''}>Wheat, Rye & Barley Flakes</option>
+                                <option value="Bars" ${data.category === 'Bars' ? 'selected' : ''}>Bars</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Recipe Number Section -->
+                    ${data.recipe_number ? `
+                    <div class="col-lg-12 mb-4">
+                        <div class="card">
+                            <div class="card-header" style="background-color: #661c31;">
+                                <h5 class="mb-0 text-white">
+                                    <i class="fas fa-hashtag me-2"></i>Rezeptnummer
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background-color: #f8f9fa;">
+                                        <i class="fas fa-barcode text-muted"></i>
+                                    </span>
+                                    <input type="text" id="recipeNumber" class="form-control" 
+                                           value="${data.recipe_number || ''}" 
+                                           style="border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
+                                    <span class="input-group-text" style="background-color: #f8f9fa; color: #6c757d;">
+                                        extrahiert aus Dokument
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Extracted Images Section -->
+                    ${data.extracted_images && data.extracted_images.length > 0 ? `
+                    <div class="col-lg-12 mb-4">
+                        <div class="card">
+                            <div class="card-header" style="background-color: #661c31;">
+                                <h5 class="mb-0 text-white">
+                                    <i class="fas fa-images me-2"></i>Extrahierte Bilder aus Dokument (${data.extracted_images.length})
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted mb-3">Wählen Sie die Bilder aus, die als Produktbild und Nutri-Score-Bild verwendet werden sollen:</p>
+                                <div class="row g-3" id="extractedImagesGrid">
+                                    ${data.extracted_images.map((img, index) => `
+                                        <div class="col-md-3">
+                                            <div class="card image-selection-card" data-image-index="${index}" data-image-url="${img.url}">
+                                                <div class="image-preview-container" style="height: 150px; overflow: hidden; position: relative;">
+                                                    <img src="${img.url}" alt="Extracted Image ${index + 1}" 
+                                                         style="width: 100%; height: 100%; object-fit: cover;">
+                                                    <div class="image-selection-overlay position-absolute top-0 start-0 w-100 h-100" 
+                                                         style="background: rgba(0,0,0,0.7); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                                        <button type="button" class="btn btn-primary btn-sm mb-2 select-as-product-btn" 
+                                                                data-image-url="${img.url}" data-image-index="${index}">
+                                                            <i class="fas fa-box me-1"></i>Als Produktbild
+                                                        </button>
+                                                        <button type="button" class="btn btn-success btn-sm select-as-nutri-btn" 
+                                                                data-image-url="${img.url}" data-image-index="${index}">
+                                                            <i class="fas fa-award me-1"></i>Als Nutri-Score
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body p-2">
+                                                    <small class="text-muted d-block">${img.source}</small>
+                                                    <small class="text-muted">${img.dimensions}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Selected Images Section -->
+                    <div class="col-lg-12 mb-4">
+                        <div class="card">
+                            <div class="card-header" style="background-color: #661c31;">
+                                <h5 class="mb-0 text-white">
+                                    <i class="fas fa-check-circle me-2"></i>Ausgewählte Bilder
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Produktbild</label>
+                                        <div class="image-upload-container position-relative">
+                                            <div class="image-preview-wrapper" style="height: 200px; border: 2px dashed #ced4da; border-radius: 8px; overflow: hidden; position: relative; background: #f8f9fa;">
+                                                <img id="productImagePreview" src="${data.image_url || 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
+                                                     alt="Product Image" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;" onclick="document.getElementById('productImageInput').click();">
+                                                <div class="image-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s;">
+                                                    <i class="fas fa-camera text-white fa-2x"></i>
+                                                </div>
+                                            </div>
+                                            <input type="file" id="productImageInput" class="d-none" accept="image/*" data-image-type="product">
+                                            <div class="mt-2 d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('productImageInput').click();">
+                                                    <i class="fas fa-upload me-1"></i>Eigenes hochladen
+                                                </button>
+                                                <button type="button" class="btn btn-outline-warning btn-sm" id="clearProductImageBtn">
+                                                    <i class="fas fa-times me-1"></i>Entfernen
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Nutri-Score Bild</label>
+                                        <div class="image-upload-container position-relative">
+                                            <div class="image-preview-wrapper" style="height: 200px; border: 2px dashed #ced4da; border-radius: 8px; overflow: hidden; position: relative; background: #f8f9fa;">
+                                                <img id="nutriScoreImagePreview" src="${data.nutri_score_image || '/static/images/placeholder-nutriscore.png'}" 
+                                                     alt="Nutri-Score Image" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;" onclick="document.getElementById('nutriScoreImageInput').click();">
+                                                <div class="image-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s;">
+                                                    <i class="fas fa-camera text-white fa-2x"></i>
+                                                </div>
+                                            </div>
+                                            <input type="file" id="nutriScoreImageInput" class="d-none" accept="image/*" data-image-type="nutri_score">
+                                            <div class="mt-2 d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-success btn-sm" onclick="document.getElementById('nutriScoreImageInput').click();">
+                                                    <i class="fas fa-upload me-1"></i>Eigenes hochladen
+                                                </button>
+                                                <button type="button" class="btn btn-outline-warning btn-sm" id="clearNutriScoreImageBtn">
+                                                    <i class="fas fa-times me-1"></i>Entfernen
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Ingredients</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th style="width: 70%;">Ingredient</th>
+                                            <th style="width: 30%; text-align: right;">Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ingredientsTableBody">${ingredientsHTML}</tbody>
+                                </table>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="addIngredientBtn">
+                                        <i class="fas fa-plus me-1"></i>Add Ingredient
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">Nutritional Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr><td class="fw-medium">Energy</td><td class="text-end"><input type="number" class="form-control nutritional-input text-end" id="energy" value="${data.nutritional_info.energy}" step="0.1" style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;"></td></tr>
+                                        <tr><td class="fw-medium">Fat</td><td class="text-end"><input type="number" class="form-control nutritional-input text-end" id="fat" value="${data.nutritional_info.fat}" step="0.1" style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;"></td></tr>
+                                        <tr class="table-light"><td class="ps-4">- of which saturated</td><td class="text-end"><input type="number" class="form-control nutritional-input text-end" id="saturated_fat" value="${data.nutritional_info.saturated_fat || 0}" step="0.1" style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;"></td></tr>
+                                        <tr><td class="fw-medium">Carbohydrates</td><td class="text-end"><input type="number" class="form-control nutritional-input text-end" id="carbohydrates" value="${data.nutritional_info.carbohydrates}" step="0.1" style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;"></td></tr>
+                                        <tr class="table-light"><td class="ps-4">- of which sugars</td><td class="text-end"><input type="number" class="form-control nutritional-input text-end" id="sugars" value="${data.nutritional_info.sugars || 0}" step="0.1" style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;"></td></tr>
+                                        <tr><td class="fw-medium">Fiber</td><td class="text-end"><input type="number" class="form-control nutritional-input text-end" id="fiber" value="${data.nutritional_info.fiber}" step="0.1" style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;"></td></tr>
+                                        <tr><td class="fw-medium">Protein</td><td class="text-end"><input type="number" class="form-control nutritional-input text-end" id="protein" value="${data.nutritional_info.protein}" step="0.1" style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;"></td></tr>
+                                        <tr><td class="fw-medium">Salt</td><td class="text-end"><input type="number" class="form-control nutritional-input text-end" id="salt" value="${data.nutritional_info.salt}" step="0.1" style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;"></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">Allergens</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex flex-column gap-2" id="allergensContainer" style="overflow: visible; word-wrap: break-word;">
+                                    ${allergensHTML || '<span class="text-muted fst-italic" id="noAllergensText">No allergens detected</span>'}
+                                </div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-outline-warning btn-sm" id="addAllergenBtn">
+                                        <i class="fas fa-plus me-1"></i>Add Allergen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Product Claims</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex flex-column gap-2" id="claimsContainer" style="overflow: visible; word-wrap: break-word;">
+                                    ${claimsHTML || '<span class="text-muted fst-italic" id="noClaimsText">No claims identified</span>'}
+                                </div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-outline-success btn-sm" id="addClaimBtn">
+                                        <i class="fas fa-plus me-1"></i>Add Claim
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-warehouse me-2"></i>Storage Conditions
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Storage Conditions</label>
+                                    <textarea id="storageConditions" class="form-control" rows="2" 
+                                             placeholder="e.g. Store in a cool, dry place, protect from direct sunlight"
+                                             style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem; resize: vertical;">${data.storage_conditions || 'Store in a cool, dry place, protect from direct sunlight'}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">Product Images</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Product Image</label>
+                                    <input type="file" class="form-control" id="productImageInput" accept="image/*">
+                                    <div class="mt-2" id="productImagePreview" style="display: none;">
+                                        <img id="productImagePreviewImg" src="" alt="Product Preview" class="img-fluid" style="max-height: 150px; border-radius: 8px;">
+                                        <p class="text-success mt-1 mb-0"><i class="fas fa-check-circle me-1"></i>Product image uploaded successfully</p>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nutri-Score Image</label>
+                                    <input type="file" class="form-control" id="nutriScoreImageInput" accept="image/*">
+                                    <div class="mt-2" id="nutriScoreImagePreview" style="display: none;">
+                                        <img id="nutriScoreImagePreviewImg" src="" alt="Nutri-Score Preview" class="img-fluid" style="max-height: 80px; border-radius: 8px;">
+                                        <p class="text-success mt-1 mb-0"><i class="fas fa-check-circle me-1"></i>Nutri-Score image uploaded successfully</p>
+                                    </div>
+                                </div>
+                                <div class="mb-3" id="currentImagesDisplay" style="display: none;">
+                                    <h6 class="fw-bold">Currently Uploaded Images:</h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-6" id="currentProductImageContainer" style="display: none;">
+                                                                                        <div class="border rounded p-2">
+                                                <label class="form-label text-muted small">Product Image</label>
+                                                <img id="currentProductImage" src="" alt="Current Product Image" class="img-fluid" style="max-height: 120px; border-radius: 4px;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" id="currentNutriScoreContainer" style="display: none;">
+                                            <div class="border rounded p-2">
+                                                <label class="form-label text-muted small">Nutri-Score Image</label>
+                                                <img id="currentNutriScoreImage" src="" alt="Current Nutri-Score Image" class="img-fluid" style="max-height: 120px; border-radius: 4px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Edit Recipe functionality
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'editRecipeBtn') {
+            toggleEditMode(true);
+        } else if (e.target && e.target.id === 'saveRecipeBtn') {
+            saveRecipeChanges();
+        } else if (e.target && e.target.id === 'publishRecipeBtn') {
+            publishRecipe();
+        }
+    });
+
+    function toggleEditMode(enableEdit) {
+        const inputs = document.querySelectorAll('#recipePreviewContent input, #recipePreviewContent textarea, #recipePreviewContent select');
+        const editBtn = document.getElementById('editRecipeBtn') || document.getElementById('cancelEditBtn');
+        const saveBtn = document.getElementById('saveRecipeBtn');
+        const removeButtons = document.querySelectorAll('.remove-existing-ingredient-btn, .remove-existing-allergen-btn, .remove-existing-claim-btn');
+        const dragHandles = document.querySelectorAll('.drag-handle');
+        const draggableItems = document.querySelectorAll('.draggable-ingredient, .draggable-allergen, .draggable-claim');
+
+        inputs.forEach(input => {
+            if (enableEdit) {
+                // Enable editing completely
+                input.removeAttribute('readonly');
+                input.removeAttribute('disabled');
+                input.readOnly = false;
+                input.disabled = false;
+
+                // Style changes for edit mode
+                input.style.border = '1px solid #ced4da';
+                input.style.background = '#fff';
+                input.style.cursor = 'text';
+                input.style.padding = '0.375rem 0.75rem';
+                input.style.borderRadius = '0.375rem';
+
+                // Ensure full text is visible
+                input.style.whiteSpace = 'normal';
+                input.style.wordWrap = 'break-word';
+                input.style.overflow = 'visible';
+                input.style.textOverflow = 'unset';
+                input.style.width = 'auto';
+                input.style.minWidth = '200px';
+                input.style.height = 'auto';
+                input.style.minHeight = '38px';
+
+                // Make inputs properly focusable
+                input.tabIndex = 0;
+                input.removeAttribute('contenteditable');
+            } else {
+                // View mode - readonly but visible
+                input.readOnly = true;
+                if (input.tagName === 'SELECT') {
+                    input.disabled = true;
+                }
+
+                // Style changes for view mode
+                input.style.border = 'none';
+                input.style.background = 'transparent';
+                input.style.cursor = 'default';
+                input.style.padding = '0.375rem 0.75rem';
+
+                // Ensure full text is always visible in view mode too
+                input.style.whiteSpace = 'normal';
+                input.style.wordWrap = 'break-word';
+                input.style.overflow = 'visible';
+                input.style.textOverflow = 'unset';
+                input.style.width = 'auto';
+                input.style.minWidth = '200px';
+                input.style.height = 'auto';
+                input.style.minHeight = '38px';
+            }
+        });
+
+        // Toggle remove buttons visibility
+        removeButtons.forEach(btn => {
+            btn.style.display = enableEdit ? 'inline-block' : 'none';
+        });
+
+        // Toggle drag handles visibility and draggable functionality
+        dragHandles.forEach(handle => {
+            handle.style.display = enableEdit ? 'inline-flex' : 'none';
+        });
+
+        draggableItems.forEach(item => {
+            item.setAttribute('draggable', enableEdit ? 'true' : 'false');
+            if (enableEdit) {
+                item.style.cursor = 'move';
+                item.style.transition = 'all 0.3s ease';
+                // Add event listeners for drag and drop
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragenter', handleDragEnter);
+                item.addEventListener('dragleave', handleDragLeave);
+            } else {
+                item.style.cursor = 'default';
+                // Remove event listeners
+                item.removeEventListener('dragstart', handleDragStart);
+                item.removeEventListener('dragover', handleDragOver);
+                item.removeEventListener('drop', handleDrop);
+                item.removeEventListener('dragend', handleDragEnd);
+                item.removeEventListener('dragenter', handleDragEnter);
+                item.removeEventListener('dragleave', handleDragLeave);
+            }
+        });
+
+        if (enableEdit) {
+            if (editBtn) {
+                editBtn.innerHTML = '<i class="fas fa-times me-2"></i>Cancel Edit';
+                editBtn.className = 'btn btn-outline-danger';
+                editBtn.id = 'cancelEditBtn';
+            }
+            if (saveBtn) {
+                saveBtn.style.display = 'inline-block';
+            }
+        } else {
+            if (editBtn) {
+                editBtn.innerHTML = '<i class="fas fa-edit me-2"></i>Edit Data';
+                editBtn.className = 'btn btn-outline-warning';
+                editBtn.id = 'editRecipeBtn';
+            }
+            if (saveBtn) {
+                saveBtn.style.display = 'none';
+            }
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'cancelEditBtn') {
+            toggleEditMode(false);
+            e.target.innerHTML = '<i class="fas fa-edit me-2"></i>Edit Data';
+            e.target.className = 'btn btn-outline-warning';
+            e.target.id = 'editRecipeBtn';
+        }
+    });
+
+    function saveRecipeChanges() {
+        // Collect all edited data (preserve existing recipe_number and other metadata)
+        const editedData = {
+            name: document.getElementById('recipeName').value,
+            description: document.getElementById('recipeDescription').value,
+            category: document.getElementById('recipeCategory').value,
+            ingredients: [],
+            nutritional_info: {
+                energy: document.getElementById('energy').value,
+                fat: document.getElementById('fat').value,
+                saturated_fat: document.getElementById('saturated_fat').value,
+                carbohydrates: document.getElementById('carbohydrates').value,
+                sugars: document.getElementById('sugars').value,
+                fiber: document.getElementById('fiber').value,
+                protein: document.getElementById('protein').value,
+                salt: document.getElementById('salt').value
+            },
+            allergens: [],
+            claims: [],
+            // Preserve recipe_number from original data or form
+            recipe_number: document.getElementById('recipeNumber')?.value || window.currentRecipeData?.recipe_number || null,
+            // Preserve other metadata if available
+            storage_conditions: document.getElementById('storageConditions')?.value || window.currentRecipeData?.storage_conditions || 'Store in a cool, dry place, protect from direct sunlight',
+            extracted_images: window.currentRecipeData?.extracted_images || []
+        };
+
+        // Collect ingredients
+        document.querySelectorAll('.ingredient-name-input').forEach((input, index) => {
+            const name = input.value;
+            const percentage = parseFloat(document.querySelector(`.percentage-input[data-index="${index}"]`).value) || 0;
+            if (name.trim()) {
+                editedData.ingredients.push({ name: name.trim(), percentage: percentage });
+            }
+        });
+
+        // Collect allergens
+        document.querySelectorAll('.allergen-input').forEach(input => {
+            if (input.value.trim()) {
+                editedData.allergens.push(input.value.trim());
+            }
+        });
+
+        // Collect claims
+        document.querySelectorAll('.claim-input').forEach(input => {
+            if (input.value.trim()) {
+                editedData.claims.push(input.value.trim());
+            }
+        });
+
+        // Store edited data globally for publishing
+        window.currentRecipeData = editedData;
+
+        // Switch back to view mode
+        toggleEditMode(false);
+
+        // Show success message
+        const saveBtn = document.getElementById('saveRecipeBtn');
+        const originalHTML = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-check me-2"></i>Saved!';
+        saveBtn.className = 'btn btn-success';
+
+        setTimeout(() => {
+            saveBtn.innerHTML = originalHTML;
+            saveBtn.className = 'btn btn-success';
+        }, 2000);
+    }
+
+    function publishRecipe() {
+        const recipeData = window.currentRecipeData || getCurrentRecipeData();
+
+
+        if (!recipeData || !recipeData.name.trim()) {
+            alert('Please ensure the recipe has a valid name before publishing.');
+            return;
+        }
+
+        // Generate unique recipe ID to prevent overwriting
+        recipeData.recipe_id = 'recipe_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        recipeData.created_at = new Date().toISOString();
+
+        // Get currently selected images from the preview
+        const productImagePreview = document.getElementById('productImagePreview');
+        const nutriScoreImagePreview = document.getElementById('nutriScoreImagePreview');
+        
+        if (productImagePreview && productImagePreview.src) {
+            // Only use extracted/uploaded images, not placeholder images
+            if (!productImagePreview.src.includes('images.unsplash.com')) {
+                recipeData.image_url = productImagePreview.src.replace(window.location.origin, '');
+            }
+        }
+        
+        if (nutriScoreImagePreview && nutriScoreImagePreview.src) {
+            // Only use extracted/uploaded images, not placeholder images  
+            if (!nutriScoreImagePreview.src.includes('placeholder-nutriscore.png')) {
+                recipeData.nutri_score_image = nutriScoreImagePreview.src.replace(window.location.origin, '');
+            }
+        }
+
+        console.log('Publishing recipe with images:', {
+            product_image: recipeData.image_url,
+            nutri_score_image: recipeData.nutri_score_image
+        });
+
+        // Send to backend to create new recipe
+        fetch('/api/publish-recipe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(recipeData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('New recipe published successfully with ID: ' + data.recipe_id);
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('recipePreviewModal'));
+                modal.hide();
+
+                // Redirect to competence page after 2 seconds to show the new recipe
+                setTimeout(() => {
+                    window.location.href = '/catalog?new_recipe=1';
+                }, 2000);
+            } else {
+                alert('Error publishing recipe: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error publishing recipe. Please try again.');
+        });
+    }
+
+    function getCurrentRecipeData() {
+        // Extract current data from form fields
+        return {
+            name: document.getElementById('recipeName')?.value || '',
+            description: document.getElementById('recipeDescription')?.value || '',
+            category: document.getElementById('recipeCategory')?.value || 'Traditional Swiss Muesli',
+            ingredients: Array.from(document.querySelectorAll('.ingredient-name-input')).map((input, index) => ({
+                name: input.value,
+                percentage: parseFloat(document.querySelector(`.percentage-input[data-index="${index}"]`)?.value) || 0
+            })).filter(ing => ing.name.trim()),
+            nutritional_info: {
+                energy: document.getElementById('energy')?.value || 0,
+                fat: document.getElementById('fat')?.value || 0,
+                saturated_fat: document.getElementById('saturated_fat')?.value || 0,
+                carbohydrates: document.getElementById('carbohydrates')?.value || 0,
+                sugars: document.getElementById('sugars')?.value || 0,
+                fiber: document.getElementById('fiber')?.value || 0,
+                protein: document.getElementById('protein')?.value || 0,
+                salt: document.getElementById('salt')?.value || 0
+            },
+            allergens: Array.from(document.querySelectorAll('.allergen-input')).map(input => input.value.trim()).filter(Boolean),
+            claims: Array.from(document.querySelectorAll('.claim-input')).map(input => input.value.trim()).filter(Boolean),
+            storage_conditions: document.getElementById('storageConditions')?.value || 'Kühl und trocken lagern, vor direkter Sonneneinstrahlung schützen',
+            recipe_number: document.getElementById('recipeNumber')?.value || null
+        };
+    }
+
+    // Add functionality for dynamic add buttons and remove buttons
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'addIngredientBtn') {
+            addNewIngredient();
+        } else if (e.target && e.target.id === 'addAllergenBtn') {
+            addNewAllergen();
+        } else if (e.target && e.target.id === 'addClaimBtn') {
+            addNewClaim();
+        } else if (e.target && e.target.classList.contains('remove-existing-ingredient-btn')) {
+            removeExistingIngredient(e.target);
+        } else if (e.target && e.target.classList.contains('remove-existing-allergen-btn')) {
+            removeExistingAllergen(e.target);
+        } else if (e.target && e.target.classList.contains('remove-existing-claim-btn')) {
+            removeExistingClaim(e.target);
+        }
+    });
+
+    // Delete recipe functionality
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList && e.target.classList.contains('delete-recipe-btn')) {
+            const recipeId = e.target.getAttribute('data-recipe-id');
+            const recipeName = e.target.getAttribute('data-recipe-name') || 'this recipe';
+            if (confirm(`Are you sure you want to delete "${recipeName}"? This action cannot be undone.`)) {
+                deleteRecipe(recipeId);
+            }
+        }
+    });
+
+    function deleteRecipe(recipeId) {
+        fetch(`/api/delete-recipe/${recipeId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the recipe card from the UI
+                const recipeCard = document.getElementById(`recipe-${recipeId}`);
+                if (recipeCard) {
+                    recipeCard.remove();
+                }
+
+                // Check if there are no more recipes
+                const recipesGrid = document.getElementById('recipesGrid');
+                if (recipesGrid && recipesGrid.children.length === 0) {
+                    const recipesList = document.getElementById('recipesList');
+                    recipesList.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No recipes found</h5>
+                            <p class="text-muted">Upload your first recipe document to get started!</p>
+                        </div>
+                    `;
+                }
+
+                alert('Recipe deleted successfully');
+            } else {
+                alert('Error deleting recipe: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting recipe. Please try again.');
+        });
+    }
+
+    // Image upload handlers
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'productImageInput') {
+            handleImageUpload(e.target, 'productImagePreview', 'productImagePreviewImg', 'product');
+        } else if (e.target && e.target.id === 'nutriScoreImageInput') {
+            handleImageUpload(e.target, 'nutriScoreImagePreview', 'nutriScoreImagePreviewImg', 'nutriscore');
+        }
+    });
+
+    function handleImageUpload(input, previewDivId, previewImgId, imageType) {
+        const file = input.files[0];
+        if (file) {
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Please upload a valid image file (JPG, PNG, GIF, or WebP)');
+                input.value = '';
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('Image file is too large. Please upload an image smaller than 5MB.');
+                input.value = '';
+                return;
+            }
+
+            // Show preview
+            const previewDiv = document.getElementById(previewDivId);
+            const previewImg = document.getElementById(previewImgId);
+
+            if (previewDiv && previewImg) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.maxWidth = '100%';
+                    previewImg.style.height = 'auto';
+                    previewDiv.style.display = 'block';
+
+                    // Store image data for later use
+                    if (imageType === 'product') {
+                        window.uploadedProductImage = e.target.result;
+                    } else if (imageType === 'nutriscore') {
+                        window.uploadedNutriScoreImage = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Upload image to server
+            uploadImageToServer(file, imageType);
+        }
+    }
+
+    function uploadImageToServer(file, imageType) {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('image_type', imageType);
+
+        // Show upload progress
+        const previewDiv = document.getElementById(imageType === 'product' ? 'productImagePreview' : 'nutriScoreImagePreview');
+        if (previewDiv) {
+            const progressText = document.createElement('p');
+            progressText.textContent = 'Uploading...';
+            progressText.className = 'text-info mt-1 mb-0 upload-progress';
+            previewDiv.appendChild(progressText);
+        }
+
+        fetch('/api/upload-recipe-image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Remove progress indicator
+            const progressIndicator = document.querySelector('.upload-progress');
+            if (progressIndicator) {
+                progressIndicator.remove();
+            }
+
+            if (data.success) {
+                // Store the server URL for later use
+                if (imageType === 'product') {
+                    window.uploadedProductImageUrl = data.image_url;
+                    updateCurrentImageDisplay('product', data.image_url);
+                } else if (imageType === 'nutriscore') {
+                    window.uploadedNutriScoreImageUrl = data.image_url;
+                    updateCurrentImageDisplay('nutriscore', data.image_url);
+                }
+                console.log(`${imageType} image uploaded successfully:`, data.image_url);
+
+                // Show success message
+                if (previewDiv) {
+                    const successText = document.createElement('p');
+                    successText.innerHTML = '<i class="fas fa-check-circle me-1"></i>' + data.message;
+                    successText.className = 'text-success mt-1 mb-0';
+                    previewDiv.appendChild(successText);
+                }
+            } else {
+                console.error('Image upload failed:', data.error);
+                alert(`Failed to upload ${imageType} image: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            // Remove progress indicator
+            const progressIndicator = document.querySelector('.upload-progress');
+            if (progressIndicator) {
+                progressIndicator.remove();
+            }
+
+            console.error('Image upload error:', error);
+            alert(`Error uploading ${imageType} image. Please try again.`);
+        });
+    }
+
+    function updateCurrentImageDisplay(imageType, imageUrl) {
+        const currentImagesDisplay = document.getElementById('currentImagesDisplay');
+
+        if (imageType === 'product') {
+            const container = document.getElementById('currentProductImageContainer');
+            const img = document.getElementById('currentProductImage');
+            if (container && img) {
+                img.src = imageUrl;
+                container.style.display = 'block';
+                currentImagesDisplay.style.display = 'block';
+            }
+        } else if (imageType === 'nutriscore') {
+            const container = document.getElementById('currentNutriScoreContainer');
+            const img = document.getElementById('currentNutriScoreImage');
+            if (container && img) {
+                img.src = imageUrl;
+                container.style.display = 'block';
+                currentImagesDisplay.style.display = 'block';
+            }
+        }
+    }
+
+    function addNewIngredient() {
+        const tbody = document.getElementById('ingredientsTableBody');
+        const index = document.querySelectorAll('.ingredient-name-input').length;
+        const newRow = document.createElement('tr');
+        newRow.className = 'draggable-ingredient';
+        newRow.setAttribute('draggable', 'true');
+        newRow.innerHTML = `
+            <td>
+                <div class="input-group">
+                    <span class="input-group-text drag-handle" style="cursor: move;">
+                        <i class="fas fa-grip-vertical"></i>
+                    </span>
+                    <input type="text" class="form-control ingredient-name-input" 
+                           value="" data-index="${index}" placeholder="Enter ingredient name">
+                </div>
+            </td>
+            <td>
+                <div class="input-group">
+                    <input type="number" class="form-control percentage-input text-end" 
+                           value="0" data-index="${index}" min="0" max="100" step="0.1" 
+                           style="min-width: 100px; width: 100px;">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-ingredient-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(newRow);
+
+        // Add drag functionality
+        newRow.addEventListener('dragstart', handleDragStart);
+        newRow.addEventListener('dragover', handleDragOver);
+        newRow.addEventListener('drop', handleDrop);
+        newRow.addEventListener('dragend', handleDragEnd);
+
+        // Add remove functionality
+        newRow.querySelector('.remove-ingredient-btn').addEventListener('click', function() {
+            newRow.remove();
+        });
+    }
+
+    function addNewAllergen() {
+        const container = document.getElementById('allergensContainer');
+        const noAllergensText = document.getElementById('noAllergensText');
+        if (noAllergensText) noAllergensText.style.display = 'none';
+
+        const index = document.querySelectorAll('.allergen-input').length;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'input-group mb-2 me-2 draggable-allergen';
+        wrapper.style.width = '100%';
+        wrapper.style.display = 'flex';
+        wrapper.style.marginBottom = '8px';
+        wrapper.setAttribute('draggable', 'true');
+        wrapper.innerHTML = `
+            <span class="input-group-text bg-warning text-dark drag-handle" style="cursor: move;">
+                <i class="fas fa-grip-vertical"></i>
+            </span>
+            <span class="input-group-text bg-warning text-dark">
+                <i class="fas fa-exclamation-triangle"></i>
+            </span>
+            <input type="text" class="form-control allergen-input" 
+                   value="" data-index="${index}" placeholder="Enter allergen" 
+                   style="flex: 1; white-space: normal; word-wrap: break-word; overflow: visible; min-height: 38px; height: auto;">
+            <button type="button" class="btn btn-outline-danger btn-sm remove-allergen-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(wrapper);
+
+        // Add drag functionality
+        wrapper.addEventListener('dragstart', handleDragStart);
+        wrapper.addEventListener('dragover', handleDragOver);
+        wrapper.addEventListener('drop', handleDrop);
+        wrapper.addEventListener('dragend', handleDragEnd);
+        wrapper.addEventListener('dragenter', handleDragEnter);
+        wrapper.addEventListener('dragleave', handleDragLeave);
+
+        // Add remove functionality
+        wrapper.querySelector('.remove-allergen-btn').addEventListener('click', function() {
+            wrapper.remove();
+            if (document.querySelectorAll('.allergen-input').length === 0 && noAllergensText) {
+                noAllergensText.style.display = 'inline';
+            }
+        });
+    }
+
+    function addNewClaim() {
+        const container = document.getElementById('claimsContainer');
+        const noClaimsText = document.getElementById('noClaimsText');
+        if (noClaimsText) noClaimsText.style.display = 'none';
+
+        const index = document.querySelectorAll('.claim-input').length;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'input-group mb-2 me-2 draggable-claim';
+        wrapper.style.width = '100%';
+        wrapper.style.display = 'flex';
+        wrapper.style.marginBottom = '8px';
+        wrapper.setAttribute('draggable', 'true');
+        wrapper.innerHTML = `
+            <span class="input-group-text bg-success text-white drag-handle" style="cursor: move;">
+                <i class="fas fa-grip-vertical"></i>
+            </span>
+            <span class="input-group-text bg-success text-white">
+                <i class="fas fa-check"></i>
+            </span>
+            <input type="text" class="form-control claim-input" 
+                   value="" data-index="${index}" placeholder="Enter claim" 
+                   style="flex: 1; white-space: normal; word-wrap: break-word; overflow: visible; min-height: 38px; height: auto;">
+            <button type="button" class="btn btn-outline-danger btn-sm remove-claim-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(wrapper);
+
+        // Add drag functionality
+        wrapper.addEventListener('dragstart', handleDragStart);
+        wrapper.addEventListener('dragover', handleDragOver);
+        wrapper.addEventListener('drop', handleDrop);
+        wrapper.addEventListener('dragend', handleDragEnd);
+        wrapper.addEventListener('dragenter', handleDragEnter);
+        wrapper.addEventListener('dragleave', handleDragLeave);
+
+        // Add remove functionality
+        wrapper.querySelector('.remove-claim-btn').addEventListener('click', function() {
+            wrapper.remove();
+            if (document.querySelectorAll('.claim-input').length === 0 && noClaimsText) {
+                noClaimsText.style.display = 'inline';
+            }
+        });
+    }
+
+    // Remove functions for existing items
+    function removeExistingIngredient(button) {
+        const row = button.closest('tr');
+        if (row) {
+            row.remove();
+        }
+    }
+
+    function removeExistingAllergen(button) {
+        const container = button.closest('.input-group');
+        if (container) {
+            container.remove();
+            // Show "no allergens" text if all are removed
+            const allergensContainer = document.getElementById('allergensContainer');
+            const noAllergensText = document.getElementById('noAllergensText');
+            if (allergensContainer && allergensContainer.querySelectorAll('.allergen-input').length === 0 && noAllergensText) {
+                noAllergensText.style.display = 'inline';
+            }
+        }
+    }
+
+    function removeExistingClaim(button) {
+        const container = button.closest('.input-group');
+        if (container) {
+            container.remove();
+            // Show "no claims" text if all are removed
+            const claimsContainer = document.getElementById('claimsContainer');
+            const noClaimsText = document.getElementById('noClaimsText');
+            if (claimsContainer && claimsContainer.querySelectorAll('.claim-input').length === 0 && noClaimsText) {
+                noClaimsText.style.display = 'inline';
+            }
+        }
+    }
+
+    // Drag and Drop functionality
+    let draggedElement = null;
+
+    function handleDragStart(e) {
+        draggedElement = this;
+        this.style.opacity = '0.5';
+        this.style.transform = 'rotate(2deg)';
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.outerHTML);
+    }
+
+    function handleDragEnter(e) {
+        e.preventDefault();
+        if (draggedElement !== this && draggedElement && this) {
+            const draggedType = getDraggedItemType(draggedElement);
+            const targetType = getDraggedItemType(this);
+            if (draggedType === targetType) {
+                this.style.borderTop = '3px solid #007bff';
+            }
+        }
+    }
+
+    function handleDragLeave(e) {
+        this.style.borderTop = '';
+    }
+
+    function handleDragOver(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    function handleDrop(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+        e.preventDefault();
+
+        // Remove visual feedback
+        this.style.borderTop = '';
+
+        if (draggedElement !== this && draggedElement && this) {
+            // Check if they're the same type
+            const draggedType = getDraggedItemType(draggedElement);
+            const targetType = getDraggedItemType(this);
+
+            if (draggedType === targetType) {
+                // Insert the dragged element before the target
+                this.parentNode.insertBefore(draggedElement, this);
+
+                // Re-index the elements
+                reindexElements(draggedType);
+            }
+        }
+        return false;
+    }
+
+    function handleDragEnd(e) {
+        if (draggedElement) {
+            draggedElement.style.opacity = '1';
+            draggedElement.style.transform = '';
+            draggedElement = null;
+        }
+        // Remove all border indicators
+        document.querySelectorAll('.draggable-ingredient, .draggable-allergen, .draggable-claim').forEach(el => {
+            el.style.borderTop = '';
+        });
+    }
+
+    function getDraggedItemType(element) {
+        if (element.classList.contains('draggable-ingredient')) return 'ingredient';
+        if (element.classList.contains('draggable-allergen')) return 'allergen';
+        if (element.classList.contains('draggable-claim')) return 'claim';
+        return null;
+    }
+
+    function reindexElements(type) {
+        let selector, inputSelector;
+        if (type === 'ingredient') {
+            selector = '.draggable-ingredient';
+            inputSelector = '.ingredient-name-input, .percentage-input';
+        } else if (type === 'allergen') {
+            selector = '.draggable-allergen';
+            inputSelector = '.allergen-input';
+        } else if (type === 'claim') {
+            selector = '.draggable-claim';
+            inputSelector = '.claim-input';
+        }
+
+        const elements = document.querySelectorAll(selector);
+        elements.forEach((element, index) => {
+            const inputs = element.querySelectorAll(inputSelector);
+            inputs.forEach(input => {
+                input.setAttribute('data-index', index);
+            });
+        });
+    }
+
+    // Function to attach drag and drop event listeners to all draggable elements
+    function attachDragAndDropEventListeners() {
+        const draggableItems = document.querySelectorAll('.draggable-ingredient, .draggable-allergen, .draggable-claim');
+
+        draggableItems.forEach(item => {
+            // Remove existing listeners first to avoid duplicates
+            item.removeEventListener('dragstart', handleDragStart);
+            item.removeEventListener('dragover', handleDragOver);
+            item.removeEventListener('drop', handleDrop);
+            item.removeEventListener('dragend', handleDragEnd);
+            item.removeEventListener('dragenter', handleDragEnter);
+            item.removeEventListener('dragleave', handleDragLeave);
+
+            // Add fresh event listeners
+            item.addEventListener('dragstart', handleDragStart);
+            item.addEventListener('dragover', handleDragOver);
+            item.addEventListener('drop', handleDrop);
+            item.addEventListener('dragend', handleDragEnd);
+            item.addEventListener('dragenter', handleDragEnter);
+            item.addEventListener('dragleave', handleDragLeave);
+        });
+
+        // Setup image upload functionality after showing preview
+        setupImageUploadHandlers();
+    }
+
+    // Image upload and swapping functionality
+    function setupImageUploadHandlers() {
+        // Handle product image upload
+        const productImageInput = document.getElementById('productImageInput');
+        const nutriScoreImageInput = document.getElementById('nutriScoreImageInput');
+        
+        if (productImageInput) {
+            productImageInput.addEventListener('change', function(e) {
+                handleImageUpload(e, 'product');
+            });
+        }
+        
+        if (nutriScoreImageInput) {
+            nutriScoreImageInput.addEventListener('change', function(e) {
+                handleImageUpload(e, 'nutri_score');
+            });
+        }
+        
+        // Handle image selection from extracted images
+        const selectAsProductBtns = document.querySelectorAll('.select-as-product-btn');
+        const selectAsNutriBtns = document.querySelectorAll('.select-as-nutri-btn');
+        
+        selectAsProductBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const imageUrl = this.dataset.imageUrl;
+                selectImageAs('product', imageUrl);
+            });
+        });
+        
+        selectAsNutriBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const imageUrl = this.dataset.imageUrl;
+                selectImageAs('nutri_score', imageUrl);
+            });
+        });
+        
+        // Handle clear image buttons
+        const clearProductImageBtn = document.getElementById('clearProductImageBtn');
+        const clearNutriScoreImageBtn = document.getElementById('clearNutriScoreImageBtn');
+        
+        if (clearProductImageBtn) {
+            clearProductImageBtn.addEventListener('click', function() {
+                clearSelectedImage('product');
+            });
+        }
+        
+        if (clearNutriScoreImageBtn) {
+            clearNutriScoreImageBtn.addEventListener('click', function() {
+                clearSelectedImage('nutri_score');
+            });
+        }
+    }
+    
+    function handleImageUpload(event, imageType) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Show loading state
+        const previewId = imageType === 'product' ? 'productImagePreview' : 'nutriScoreImagePreview';
+        const preview = document.getElementById(previewId);
+        if (preview) {
+            preview.style.opacity = '0.5';
+        }
+        
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('image_type', imageType);
+        
+        fetch('/api/upload-recipe-image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the preview image
+                if (preview) {
+                    preview.src = data.image_url;
+                    preview.style.opacity = '1';
+                }
+                
+                // Update the stored recipe data
+                if (window.currentRecipeData) {
+                    if (imageType === 'product') {
+                        window.currentRecipeData.image_url = data.image_url;
+                    } else {
+                        window.currentRecipeData.nutri_score_image = data.image_url;
+                    }
+                }
+                
+                console.log(`${imageType} image uploaded successfully:`, data.image_url);
+            } else {
+                console.error('Image upload failed:', data.error);
+                if (preview) {
+                    preview.style.opacity = '1';
+                }
+                alert('Image upload failed: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Image upload error:', error);
+            if (preview) {
+                preview.style.opacity = '1';
+            }
+            alert('An error occurred during image upload.');
+        });
+    }
+    
+    function selectImageAs(type, imageUrl) {
+        const previewId = type === 'product' ? 'productImagePreview' : 'nutriScoreImagePreview';
+        const preview = document.getElementById(previewId);
+        
+        if (preview) {
+            preview.src = imageUrl;
+            
+            // Update stored recipe data
+            if (window.currentRecipeData) {
+                if (type === 'product') {
+                    window.currentRecipeData.image_url = imageUrl;
+                } else {
+                    window.currentRecipeData.nutri_score_image = imageUrl;
+                }
+            }
+            
+            console.log(`Selected image as ${type}:`, imageUrl);
+        }
+    }
+    
+    function clearSelectedImage(type) {
+        const previewId = type === 'product' ? 'productImagePreview' : 'nutriScoreImagePreview';
+        const preview = document.getElementById(previewId);
+        
+        if (preview) {
+            const defaultUrl = type === 'product' ? 
+                'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' : 
+                '/static/images/placeholder-nutriscore.png';
+            
+            preview.src = defaultUrl;
+            
+            // Update stored recipe data
+            if (window.currentRecipeData) {
+                if (type === 'product') {
+                    window.currentRecipeData.image_url = defaultUrl;
+                } else {
+                    window.currentRecipeData.nutri_score_image = null;
+                }
+            }
+            
+            console.log(`Cleared ${type} image`);
+        }
+    }
+});
+
+// Drag and drop handlers
+function dragOverHandler(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.add('border-primary');
+}
+
+function dragLeaveHandler(ev) {
+    ev.currentTarget.classList.remove('border-primary');
+}
+
+function dropHandler(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.remove('border-primary');
+
+    const files = ev.dataTransfer.files;
+    if (files.length > 0) {
+        document.getElementById('recipeFile').files = files;
+        handleFileSelect(files[0]);
+    }
+}
+</script>
+{% endblock %}

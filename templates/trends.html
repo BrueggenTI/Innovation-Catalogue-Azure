@@ -1,0 +1,1857 @@
+{% extends "base.html" %}
+
+{% block title %}Trends & Insights - Brüggen Innovation Catalogue{% endblock %}
+
+{% block content %}
+<div class="trends-header py-5 bg-gradient-success text-white">
+    <div class="container-fluid px-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">{{ get_text('future_of_breakfast', lang) }}</h1>
+                <p class="lead mb-0">
+                    {{ get_text('trends_subtitle', lang) }}
+                </p>
+            </div>
+            <div class="col-lg-4 text-end">
+                <div class="trend-icon">
+                    <i class="fas fa-chart-line fa-5x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trends Search Section -->
+<div class="search-section py-3 bg-white border-bottom">
+    <div class="container-fluid px-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="search-container position-relative">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="trendsSearch" 
+                               placeholder="Search trends by title, description, or category..." 
+                               autocomplete="off">
+                        <button class="btn btn-outline-secondary" type="button" id="clearTrendsSearch" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button class="btn btn-primary" type="button" id="createTrendIcon" title="Create Your Own Trend" data-bs-toggle="modal" data-bs-target="#uploadTrendModal">
+                            <i class="fas fa-plus me-1"></i>Create
+                        </button>
+                    </div>
+                    <!-- Search Results Dropdown -->
+                    <div class="search-results" id="trendsSearchResults" style="display: none;">
+                        <!-- Results will be populated here directly (Innovation Catalogue style) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Trend Modal -->
+<div class="modal fade" id="uploadTrendModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-upload me-2"></i>Create Your Own Trend
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">Upload documents and let AI analyze them to create professional trend reports</p>
+                
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <div class="upload-icon mb-3">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h5 class="upload-title mb-2">Drag & Drop your files here</h5>
+                        <p class="upload-subtitle mb-3">or click to browse</p>
+                        <div class="upload-formats mb-3">
+                            <span class="badge bg-primary me-2">PDF</span>
+                            <span class="badge bg-primary me-2">DOCX</span>
+                            <span class="badge bg-primary">TXT</span>
+                        </div>
+                        <small class="text-muted">Max file size: 10MB</small>
+                    </div>
+                    <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt" style="display: none;">
+                </div>
+
+                <!-- File List -->
+                <div class="uploaded-files mt-4" id="uploadedFiles" style="display: none;">
+                    <h6 class="mb-3"><i class="fas fa-file-alt me-2"></i>Uploaded Files</h6>
+                    <div class="files-list" id="filesList">
+                        <!-- Uploaded files will appear here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <div class="upload-actions d-flex align-items-center" id="uploadActions" style="display: none; align-self: center;">
+                        <button type="button" class="btn btn-outline-secondary me-2" id="clearFilesBtn" style="vertical-align: middle;">
+                            <i class="fas fa-trash me-2"></i>Clear All
+                        </button>
+                        <button type="button" class="btn btn-primary" id="analyzeBtn" style="vertical-align: middle;">
+                            <i class="fas fa-brain me-2"></i>Analyze with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Analysis Modal -->
+<div class="modal fade" id="aiAnalysisModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-brain me-2"></i>AI Trend Analysis
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Analysis results will be shown here -->
+                <div class="analysis-loading text-center py-5" id="analysisLoading">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="text-muted">AI is analyzing your documents...</p>
+                    <small class="text-muted">This may take a few moments</small>
+                </div>
+                
+                <div class="analysis-results" id="analysisResults" style="display: none;">
+                    <!-- AI suggestions form will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="createTrendBtn" style="display: none;">
+                    <i class="fas fa-plus me-2"></i>Create Trend
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Interface Section -->
+<div class="filters-section py-4 bg-light border-bottom">
+    <div class="container-fluid px-4">
+        <!-- Hidden form for backend compatibility -->
+        <form method="GET" id="trendsFilterForm" style="display: none;" action="{{ url_for('trends') }}">
+            <!-- Multiple hidden inputs for selected report types -->
+            {% for report_type in selected_report_types %}
+            <input type="hidden" name="report_type" value="{{ report_type }}">
+            {% endfor %}
+            <!-- Multiple hidden inputs for selected categories -->
+            {% for category in selected_categories %}
+            <input type="hidden" name="category" value="{{ category }}">
+            {% endfor %}
+        </form>
+        
+        <!-- Filter Headers -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="filter-header" data-filter="trendCategory">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-tags me-2" style="color: #661c31;"></i>Category
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">3 available</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="filter-header" data-filter="trendType">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-chart-line me-2" style="color: #661c31;"></i>Report Type
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">2 available</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expandable Filter Options -->
+<div class="filter-options-section bg-white border-bottom" id="trendsFilterOptionsSection" style="display: none;">
+    <div class="container-fluid px-4 py-4">
+        <!-- Category Options -->
+        <div class="filter-options" id="trendCategoryOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">Select Categories (multiple allowed):</h6>
+            <div class="row g-2">
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn category-clear-btn" data-filter="trendCategory" data-value="">
+                        <i class="fas fa-times-circle me-2"></i>Clear All
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn category-toggle-btn" data-filter="trendCategory" data-value="health">
+                        <i class="fas fa-heartbeat me-2"></i>Health & Wellness
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn category-toggle-btn" data-filter="trendCategory" data-value="sustainability">
+                        <i class="fas fa-leaf me-2"></i>Sustainability
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn category-toggle-btn" data-filter="trendCategory" data-value="innovation">
+                        <i class="fas fa-lightbulb me-2"></i>Innovation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Type Options -->
+        <div class="filter-options" id="trendTypeOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">Select Report Types (multiple allowed):</h6>
+            <div class="row g-2">
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn report-type-clear-btn" data-filter="trendType" data-value="">
+                        <i class="fas fa-times-circle me-2"></i>Clear All
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn report-type-toggle-btn" data-filter="trendType" data-value="produktentwicklung">
+                        <i class="fas fa-flask me-2"></i>Product Development
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn report-type-toggle-btn" data-filter="trendType" data-value="marktdaten">
+                        <i class="fas fa-chart-bar me-2"></i>Market Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="trends-section py-5">
+    <div class="container-fluid px-4">
+        {% if trends %}
+            <div class="row g-4">
+                {% for trend in trends %}
+                    <div class="col-lg-6">
+                        <div class="trend-card h-100 border-0 shadow-sm">
+                            <div class="trend-image-container">
+                                <img src="{{ trend.image_url }}" alt="{{ trend.title }}" class="trend-image">
+                                <div class="trend-category-badge trend-{{ trend.category }}">
+                                    {% if trend.category == 'health' %}
+                                        <i class="fas fa-heartbeat me-2"></i>Health & Wellness
+                                    {% elif trend.category == 'sustainability' %}
+                                        <i class="fas fa-leaf me-2"></i>Sustainability
+                                    {% elif trend.category == 'innovation' %}
+                                        <i class="fas fa-lightbulb me-2"></i>Innovation
+                                    {% endif %}
+                                </div>
+                                <div class="trend-report-type-badge trend-report-{{ trend.report_type }}">
+                                    {% if trend.report_type == 'produktentwicklung' %}
+                                        <i class="fas fa-flask me-2"></i>Product Development
+                                    {% elif trend.report_type == 'marktdaten' %}
+                                        <i class="fas fa-chart-bar me-2"></i>Market Data
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="card-body p-4">
+                                <h4 class="card-title fw-semibold mb-3" style="color: #1f2937; line-height: 1.4;">{{ trend.title }}</h4>
+                                <p class="card-text mb-4" style="color: #6b7280; font-size: 15px; line-height: 1.6;">{{ trend.description }}</p>
+                                
+                                <div class="trend-insights mb-4">
+                                    <div class="insight-item mb-3 p-3">
+                                        <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
+                                            <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                                <path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5v12h-2V2h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/>
+                                            </svg>Market Data
+                                        </div>
+                                        <div class="insight-content" style="font-size: 14px; color: #4b5563;">{{ trend.market_data }}</div>
+                                    </div>
+                                    
+                                    <div class="insight-item p-3">
+                                        <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
+                                            <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                                <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+                                            </svg>Consumer Insights
+                                        </div>
+                                        <div class="insight-content" style="font-size: 14px; color: #4b5563;">{{ trend.consumer_insights }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="trend-actions d-flex gap-2">
+                                    <button class="btn btn-outline-secondary flex-fill rounded-pill expand-trend-btn" data-trend-id="{{ trend.id }}" style="border-color: #661c31; color: #661c31; font-weight: 500; padding: 8px 16px; font-size: 14px;">
+                                        <i class="fas fa-expand me-2"></i>Details
+                                    </button>
+                                    <a href="{{ url_for('cocreation') }}?trend={{ trend.id }}" class="btn btn-primary flex-fill rounded-pill" style="background: #ff4143; border-color: #ff4143; font-weight: 500; padding: 8px 16px; font-size: 14px;">
+                                        <i class="fas fa-plus me-2"></i>Apply Trend
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="empty-state">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h3 class="text-muted mb-3">No trends found</h3>
+                    <p class="text-muted mb-4">Try selecting a different category to explore trends.</p>
+                    <a href="{{ url_for('trends') }}" class="btn btn-success rounded-pill px-4">
+                        <i class="fas fa-refresh me-2"></i>View All Trends
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Trend Detail Modal -->
+<div class="modal fade" id="trendDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="trendModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="trendModalBody">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="applyTrendBtn" class="btn btn-apply-trend rounded-pill">
+                    <i class="fas fa-plus me-2"></i>Apply This Trend
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PDF Modal for Global Fusion Flavors -->
+<div class="modal fade" id="pdfModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-pdf me-2"></i>Global Fusion Flavors: Comprehensive Trend Report
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- PDF Controls -->
+                <div class="pdf-modal-controls py-3 px-3 bg-light border-bottom">
+                    <div class="text-center">
+                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
+                           download="Global Fusion Flavors Report.pdf" 
+                           class="btn btn-success btn-sm rounded-pill me-2">
+                            <i class="fas fa-download me-1"></i>Download PDF
+                        </a>
+                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
+                           target="_blank" 
+                           class="btn btn-outline-secondary btn-sm rounded-pill">
+                            <i class="fas fa-external-link-alt me-1"></i>Open in New Tab
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- PDF Display Area -->
+                <div class="pdf-modal-display" id="pdfModalContainer" style="height: 70vh; background: #f8f9fa;">
+                    <!-- Multi-layered PDF display with fallbacks -->
+                    <object 
+                        data="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
+                        type="application/pdf" 
+                        width="100%" 
+                        height="100%" 
+                        style="border-radius: 4px;">
+                        
+                        <!-- Fallback 1: embed -->
+                        <embed 
+                            src="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
+                            type="application/pdf" 
+                            width="100%" 
+                            height="100%" 
+                            style="border-radius: 4px;">
+                            
+                            <!-- Fallback 2: iframe with sandboxing -->
+                            <iframe 
+                                src="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}"
+                                width="100%" 
+                                height="100%" 
+                                style="border: none; border-radius: 4px;"
+                                sandbox="allow-scripts allow-same-origin allow-popups"
+                                title="Global Fusion Flavors PDF Report">
+                                
+                                <!-- Final fallback: Error message with download link -->
+                                <div class="d-flex justify-content-center align-items-center h-100">
+                                    <div class="text-center p-4">
+                                        <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+                                        <h6 class="text-muted mb-3">PDF-Vorschau nicht verfügbar</h6>
+                                        <p class="text-muted small mb-3">Ihr Browser unterstützt keine PDF-Einbettung oder blockiert sie aus Sicherheitsgründen.</p>
+                                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
+                                           class="btn btn-primary btn-sm me-2" target="_blank">
+                                            <i class="fas fa-external-link-alt me-1"></i>PDF öffnen
+                                        </a>
+                                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
+                                           class="btn btn-outline-success btn-sm" download="Global_Fusion_Flavors_Report.pdf">
+                                            <i class="fas fa-download me-1"></i>Herunterladen
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                            </iframe>
+                        </embed>
+                    </object>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Schließen
+                </button>
+                <a href="{{ url_for('cocreation') }}?trend=6" class="btn btn-apply-trend rounded-pill">
+                    <i class="fas fa-plus me-2"></i>Trend Anwenden
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="trend-stats-section py-5 bg-light">
+    <div class="container-fluid px-4">
+        <div class="row text-center">
+            <div class="col">
+                <h3 class="fw-bold text-primary mb-4">Innovation by the Numbers</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon text-primary">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="stat-number">73%</div>
+                    <div class="stat-label">Seek Functional Benefits</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="stat-number">€279B</div>
+                    <div class="stat-label">Functional Food Market by 2025</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon text-warning">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="stat-number">78%</div>
+                    <div class="stat-label">Want International Flavors</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon text-info">
+                        <i class="fas fa-recycle"></i>
+                    </div>
+                    <div class="stat-number">60%</div>
+                    <div class="stat-label">Pay Premium for Upcycled</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle trend expansion
+    document.querySelectorAll('.expand-trend-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const trendId = this.dataset.trendId;
+            // In a real implementation, this would fetch detailed trend data
+            showTrendDetail(trendId);
+        });
+    });
+    
+    // Helper function to escape HTML content
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Helper function to validate PDF path
+    function isValidPdfPath(path) {
+        return path && typeof path === 'string' && path.startsWith('/static/pdfs/');
+    }
+
+    async function showTrendDetail(trendId) {
+        try {
+            // Show loading state
+            document.getElementById('trendModalTitle').textContent = 'Loading...';
+            document.getElementById('trendModalBody').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="text-muted">Loading trend details...</p>
+                </div>
+            `;
+            new bootstrap.Modal(document.getElementById('trendDetailModal')).show();
+            
+            // Fetch trend details
+            const response = await fetch(`/api/trends/${trendId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load trend details');
+            }
+            
+            const trend = data.trend;
+            
+            // If trend has a PDF, show PDF viewer in modal
+            if (trend.pdf_path && isValidPdfPath(trend.pdf_path)) {
+                // Safely set title with PDF icon
+                const titleElement = document.getElementById('trendModalTitle');
+                titleElement.innerHTML = '<i class="fas fa-file-pdf me-2 text-danger"></i>';
+                titleElement.appendChild(document.createTextNode(trend.title));
+                
+                // Create PDF viewer container safely
+                const modalBody = document.getElementById('trendModalBody');
+                modalBody.innerHTML = `
+                    <div class="pdf-viewer-container">
+                        <div class="pdf-controls mb-3 text-center">
+                            <a href="${escapeHtml(trend.pdf_path)}" 
+                               download="${escapeHtml(trend.title)}.pdf" 
+                               class="btn btn-success btn-sm me-2">
+                                <i class="fas fa-download me-1"></i>Download PDF
+                            </a>
+                            <a href="${escapeHtml(trend.pdf_path)}" 
+                               target="_blank" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i>Open in New Tab
+                            </a>
+                        </div>
+                        <div class="pdf-embed-container">
+                            <iframe width="100%" 
+                                    height="500px" 
+                                    style="border: 1px solid #ddd; border-radius: 4px;"
+                                    title="PDF Viewer">
+                                <p>Your browser doesn't support PDF viewing. 
+                                   <a href="${escapeHtml(trend.pdf_path)}">Click here to download the PDF</a>.
+                                </p>
+                            </iframe>
+                        </div>
+                    </div>
+                `;
+                
+                // Set iframe src safely after creation
+                const iframe = modalBody.querySelector('iframe');
+                iframe.src = trend.pdf_path;  // Already validated above
+            } else {
+                // Show trend details when no PDF is available
+                document.getElementById('trendModalTitle').textContent = trend.title;
+                
+                // Create trend details content safely
+                const modalBody = document.getElementById('trendModalBody');
+                modalBody.innerHTML = `
+                    <div class="trend-detail-content">
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary mb-3">Description</h6>
+                            <p></p>
+                        </div>
+                        <div class="insights-container"></div>
+                        <div class="mt-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-secondary">Category</h6>
+                                    <span class="badge bg-secondary"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-secondary">Report Type</h6>
+                                    <span class="badge bg-primary"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Safely set text content
+                modalBody.querySelector('p').textContent = trend.description;
+                modalBody.querySelector('.badge.bg-secondary').textContent = trend.category;
+                modalBody.querySelector('.badge.bg-primary').textContent = 
+                    trend.report_type === 'produktentwicklung' ? 'Product Development' : 'Market Data';
+                
+                // Add insights safely
+                const insightsContainer = modalBody.querySelector('.insights-container');
+                
+                if (trend.market_data) {
+                    const marketDataDiv = document.createElement('div');
+                    marketDataDiv.className = 'insight-item mb-3 p-3';
+                    marketDataDiv.innerHTML = `
+                        <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
+                            <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                <path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5v12h-2V2h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/>
+                            </svg>Market Data
+                        </div>
+                        <div class="insight-content" style="font-size: 14px; color: #4b5563;"></div>
+                    `;
+                    marketDataDiv.querySelector('.insight-content').textContent = trend.market_data;
+                    insightsContainer.appendChild(marketDataDiv);
+                }
+                
+                if (trend.consumer_insights) {
+                    const consumerInsightsDiv = document.createElement('div');
+                    consumerInsightsDiv.className = 'insight-item p-3';
+                    consumerInsightsDiv.innerHTML = `
+                        <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
+                            <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+                            </svg>Consumer Insights
+                        </div>
+                        <div class="insight-content" style="font-size: 14px; color: #4b5563;"></div>
+                    `;
+                    consumerInsightsDiv.querySelector('.insight-content').textContent = trend.consumer_insights;
+                    insightsContainer.appendChild(consumerInsightsDiv);
+                }
+            }
+            
+            // Update Apply Trend button
+            document.getElementById('applyTrendBtn').href = `/cocreation?trend=${trendId}`;
+            
+        } catch (error) {
+            console.error('Error loading trend details:', error);
+            document.getElementById('trendModalTitle').textContent = 'Error Loading Trend';
+            document.getElementById('trendModalBody').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Failed to load trend details. Please try again.
+                </div>
+            `;
+        }
+    }
+    
+    // PDF Modal functionality - simplified for iframe display
+    function showPdfModal() {
+        const pdfModal = new bootstrap.Modal(document.getElementById('pdfModal'));
+        pdfModal.show();
+    }
+    
+    // Removed entrance animations for better performance and no layout shift
+    
+    // Initialize trends search functionality
+    initializeTrendsSearch();
+    
+    // Initialize trends filters functionality
+    initializeTrendsFilters();
+    
+    // Initialize multi-select selection states
+    initializeSelectedCategories();
+    initializeSelectedReportTypes();
+    
+    // No need for legacy single-select button updates anymore
+    
+    // No need for toggle switch initialization anymore
+    
+    // Initialize upload system
+    initializeUploadSystem();
+});
+
+// Upload Functionality
+let uploadedFiles = [];
+
+function initializeUploadSystem() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const uploadedFilesDiv = document.getElementById('uploadedFiles');
+    const filesList = document.getElementById('filesList');
+    const uploadActions = document.getElementById('uploadActions');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const clearFilesBtn = document.getElementById('clearFilesBtn');
+    const uploadTrendModal = new bootstrap.Modal(document.getElementById('uploadTrendModal'));
+    const aiAnalysisModal = new bootstrap.Modal(document.getElementById('aiAnalysisModal'));
+
+    // Click to upload
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // File input change
+    fileInput.addEventListener('change', handleFileSelect);
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', handleDragOver);
+    uploadArea.addEventListener('dragleave', handleDragLeave);
+    uploadArea.addEventListener('drop', handleFileDrop);
+
+    // Action buttons
+    analyzeBtn.addEventListener('click', analyzeFiles);
+    clearFilesBtn.addEventListener('click', clearAllFiles);
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    }
+
+    function handleFileDrop(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files);
+        processFiles(files);
+    }
+
+    function handleFileSelect(e) {
+        const files = Array.from(e.target.files);
+        processFiles(files);
+    }
+
+    function processFiles(files) {
+        files.forEach(file => {
+            if (validateFile(file)) {
+                addFileToList(file);
+            }
+        });
+        updateUI();
+    }
+
+    function validateFile(file) {
+        // Check file type
+        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+        if (!allowedTypes.includes(file.type)) {
+            alert(`File type not supported: ${file.name}. Please upload PDF, DOCX, or TXT files.`);
+            return false;
+        }
+
+        // Check file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            alert(`File too large: ${file.name}. Maximum size is 10MB.`);
+            return false;
+        }
+
+        // Check if file already uploaded
+        if (uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            alert(`File already uploaded: ${file.name}`);
+            return false;
+        }
+
+        return true;
+    }
+
+    function addFileToList(file) {
+        uploadedFiles.push(file);
+        const fileElement = createFileElement(file);
+        filesList.appendChild(fileElement);
+    }
+
+    function createFileElement(file) {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+            <div class="file-info">
+                <div class="file-icon">
+                    <i class="${getFileIcon(file.type)}"></i>
+                </div>
+                <div class="file-details">
+                    <h6>${file.name}</h6>
+                    <small>${formatFileSize(file.size)} • ${getFileTypeLabel(file.type)}</small>
+                </div>
+            </div>
+            <div class="file-actions">
+                <button class="file-remove" onclick="removeFile('${file.name}', this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        return fileItem;
+    }
+
+    function getFileIcon(type) {
+        switch(type) {
+            case 'application/pdf': return 'fas fa-file-pdf';
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': return 'fas fa-file-word';
+            case 'text/plain': return 'fas fa-file-alt';
+            default: return 'fas fa-file';
+        }
+    }
+
+    function getFileTypeLabel(type) {
+        switch(type) {
+            case 'application/pdf': return 'PDF Document';
+            case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': return 'Word Document';
+            case 'text/plain': return 'Text File';
+            default: return 'Unknown';
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function updateUI() {
+        const uploadedFilesDiv = document.getElementById('uploadedFiles');
+        const uploadActions = document.getElementById('uploadActions');
+        
+        if (uploadedFiles.length > 0) {
+            uploadedFilesDiv.style.display = 'block';
+            uploadActions.style.display = 'block';
+        } else {
+            uploadedFilesDiv.style.display = 'none';
+            uploadActions.style.display = 'none';
+        }
+    }
+
+    function clearAllFiles() {
+        uploadedFiles = [];
+        filesList.innerHTML = '';
+        fileInput.value = '';
+        updateUI();
+    }
+
+    async function analyzeFiles() {
+        if (uploadedFiles.length === 0) {
+            alert('Please upload at least one file to analyze.');
+            return;
+        }
+
+        // Hide upload modal and show AI analysis modal
+        uploadTrendModal.hide();
+        aiAnalysisModal.show();
+        document.getElementById('analysisLoading').style.display = 'block';
+        document.getElementById('analysisResults').style.display = 'none';
+        document.getElementById('createTrendBtn').style.display = 'none';
+
+        try {
+            const formData = new FormData();
+            uploadedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            // Show better loading message with timeout info
+            document.querySelector('#analysisLoading p').textContent = 'AI is analyzing your documents... This may take up to 2 minutes for large files.';
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minute timeout
+
+            const response = await fetch('/api/trends/analyze', {
+                method: 'POST',
+                body: formData,
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                let errorMessage = `Analysis failed (${response.status})`;
+                try {
+                    const errorText = await response.text();
+                    if (errorText) errorMessage += `: ${errorText}`;
+                } catch (e) {
+                    errorMessage += `: ${response.statusText}`;
+                }
+                throw new Error(errorMessage);
+            }
+
+            const result = await response.json();
+            displayAnalysisResults(result);
+
+        } catch (error) {
+            console.error('Analysis error:', error);
+            
+            let errorTitle = 'Analysis Failed';
+            let errorMessage = 'Please try again.';
+            
+            // Handle specific error types
+            if (error.name === 'AbortError') {
+                errorTitle = 'Analysis Timeout';
+                errorMessage = 'The analysis took too long. Please try with smaller files.';
+            } else if (error.message && error.message.includes('500')) {
+                errorTitle = 'Server Error';
+                errorMessage = 'Server encountered an error. Please try again in a moment.';
+            }
+            
+            document.getElementById('analysisLoading').innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="text-warning">${errorTitle}</h5>
+                    <p class="text-danger">${errorMessage}</p>
+                    <small class="text-muted">${error.message}</small>
+                </div>
+            `;
+        }
+    }
+
+    function displayAnalysisResults(result) {
+        // Store analysis results globally for trend creation
+        window.currentAnalysisResults = result;
+        
+        document.getElementById('analysisLoading').style.display = 'none';
+        document.getElementById('analysisResults').style.display = 'block';
+        document.getElementById('createTrendBtn').style.display = 'block';
+
+        const resultsContainer = document.getElementById('analysisResults');
+        resultsContainer.innerHTML = `
+            <div class="analysis-form">
+                <h6 class="mb-4"><i class="fas fa-sparkles me-2"></i>AI Analysis Results</h6>
+                
+                <div class="ai-suggestion">
+                    <div class="suggestion-label">AI Suggested Title:</div>
+                    <p class="suggestion-text">${result.title}</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="trendTitle">Trend Title</label>
+                    <input type="text" id="trendTitle" value="${result.title}" maxlength="100">
+                </div>
+
+                <div class="ai-suggestion">
+                    <div class="suggestion-label">AI Suggested Description:</div>
+                    <p class="suggestion-text">${result.description}</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="trendDescription">Description</label>
+                    <textarea id="trendDescription" rows="4" maxlength="300">${result.description}</textarea>
+                </div>
+
+                <!-- Image Upload Section -->
+                <div class="form-group">
+                    <label>Trend Image</label>
+                    <div class="image-upload-container">
+                        <!-- Upload Options -->
+                        <div class="upload-options mb-3">
+                            <button type="button" class="btn btn-outline-primary me-2" id="uploadImageBtn">
+                                <i class="fas fa-upload me-2"></i>Upload Image
+                            </button>
+                            <button type="button" class="btn btn-outline-success" id="generateImageBtn">
+                                <i class="fas fa-magic me-2"></i>Generate AI Image
+                            </button>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                        
+                        <!-- Image Preview -->
+                        <div class="image-preview" id="imagePreview" style="display: none;">
+                            <div class="preview-container text-center">
+                                <img id="previewImage" src="" alt="Trend Image Preview" style="max-width: 300px; max-height: 200px;" class="img-fluid rounded border">
+                                <br>
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeImageBtn">
+                                    <i class="fas fa-times me-1"></i>Remove Image
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Generation Progress -->
+                        <div class="generation-progress" id="generationProgress" style="display: none;">
+                            <div class="text-center py-3">
+                                <div class="spinner-border spinner-border-sm text-success mb-2" role="status"></div>
+                                <p class="small text-muted mb-0">Generating AI image based on your trend...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="trendCategory">Category</label>
+                            <select id="trendCategory">
+                                <option value="Health" ${result.category === 'Health' ? 'selected' : ''}>Health</option>
+                                <option value="Sustainability" ${result.category === 'Sustainability' ? 'selected' : ''}>Sustainability</option>
+                                <option value="Innovation" ${result.category === 'Innovation' ? 'selected' : ''}>Innovation</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="trendReportType">Report Type</label>
+                            <select id="trendReportType">
+                                <option value="produktentwicklung" ${result.report_type === 'produktentwicklung' ? 'selected' : ''}>Produktentwicklung</option>
+                                <option value="marktdaten" ${result.report_type === 'marktdaten' ? 'selected' : ''}>Marktdaten</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="mt-4">
+                    <h6>Key Facts Preview:</h6>
+                    <div class="trend-insights">
+                        ${result.market_data ? `
+                            <div class="insight-item mb-3 p-3">
+                                <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
+                                    <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                        <path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5v12h-2V2h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/>
+                                    </svg>Market Data
+                                </div>
+                                <div class="insight-content" style="font-size: 14px; color: #4b5563;">${result.market_data}</div>
+                            </div>
+                        ` : ''}
+                        ${result.consumer_insights ? `
+                            <div class="insight-item p-3">
+                                <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
+                                    <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                        <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+                                    </svg>Consumer Insights
+                                </div>
+                                <div class="insight-content" style="font-size: 14px; color: #4b5563;">${result.consumer_insights}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add event listener for create trend button
+        document.getElementById('createTrendBtn').onclick = createCustomTrend;
+        
+        // Add image upload functionality
+        setupImageUpload();
+    }
+
+    async function createCustomTrend() {
+        const title = document.getElementById('trendTitle').value.trim();
+        const description = document.getElementById('trendDescription').value.trim();
+        const category = document.getElementById('trendCategory').value;
+        const reportType = document.getElementById('trendReportType').value;
+        
+        // Get uploaded image if any
+        const imageFile = window.getSelectedImageFile ? window.getSelectedImageFile() : null;
+
+        if (!title || !description) {
+            alert('Please provide both a title and description for your trend.');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('category', category);
+            formData.append('report_type', reportType);
+            formData.append('is_custom', 'true');
+            
+            // Add AI-generated key facts if available
+            if (window.currentAnalysisResults) {
+                formData.append('market_data', window.currentAnalysisResults.market_data || '');
+                formData.append('consumer_insights', window.currentAnalysisResults.consumer_insights || '');
+                formData.append('pdf_path', window.currentAnalysisResults.pdf_path || '');
+            }
+            
+            // Add image if available
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            const response = await fetch('/api/trends/create', {
+                method: 'POST',
+                body: formData  // Use FormData instead of JSON to support file uploads
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            // Close modal and refresh page to show new trend
+            aiAnalysisModal.hide();
+            clearAllFiles();
+            
+            // Show success message
+            alert('Your custom trend has been created successfully!');
+            
+            // Refresh the page to show the new trend
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Creation error:', error);
+            alert('Failed to create trend. Please try again.');
+        }
+    }
+
+    function setupImageUpload() {
+        let selectedImageFile = null;
+        
+        // Upload Image Button
+        document.getElementById('uploadImageBtn').addEventListener('click', function() {
+            document.getElementById('imageInput').click();
+        });
+        
+        // File Input Change
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedImageFile = file;
+                displayImagePreview(file);
+            }
+        });
+        
+        // Generate AI Image Button
+        document.getElementById('generateImageBtn').addEventListener('click', function() {
+            generateAIImage();
+        });
+        
+        // Remove Image Button
+        document.getElementById('removeImageBtn').addEventListener('click', function() {
+            removeImage();
+        });
+        
+        function displayImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImage = document.getElementById('previewImage');
+                previewImage.src = e.target.result;
+                previewImage.dataset.imageFile = file;
+                
+                document.getElementById('imagePreview').style.display = 'block';
+                selectedImageFile = file;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function generateAIImage() {
+            const title = document.getElementById('trendTitle').value.trim();
+            const description = document.getElementById('trendDescription').value.trim();
+            
+            if (!title && !description) {
+                alert('Please enter a title or description first to generate an AI image.');
+                return;
+            }
+            
+            // Show generation progress
+            document.getElementById('generationProgress').style.display = 'block';
+            document.getElementById('imagePreview').style.display = 'none';
+            
+            try {
+                const prompt = `Professional business trend visualization for: ${title}. ${description}. Modern, clean, corporate style.`;
+                
+                const response = await fetch('/api/generate-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        one_line_summary: title || 'Business Trend',
+                        aspect_ratio: '16:9'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Generation failed: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                // Create blob from generated image and display
+                const imageResponse = await fetch(result.image_url);
+                const imageBlob = await imageResponse.blob();
+                const imageFile = new File([imageBlob], 'generated-image.png', { type: 'image/png' });
+                
+                selectedImageFile = imageFile;
+                displayImagePreview(imageFile);
+                
+            } catch (error) {
+                console.error('Image generation error:', error);
+                alert('Failed to generate image. Please try again or upload your own image.');
+            }
+            
+            // Hide generation progress
+            document.getElementById('generationProgress').style.display = 'none';
+        }
+        
+        function removeImage() {
+            selectedImageFile = null;
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('previewImage').src = '';
+            document.getElementById('previewImage').dataset.imageFile = '';
+            document.getElementById('imageInput').value = '';
+        }
+        
+        // Make selectedImageFile available to createCustomTrend function
+        window.getSelectedImageFile = function() {
+            return selectedImageFile;
+        };
+    }
+
+    // Global function for removing files
+    window.removeFile = function(fileName, element) {
+        uploadedFiles = uploadedFiles.filter(file => file.name !== fileName);
+        element.closest('.file-item').remove();
+        updateUI();
+    };
+}
+
+function initializeTrendsSearch() {
+    const searchInput = document.getElementById('trendsSearch');
+    const clearButton = document.getElementById('clearTrendsSearch');
+    const searchResults = document.getElementById('trendsSearchResults');
+    
+    if (!searchInput) return;
+    
+    // Override hideSearchResults to work with trends search as well
+    if (typeof hideSearchResults !== 'undefined') {
+        const originalHideSearchResults = hideSearchResults;
+        window.hideSearchResults = function() {
+            originalHideSearchResults();
+            if (searchResults) {
+                searchResults.style.display = 'none';
+            }
+        };
+    } else {
+        // Define it if not available
+        window.hideSearchResults = function() {
+            if (searchResults) {
+                searchResults.style.display = 'none';
+            }
+        };
+    }
+    
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length === 0) {
+            clearButton.style.display = 'none';
+            searchResults.style.display = 'none';
+            return;
+        }
+        
+        clearButton.style.display = 'block';
+        
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+        
+        // Debounce search
+        searchTimeout = setTimeout(() => {
+            performTrendsSearch(query);
+        }, 300);
+    });
+    
+    // Clear search
+    clearButton.addEventListener('click', function() {
+        searchInput.value = '';
+        clearButton.style.display = 'none';
+        searchResults.style.display = 'none';
+        searchInput.focus();
+    });
+    
+    // Handle Enter key
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = e.target.value.trim();
+            if (query.length >= 2) {
+                // Navigate to search results with current filters
+                const selectedReportTypes = getSelectedReportTypes();
+                const selectedCategories = getSelectedCategories();
+                
+                const params = new URLSearchParams();
+                params.append('search', query);
+                
+                // Add selected report types (or default)
+                if (selectedReportTypes.length > 0) {
+                    selectedReportTypes.forEach(type => params.append('report_type', type));
+                } else {
+                    params.append('report_type', 'produktentwicklung');
+                }
+                
+                // Add selected categories
+                selectedCategories.forEach(cat => params.append('category', cat));
+                
+                window.location.href = `{{ url_for('trends') }}?${params.toString()}`;
+            }
+        }
+    });
+    
+    // Close search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.closest('.search-container').contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+}
+
+async function performTrendsSearch(query) {
+    const searchResults = document.getElementById('trendsSearchResults');
+    
+    // Get currently selected report types
+    const selectedReportTypes = getSelectedReportTypes();
+    const reportTypesToUse = selectedReportTypes.length > 0 ? selectedReportTypes : ['produktentwicklung'];
+    
+    // Show loading state
+    searchResults.innerHTML = `
+        <div class="search-loading">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            Searching trends...
+        </div>
+    `;
+    searchResults.style.display = 'block';
+    
+    try {
+        // Build URL with multiple report types
+        const params = new URLSearchParams();
+        params.append('q', query);
+        reportTypesToUse.forEach(type => params.append('report_type', type));
+        
+        const response = await fetch(`/api/trends/search?${params.toString()}`);
+        const trends = await response.json();
+        
+        if (trends.length === 0) {
+            searchResults.innerHTML = '<div class="search-empty"><i class="fas fa-search me-2"></i>No trends found for "' + query + '"</div>';
+        } else {
+            // Function to get badge class based on category
+            function getCategoryBadge(category) {
+                switch(category.toLowerCase()) {
+                    case 'health':
+                        return 'bg-success';
+                    case 'sustainability':
+                        return 'bg-info';
+                    case 'innovation':
+                        return 'bg-primary';
+                    default:
+                        return 'bg-secondary';
+                }
+            }
+            
+            // Function to get report type badge class
+            function getReportTypeBadge(reportType) {
+                return reportType === 'produktentwicklung' ? 'bg-primary' : 'bg-warning';
+            }
+            
+            // Use innovation catalogue style layout (exactly same structure)
+            let html = '<div class="search-results-list">';
+            html += `<div class="search-section">
+                <h6 class="search-section-title">
+                    <i class="fas fa-chart-line me-2"></i>Trends & Insights
+                </h6>`;
+            
+            trends.forEach(trend => {
+                html += `
+                    <div class="recipe-number-result-item" onclick="navigateToResult('${trend.url}')">
+                        <div class="recipe-info-left">
+                            <div class="recipe-number-display">${highlightTrendsText(trend.title, query)}</div>
+                            <div class="recipe-name-display">${trend.description}</div>
+                            <div class="search-result-meta mt-2">
+                                <span class="badge ${getCategoryBadge(trend.category.toLowerCase())} text-white me-2">${trend.category}</span>
+                                <span class="badge ${getReportTypeBadge(trend.report_type)} text-white">${trend.report_type_name}</span>
+                            </div>
+                        </div>
+                        <div class="recipe-image-right">
+                            ${trend.image ? `<img src="${trend.image}" alt="${trend.title}" class="recipe-result-image" onerror="this.style.display='none'">` : `<div class="recipe-image-placeholder"><i class="fas fa-chart-line"></i></div>`}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            searchResults.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Search error:', error);
+        searchResults.innerHTML = '<div class="search-error">Search failed. Please try again.</div>';
+    }
+}
+
+// Trends Filter Functionality
+function initializeTrendsFilters() {
+    // Add click handlers for filter headers
+    document.querySelectorAll('.filter-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const filterType = this.getAttribute('data-filter');
+            toggleTrendsFilterOptions(filterType);
+        });
+    });
+
+    // Add click handlers for filter option buttons
+    document.querySelectorAll('.filter-option-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const filterType = this.getAttribute('data-filter');
+            const value = this.getAttribute('data-value');
+            
+            if (filterType === 'trendCategory') {
+                if (this.classList.contains('category-clear-btn')) {
+                    // Clear all categories
+                    clearAllCategories();
+                } else if (this.classList.contains('category-toggle-btn')) {
+                    // Toggle category selection
+                    toggleCategorySelection(this, value);
+                }
+            } else if (filterType === 'trendType') {
+                if (this.classList.contains('report-type-clear-btn')) {
+                    // Clear all report types
+                    clearAllReportTypes();
+                } else if (this.classList.contains('report-type-toggle-btn')) {
+                    // Toggle report type selection
+                    toggleReportTypeSelection(this, value);
+                }
+            }
+        });
+    });
+}
+
+function toggleTrendsFilterOptions(filterType) {
+    const filterOptionsSection = document.getElementById('trendsFilterOptionsSection');
+    const currentOptions = document.getElementById(filterType + 'Options');
+    
+    // Hide all other filter options
+    document.querySelectorAll('.filter-options').forEach(option => {
+        option.style.display = 'none';
+    });
+    
+    // Toggle current filter options
+    if (currentOptions.style.display === 'block') {
+        filterOptionsSection.style.display = 'none';
+        currentOptions.style.display = 'none';
+        updateTrendsChevrons('none');
+    } else {
+        filterOptionsSection.style.display = 'block';
+        currentOptions.style.display = 'block';
+        updateTrendsChevrons(filterType);
+    }
+}
+
+function updateTrendsChevrons(activeFilter) {
+    document.querySelectorAll('.filter-chevron').forEach(chevron => {
+        const header = chevron.closest('.filter-header');
+        const filterType = header.getAttribute('data-filter');
+        
+        if (filterType === activeFilter) {
+            chevron.classList.remove('fa-chevron-down');
+            chevron.classList.add('fa-chevron-up');
+        } else {
+            chevron.classList.remove('fa-chevron-up');
+            chevron.classList.add('fa-chevron-down');
+        }
+    });
+}
+
+function updateTrendsFilterButtons(filterType, selectedValue) {
+    document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-value') === selectedValue) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+function applyTrendsFilters() {
+    document.getElementById('trendsFilterForm').submit();
+}
+
+function clearTrendsFilters() {
+    const reportType = '{{ selected_report_type }}';
+    window.location.href = `{{ url_for('trends') }}?report_type=${reportType}`;
+}
+
+// Multi-Category Selection Functions
+let categoryFilterTimeout;
+
+function toggleCategorySelection(button, value) {
+    // Toggle the selected state
+    button.classList.toggle('selected');
+    
+    // Clear existing timeout and set new one for auto-apply
+    clearTimeout(categoryFilterTimeout);
+    categoryFilterTimeout = setTimeout(() => {
+        applyMultiFilters();
+    }, 500); // Apply filter after 500ms of inactivity
+}
+
+function clearAllCategories() {
+    // Remove selected class from all category toggle buttons
+    document.querySelectorAll('.category-toggle-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    
+    // Apply filter immediately
+    applyMultiFilters();
+}
+
+function getSelectedCategories() {
+    const selectedButtons = document.querySelectorAll('.category-toggle-btn.selected');
+    return Array.from(selectedButtons).map(btn => btn.getAttribute('data-value'));
+}
+
+function initializeSelectedCategories() {
+    // Initialize selected state based on current URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const categories = urlParams.getAll('category');
+    
+    categories.forEach(category => {
+        const button = document.querySelector(`[data-filter="trendCategory"][data-value="${category}"]`);
+        if (button && button.classList.contains('category-toggle-btn')) {
+            button.classList.add('selected');
+        }
+    });
+}
+
+// Multi-Report Type Selection Functions
+let reportTypeFilterTimeout;
+
+function toggleReportTypeSelection(button, value) {
+    // Toggle the selected state
+    button.classList.toggle('selected');
+    
+    // Clear existing timeout and set new one for auto-apply
+    clearTimeout(reportTypeFilterTimeout);
+    reportTypeFilterTimeout = setTimeout(() => {
+        applyMultiFilters();
+    }, 500); // Apply filter after 500ms of inactivity
+}
+
+function clearAllReportTypes() {
+    // Remove selected class from all report type toggle buttons
+    document.querySelectorAll('.report-type-toggle-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    
+    // Apply filter immediately
+    applyMultiFilters();
+}
+
+function getSelectedReportTypes() {
+    const selectedButtons = document.querySelectorAll('.report-type-toggle-btn.selected');
+    return Array.from(selectedButtons).map(btn => btn.getAttribute('data-value'));
+}
+
+function applyMultiFilters() {
+    // Combine both category and report type selections
+    const selectedCategories = getSelectedCategories();
+    const selectedReportTypes = getSelectedReportTypes();
+    
+    let url = `{{ url_for('trends') }}`;
+    const params = new URLSearchParams();
+    
+    // Add report types (use default if none selected)
+    if (selectedReportTypes.length > 0) {
+        selectedReportTypes.forEach(type => {
+            params.append('report_type', type);
+        });
+    } else {
+        // Default to produktentwicklung if no report types selected
+        params.append('report_type', 'produktentwicklung');
+    }
+    
+    // Add categories
+    selectedCategories.forEach(category => {
+        params.append('category', category);
+    });
+    
+    url += '?' + params.toString();
+    window.location.href = url;
+}
+
+function initializeSelectedReportTypes() {
+    // Initialize selected state based on current URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const reportTypes = urlParams.getAll('report_type');
+    
+    reportTypes.forEach(reportType => {
+        const button = document.querySelector(`[data-filter="trendType"][data-value="${reportType}"]`);
+        if (button && button.classList.contains('report-type-toggle-btn')) {
+            button.classList.add('selected');
+        }
+    });
+}
+
+// Trends Text Highlighting Function
+function highlightTrendsText(text, query) {
+    try {
+        // Escape special regex characters to prevent injection
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+    } catch (e) {
+        // Fallback if regex fails
+        return text;
+    }
+}
+</script>
+
+<style>
+/* Innovation Catalogue Search Results Styling (exact copy) */
+.recipe-number-result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    margin: 12px 0;
+    background: #ffffff;
+    border: 1px solid #f0f0f3;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.recipe-number-result-item:hover {
+    border-color: rgba(255, 65, 67, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(255, 65, 67, 0.12);
+    background: #fefefe;
+}
+
+.recipe-number-result-item.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.recipe-info-left {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recipe-number-display {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ff4143;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.recipe-name-display {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2d3748;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+}
+
+.recipe-name-display.loading-text {
+    color: #a0aec0;
+    font-style: italic;
+}
+
+.recipe-image-right {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-left: 24px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.recipe-result-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.recipe-number-result-item:hover .recipe-result-image {
+    transform: scale(1.05);
+}
+
+.recipe-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a0aec0;
+    font-size: 1.5rem;
+}
+
+/* Upload Section Styling */
+.upload-section {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.upload-area {
+    border: 3px dashed #cbd5e0;
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-area:hover {
+    border-color: #4299e1;
+    background: #f7fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(66, 153, 225, 0.1);
+}
+
+.upload-area.dragover {
+    border-color: #3182ce;
+    background: #ebf8ff;
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 4rem;
+    color: #4299e1;
+    margin-bottom: 1rem;
+}
+
+.upload-title {
+    color: #2d3748;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.upload-subtitle {
+    color: #718096;
+    font-size: 1.1rem;
+}
+
+.uploaded-files {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    margin: 8px 0;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.file-item:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.file-icon {
+    font-size: 1.5rem;
+    margin-right: 12px;
+    color: #4299e1;
+}
+
+.file-details h6 {
+    margin: 0;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.file-details small {
+    color: #718096;
+}
+
+.file-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.file-remove {
+    background: none;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.file-remove:hover {
+    background: #fed7d7;
+}
+
+.upload-actions {
+    margin-top: 2rem;
+}
+
+.analysis-form {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.ai-suggestion {
+    background: #e6fffa;
+    border: 1px solid #81e6d9;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.ai-suggestion .suggestion-label {
+    font-size: 0.9rem;
+    color: #065f46;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.ai-suggestion .suggestion-text {
+    color: #047857;
+    margin: 0;
+}
+
+</style>
+{% endblock %}

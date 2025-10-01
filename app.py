@@ -1,0 +1,100 @@
+import os
+import logging
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail
+from sqlalchemy.orm import DeclarativeBase
+from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_talisman import Talisman
+from flask_wtf.csrf import CSRFProtect
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
+class Base(DeclarativeBase):
+    pass
+
+db = SQLAlchemy(model_class=Base)
+mail = Mail()
+
+# create the app
+app = Flask(__name__)
+app.secret_key = os.environ.get("SESSION_SECRET", "bruggen-innovation-dev-key-2025")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# configure the database
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///bruggen_innovation.db")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
+
+# configure mail
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'innovation@bruggen.com')
+
+# initialize extensions
+db.init_app(app)
+mail.init_app(app)
+
+# Configure CSRF protection
+csrf = CSRFProtect(app)
+
+# Add minimal security headers for PDF embedding only
+@app.after_request
+def add_security_headers(response):
+    # Allow PDFs to be embedded from same origin
+    if response.mimetype == 'application/pdf':
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    
+    return response
+
+# Security enhancements
+csp = {
+    'default-src': "'self'",
+    'script-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+    'style-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
+    'font-src': "'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+    'img-src': "'self' data: https://images.unsplash.com https://plus.unsplash.com",
+    'connect-src': "'self'"
+}
+
+Talisman(app, 
+         force_https=False,  # Set to True in production
+         content_security_policy=csp)
+
+# Add custom Jinja2 filters
+import json
+def from_json_filter(value):
+    try:
+        return json.loads(value) if value else []
+    except (json.JSONDecodeError, TypeError):
+        return []
+
+app.jinja_env.filters['from_json'] = from_json_filter
+
+# Initialize database tables when app starts
+with app.app_context():
+    # import models to ensure tables are created
+    import models
+    db.create_all()
+
+# Import after app creation to avoid circular imports
+from translations import get_text, get_available_languages
+from flask import session
+
+@app.context_processor
+def inject_translations():
+    """Make translation functions available in all templates"""
+    return dict(
+        get_text=get_text,
+        lang=session.get('language', 'en'),
+        available_languages=get_available_languages()
+    )
+
+# import routes
+from routes import *
