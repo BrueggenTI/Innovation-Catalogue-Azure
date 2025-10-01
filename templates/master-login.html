@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Master Login - Brüggen Innovation Catalogue{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #661c31 0%, #8b2442 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <!-- Logo/Header -->
+                        <div class="text-center mb-4">
+                            <h3 class="fw-bold mb-2" style="color: #661c31;">Master Login</h3>
+                            <p class="text-muted small">Brüggen Innovation Catalogue</p>
+                        </div>
+
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <!-- Login Form -->
+                        <form method="POST" action="{{ url_for('master_login') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-2"></i>Username
+                                </label>
+                                <input type="text" class="form-control" id="username" name="username" required autofocus>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-semibold">
+                                    <i class="fas fa-lock me-2"></i>Password
+                                </label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+
+                            <button type="submit" class="btn w-100 text-white" style="background-color: #661c31;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="text-center my-4">
+                            <hr>
+                            <span class="text-muted small">or</span>
+                            <hr>
+                        </div>
+
+                        <!-- Link to Microsoft Login -->
+                        <div class="text-center">
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fab fa-microsoft me-2"></i>Sign in with Microsoft
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Note -->
+                <div class="text-center mt-3">
+                    <p class="text-white small">
+                        <i class="fas fa-shield-alt me-2"></i>Secure Master Access
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-focus on username field
+document.addEventListener('DOMContentLoaded', function() {
+    const usernameField = document.getElementById('username');
+    if (usernameField) {
+        usernameField.focus();
+    }
+});
+</script>
+{% endblock %}
