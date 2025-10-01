@@ -1326,7 +1326,7 @@ def generate_image():
         }), 500
 
 @app.route('/add-recipe')
-@login_required
+@master_required
 def add_recipe():
     init_user_session()
     # Get all recipes to display in the list at the bottom
@@ -1335,7 +1335,7 @@ def add_recipe():
 
 @app.route('/api/analyze-recipe', methods=['POST'])
 @csrf.exempt
-@login_required
+@master_required
 def analyze_recipe():
     # Check for file in request - handle both field names
     file = None
@@ -1745,7 +1745,7 @@ def analyze_recipe():
 
 @app.route('/api/upload-recipe-image', methods=['POST'])
 @csrf.exempt
-@login_required
+@master_required
 def upload_recipe_image():
     """Upload recipe images (product image or nutri-score image) with fallback to local storage"""
     try:
@@ -1809,7 +1809,7 @@ def upload_recipe_image():
 
 @app.route('/api/publish-recipe', methods=['POST'])
 @csrf.exempt
-@login_required
+@master_required
 def publish_recipe():
     """Create a new recipe in the database - never overwrite existing ones"""
     try:
@@ -2146,7 +2146,7 @@ def get_product_by_recipe_number(recipe_number):
         }), 500
 
 @app.route('/manage-reports')
-@login_required
+@master_required
 def manage_reports():
     """Page for managing and deleting trends/reports"""
     # Simple protection: require session to be explicitly set as admin
@@ -2165,7 +2165,7 @@ def manage_reports():
 
 @csrf.exempt
 @app.route('/api/trends/<int:trend_id>/delete', methods=['DELETE'])
-@login_required
+@master_required
 def delete_trend(trend_id):
     """API endpoint for deleting a trend/report"""
     try:
