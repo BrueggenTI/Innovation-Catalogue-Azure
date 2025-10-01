@@ -435,7 +435,7 @@ def master_login():
     # Show master login page
     return render_template('master-login.html')
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
     """
     User profile page - shows Microsoft account information if authenticated
@@ -445,6 +445,39 @@ def profile():
     microsoft_account = session.get('microsoft_account', {})
     lang = session.get('language', 'en')
     
+    if request.method == 'POST':
+        # Handle profile update
+        from models import User
+        user_id = session.get('user_id')
+        
+        if user_id:
+            user = User.query.get(user_id)
+            if user:
+                # Update user data from form
+                user.name = request.form.get('name', '').strip()
+                user.email = request.form.get('email', '').strip()
+                user.position = request.form.get('position', '').strip()
+                user.department = request.form.get('department', '').strip()
+                
+                # Save to database
+                db.session.commit()
+                
+                # Update session with new data
+                session['user_name'] = user.name
+                session['user_email'] = user.email
+                session['user_position'] = user.position
+                session['user_department'] = user.department
+                
+                flash('Profile updated successfully!', 'success')
+                logging.info(f"User {user.email} updated profile")
+            else:
+                flash('User not found in database', 'danger')
+        else:
+            flash('You must be logged in to update your profile', 'warning')
+        
+        return redirect(url_for('profile'))
+    
+    # GET request - show profile form
     # Pass user data for the profile form
     user_data = {
         'name': session.get('user_name', 'Sarah Mitchell'),
