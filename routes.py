@@ -26,6 +26,8 @@ import base64
 import io
 from document_processor import document_processor
 from ai_trend_analyzer import analyze_document_for_trend, improve_trend_description
+from functools import wraps
+from auth_config import get_msal_app, get_auth_url, acquire_token_by_code, get_logout_url, validate_config
 
 def sanitize_input(input_string, max_length=100):
     """Sanitize user input to prevent XSS and injection attacks"""
@@ -192,6 +194,144 @@ def init_user_session():
         session['user_location'] = 'Wallenhorst, Germany'
     if not session.get('language'):
         session['language'] = 'en'  # Default to English
+
+# ============================================================================
+# MICROSOFT SSO AUTHENTICATION ROUTES
+# ============================================================================
+
+def login_required(f):
+    """
+    Decorator to protect routes that require authentication
+    Usage: @login_required
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('authenticated'):
+            flash('Please sign in with Microsoft to access this page.', 'warning')
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login')
+def login():
+    """
+    Initiates Microsoft SSO login flow
+    Redirects user to Microsoft login page
+    """
+    # Validate Azure configuration
+    is_valid, message = validate_config()
+    if not is_valid:
+        flash(f'Authentication configuration error: {message}. Please contact administrator.', 'danger')
+        logging.error(f"Azure config error: {message}")
+        return redirect(url_for('index'))
+    
+    # Get MSAL app instance
+    msal_app = get_msal_app()
+    
+    # Generate state token for security
+    state = str(uuid.uuid4())
+    session['auth_state'] = state
+    
+    # Store the 'next' URL to redirect after login
+    session['next_url'] = request.args.get('next', url_for('index'))
+    
+    # Get Microsoft authorization URL
+    auth_url = get_auth_url(msal_app, state=state)
+    
+    logging.info("Redirecting to Microsoft login")
+    return redirect(auth_url)
+
+@app.route('/auth/callback')
+def auth_callback():
+    """
+    Microsoft SSO callback handler
+    Processes authorization code and establishes user session
+    """
+    # Verify state to prevent CSRF attacks
+    if request.args.get('state') != session.get('auth_state'):
+        flash('Authentication failed: Invalid state parameter', 'danger')
+        logging.error("State mismatch in auth callback")
+        return redirect(url_for('index'))
+    
+    # Get authorization code from Microsoft
+    code = request.args.get('code')
+    if not code:
+        error = request.args.get('error', 'Unknown error')
+        error_description = request.args.get('error_description', 'No description provided')
+        flash(f'Authentication failed: {error} - {error_description}', 'danger')
+        logging.error(f"Auth callback error: {error} - {error_description}")
+        return redirect(url_for('index'))
+    
+    # Exchange code for access token
+    msal_app = get_msal_app()
+    result = acquire_token_by_code(msal_app, code)
+    
+    if 'error' in result:
+        flash(f'Authentication failed: {result.get("error_description", "Unknown error")}', 'danger')
+        logging.error(f"Token acquisition error: {result.get('error_description')}")
+        return redirect(url_for('index'))
+    
+    # Store user information in session
+    account = result.get('id_token_claims', {})
+    session['authenticated'] = True
+    session['user_name'] = account.get('name', 'Unknown User')
+    session['user_email'] = account.get('preferred_username', account.get('email', ''))
+    session['microsoft_account'] = {
+        'name': account.get('name'),
+        'email': account.get('preferred_username', account.get('email')),
+        'id': account.get('oid'),
+        'tenant_id': account.get('tid')
+    }
+    
+    # Clear auth state
+    session.pop('auth_state', None)
+    
+    # Get next URL and redirect
+    next_url = session.pop('next_url', url_for('index'))
+    
+    flash(f'Welcome, {session["user_name"]}! You are now signed in with Microsoft.', 'success')
+    logging.info(f"User {session['user_email']} successfully authenticated")
+    
+    return redirect(next_url)
+
+@app.route('/logout')
+def logout():
+    """
+    Logout user from both local session and Microsoft
+    """
+    user_name = session.get('user_name', 'User')
+    
+    # Clear local session
+    session.clear()
+    
+    # Initialize default session again
+    init_user_session()
+    
+    flash(f'Goodbye, {user_name}! You have been signed out.', 'info')
+    
+    # Redirect to Microsoft logout to clear SSO session
+    logout_url = get_logout_url()
+    return redirect(logout_url)
+
+@app.route('/profile')
+@login_required
+def profile():
+    """
+    User profile page - shows Microsoft account information
+    Protected route - requires authentication
+    """
+    init_user_session()
+    microsoft_account = session.get('microsoft_account', {})
+    lang = session.get('language', 'en')
+    
+    return render_template('profile.html', 
+                         microsoft_account=microsoft_account,
+                         get_text=get_text,
+                         lang=lang)
+
+# ============================================================================
+# END MICROSOFT SSO AUTHENTICATION ROUTES
+# ============================================================================
 
 @app.route('/set-language/<language>')
 def set_language(language):
