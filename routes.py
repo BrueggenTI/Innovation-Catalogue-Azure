@@ -314,18 +314,28 @@ def logout():
     return redirect(logout_url)
 
 @app.route('/profile')
-@login_required
 def profile():
     """
-    User profile page - shows Microsoft account information
-    Protected route - requires authentication
+    User profile page - shows Microsoft account information if authenticated
+    Also displays user profile edit form
     """
     init_user_session()
     microsoft_account = session.get('microsoft_account', {})
     lang = session.get('language', 'en')
     
+    # Pass user data for the profile form
+    user_data = {
+        'name': session.get('user_name', 'Sarah Mitchell'),
+        'email': session.get('user_email', 'sarah.mitchell@brueggen.com'),
+        'position': session.get('user_position', 'Sales Representative'),
+        'department': session.get('user_department', 'Sales & Business Development'),
+        'phone': session.get('user_phone', '+49 541 123456'),
+        'location': session.get('user_location', 'Wallenhorst, Germany'),
+    }
+    
     return render_template('profile.html', 
                          microsoft_account=microsoft_account,
+                         user=user_data,
                          get_text=get_text,
                          lang=lang)
 
@@ -1826,22 +1836,6 @@ def delete_recipe(recipe_id):
             'success': False,
             'error': f'Deletion failed: {str(e)}'
         }), 500
-
-@app.route('/profile')
-def profile():
-    # For now, we'll use session data for user info
-    # In a real app, this would come from a User model
-    user_data = {
-        'name': session.get('user_name', 'Sarah Mitchell'),
-        'email': session.get('user_email', 'sarah.mitchell@brueggen.com'),
-        'position': session.get('user_position', 'Sales Representative'),
-        'department': session.get('user_department', 'Sales & Business Development'),
-        'phone': session.get('user_phone', '+49 541 123456'),
-        'location': session.get('user_location', 'Wallenhorst, Germany'),
-        # Removed language, timezone, and notification settings as per user request
-    }
-    
-    return render_template('profile.html', user=user_data)
 
 @app.route('/api/image/<path:filename>')
 def serve_image(filename):
