@@ -324,6 +324,46 @@ def logout():
     logout_url = get_logout_url()
     return redirect(logout_url)
 
+@app.route('/master-login', methods=['GET', 'POST'])
+def master_login():
+    """
+    Master login route - separate from Microsoft SSO
+    Allows master user to login with username and password
+    """
+    # Check if user is already authenticated
+    if session.get('authenticated'):
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        
+        # Master credentials (should be stored as environment variables in production)
+        MASTER_USERNAME = os.environ.get('MASTER_USERNAME', 'innocatmaster23568')
+        MASTER_PASSWORD = os.environ.get('MASTER_PASSWORD', 'Villa23568hafer23568!')
+        
+        # Validate credentials
+        if username == MASTER_USERNAME and password == MASTER_PASSWORD:
+            # Set session as authenticated
+            session['authenticated'] = True
+            session['user_name'] = 'Master User'
+            session['user_email'] = 'master@brueggen.com'
+            session['user_position'] = 'System Administrator'
+            session['user_department'] = 'IT & Innovation'
+            session['is_master_user'] = True  # Flag to identify master user
+            
+            flash(f'Welcome, Master User! You are now signed in.', 'success')
+            logging.info(f"Master user successfully authenticated from IP: {request.remote_addr}")
+            
+            # Redirect to index/home page
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid username or password. Please try again.', 'danger')
+            logging.warning(f"Failed master login attempt from IP: {request.remote_addr}")
+    
+    # Show master login page
+    return render_template('master-login.html')
+
 @app.route('/profile')
 def profile():
     """
