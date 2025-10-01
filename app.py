@@ -3,6 +3,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
+from flask_session import Session
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_talisman import Talisman
@@ -21,6 +22,13 @@ mail = Mail()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "bruggen-innovation-dev-key-2025")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# Configure Flask-Session for Microsoft SSO
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_USE_SIGNER"] = True
+app.config["SESSION_FILE_THRESHOLD"] = 100
+Session(app)
 
 # configure the database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///bruggen_innovation.db")
