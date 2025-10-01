@@ -46,6 +46,10 @@ localPort = 35965
 externalPort = 4200
 
 [[ports]]
+localPort = 35997
+externalPort = 6000
+
+[[ports]]
 localPort = 36425
 externalPort = 6800
 
@@ -64,10 +68,6 @@ externalPort = 5000
 [[ports]]
 localPort = 45609
 externalPort = 5173
-
-[[ports]]
-localPort = 46209
-externalPort = 6000
 
 [agent]
 integrations = ["python_openai:1.0.0"]
