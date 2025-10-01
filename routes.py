@@ -1,7 +1,7 @@
 
 from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, session
 from app import app, db, csrf
-from models import Product, ConceptSession, Trend
+from models import Product, ConceptSession, Trend, User
 from data.products import init_products
 from data.trends import init_trends
 from utils.pdf_generator import generate_concept_pdf
@@ -179,7 +179,23 @@ def extract_images_from_document(file_path, file_extension, original_filename):
 
 
 def init_user_session():
-    """Initialize default user session data if not already set"""
+    """Initialize user session data from database or use defaults"""
+    # If user_id exists in session, load from database
+    user_id = session.get('user_id')
+    if user_id:
+        user = User.query.get(user_id)
+        if user:
+            # Load data from database
+            session['user_name'] = user.name or 'User'
+            session['user_email'] = user.email
+            session['user_position'] = user.position
+            session['user_department'] = user.department
+            session['is_master_user'] = user.is_master_user
+            if not session.get('language'):
+                session['language'] = 'en'
+            return
+    
+    # Fallback to default values if no user in database
     if not session.get('user_name'):
         session['user_name'] = 'Sarah Mitchell'
     if not session.get('user_position'):
@@ -307,7 +323,6 @@ def auth_callback():
     microsoft_id = account.get('oid')
     
     # Get or create user in database
-    from models import User
     user = User.query.filter_by(email=user_email).first()
     
     if not user:
@@ -393,7 +408,6 @@ def master_login():
         # Validate credentials
         if username == MASTER_USERNAME and password == MASTER_PASSWORD:
             # Get or create master user in database
-            from models import User
             master_email = 'master@brueggen.com'
             user = User.query.filter_by(email=master_email).first()
             
@@ -447,7 +461,6 @@ def profile():
     
     if request.method == 'POST':
         # Handle profile update
-        from models import User
         user_id = session.get('user_id')
         
         if user_id:
