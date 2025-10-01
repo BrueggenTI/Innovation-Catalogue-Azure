@@ -215,16 +215,25 @@ def login_required(f):
 @app.route('/login')
 def login():
     """
-    Initiates Microsoft SSO login flow
-    Redirects user to Microsoft login page
+    Displays login page with Microsoft SSO option
+    If Azure is configured, shows login button
+    If not configured, shows setup instructions
     """
-    # Validate Azure configuration
-    is_valid, message = validate_config()
-    if not is_valid:
-        flash(f'Authentication configuration error: {message}. Please contact administrator.', 'danger')
-        logging.error(f"Azure config error: {message}")
+    # Check if user is already authenticated
+    if session.get('authenticated'):
         return redirect(url_for('index'))
     
+    # Validate Azure configuration
+    is_valid, message = validate_config()
+    
+    if not is_valid:
+        # Show login page with configuration error
+        logging.warning(f"Azure config invalid: {message}")
+        return render_template('login.html', 
+                             config_valid=False, 
+                             error_message=message)
+    
+    # Azure is configured - prepare Microsoft SSO
     # Get MSAL app instance
     msal_app = get_msal_app()
     
@@ -238,8 +247,10 @@ def login():
     # Get Microsoft authorization URL
     auth_url = get_auth_url(msal_app, state=state)
     
-    logging.info("Redirecting to Microsoft login")
-    return redirect(auth_url)
+    # Show login page with Microsoft SSO button
+    return render_template('login.html', 
+                         config_valid=True, 
+                         auth_url=auth_url)
 
 @app.route('/auth/callback')
 def auth_callback():
@@ -251,7 +262,7 @@ def auth_callback():
     if request.args.get('state') != session.get('auth_state'):
         flash('Authentication failed: Invalid state parameter', 'danger')
         logging.error("State mismatch in auth callback")
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     
     # Get authorization code from Microsoft
     code = request.args.get('code')
@@ -260,7 +271,7 @@ def auth_callback():
         error_description = request.args.get('error_description', 'No description provided')
         flash(f'Authentication failed: {error} - {error_description}', 'danger')
         logging.error(f"Auth callback error: {error} - {error_description}")
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     
     # Exchange code for access token
     msal_app = get_msal_app()
@@ -269,7 +280,7 @@ def auth_callback():
     if 'error' in result:
         flash(f'Authentication failed: {result.get("error_description", "Unknown error")}', 'danger')
         logging.error(f"Token acquisition error: {result.get('error_description')}")
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     
     # Store user information in session
     account = result.get('id_token_claims', {})
