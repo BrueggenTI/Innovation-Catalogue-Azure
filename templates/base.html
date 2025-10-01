@@ -59,6 +59,12 @@
                             </div>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            {% if session.get('authenticated') %}
+                            <li class="dropdown-header">
+                                <i class="fab fa-microsoft me-2 text-success"></i>Microsoft SSO Active
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="{{ url_for('add_recipe') }}">
                                 <i class="fas fa-plus-circle me-2"></i>Add Recipe
                             </a></li>
@@ -67,12 +73,18 @@
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('profile') }}">
-                                <i class="fas fa-user-edit me-2"></i>{{ get_text('edit_profile', lang) }}
+                                <i class="fas fa-user-edit me-2"></i>{{ get_text('edit_profile', lang) if lang else 'Profile' }}
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('index') }}">
-                                <i class="fas fa-sign-out-alt me-2"></i>{{ get_text('sign_out', lang) }}
+                            {% if session.get('authenticated') %}
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sign Out (Microsoft)
                             </a></li>
+                            {% else %}
+                            <li><a class="dropdown-item" href="{{ url_for('login') }}">
+                                <i class="fab fa-microsoft me-2"></i>Sign In with Microsoft
+                            </a></li>
+                            {% endif %}
                         </ul>
                     </div>
                     
