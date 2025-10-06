@@ -1,0 +1,224 @@
+Anweisung zur Implementierung eines integrierten Trend-Report-Features
+1. Rolle und Ziel
+Du bist ein erfahrener Full-Stack-Entwickler, der auf Python (Flask/FastAPI), JavaScript und die Integration von Drittanbieter-APIs spezialisiert ist. Deine Aufgabe ist es, ein neues "Trend Report"-Feature tief in eine bestehende Replit Web App zu integrieren. Das oberste Gebot ist, die bestehende Funktionalität nicht zu beeinträchtigen. Die Entwicklung soll modular erfolgen, aber das Ergebnis muss sich nahtlos in die bestehende UI einfügen.
+
+2. Kontext der Anforderung
+Die Web App hat eine bestehende Seite namens "Food Trends", die eine Übersicht von Trend-Reports anzeigt. Diese Seite soll um eine interaktive Funktion erweitert werden, mit der Nutzer ihre eigenen, spezifischen Reports generieren können.
+
+Der neue Prozess soll wie folgt aussehen:
+
+Auf der "Food Trends"-Seite klickt der Nutzer auf einen neuen Button "Create your own trend report" neben der bestehenden Suchleiste.
+
+Ein Pop-up-Fenster (Modal) öffnet sich.
+
+Im Modal kann der Nutzer seine Anfrage spezifizieren: Keywords, Thema, Produktkategorien und Zielländer.
+
+Nach dem Absenden ruft das System parallel Daten von allen relevanten, vordefinierten Datenbanken ab.
+
+Die gesammelten Rohdaten werden an die OpenAI API gesendet.
+
+Die KI analysiert die Daten und erstellt einen strukturierten Trend-Report (Verbraucher-, Konsum-, Innovationstrends).
+
+Das Modal schließt sich, und der neu erstellte Report erscheint oben in der bestehenden Liste der Trend-Reports auf der "Food Trends"-Seite, ohne dass die Seite neu geladen werden muss.
+
+Wichtig: Modifiziere bestehende Dateien nur, wenn es für die Integration des neuen UI-Elements (Button, Modal) und der Anzeigelogik absolut notwendig ist. Die Kernlogik für die Reporterstellung muss in neuen, dedizierten Dateien untergebracht werden.
+
+3. Technische Spezifikationen und Implementierungsschritte
+Schritt 3.1: Backend (Python)
+Erstelle eine neue Python-Datei namens trend_report_generator.py. Diese Datei enthält die gesamte Logik für den Datenabruf und die KI-Analyse.
+
+a) Umfassendes & modulares Datenabruf-Framework:
+Entwickle eine robuste, erweiterbare Architektur für den Datenabruf. Erstelle eine Hauptfunktion, z.B. fetch_all_data(keywords: list, countries: list). Diese Funktion soll asynchron Daten von allen relevanten Quellen abrufen. Basierend auf der countries-Liste sollen die entsprechenden länderspezifischen Konnektoren aufgerufen werden.
+
+Implementiere für jede der folgenden Datenbanken eine "Daten-Konnektor"-Funktion als Platzhalter (Stub). Jede Funktion soll die passenden Parameter (Keywords, Länderkürzel) akzeptieren und klar kommentiert sein, wie die finale Implementierung auszusehen hat.
+
+Allgemeine Konnektoren:
+
+fetch_open_food_facts(keywords)
+
+fetch_pubmed_articles(keywords)
+
+fetch_google_trends(keywords)
+
+AI Deep Research Konnektoren:
+
+fetch_perplexity_ai(keywords)
+
+fetch_gemini_ai(keywords)
+
+Länderspezifische Konnektoren (Funktionen sollen Ländercode als Parameter erhalten, wo sinnvoll):
+
+fetch_eurostat_data(keywords, country_code) (für EU-Länder)
+
+fetch_usda_data(keywords) (USA)
+
+fetch_genesis_data(keywords) (DE)
+
+fetch_ons_data(keywords) (UK)
+
+fetch_statcan_data(keywords) (CA)
+
+fetch_insee_data(keywords) (FR)
+
+fetch_bfs_data(keywords) (CH)
+
+fetch_abs_data(keywords) (AU)
+
+fetch_estat_data(keywords) (JP)
+
+fetch_statsnz_data(keywords) (NZ)
+
+fetch_cbs_nl_data(keywords) (NL)
+
+fetch_statistik_at_data(keywords) (AT)
+
+fetch_ine_es_data(keywords) (SP)
+
+fetch_istat_data(keywords) (IT)
+
+fetch_dst_dk_data(keywords) (DK)
+
+fetch_stat_fi_data(keywords) (FI)
+
+fetch_ssb_no_data(keywords) (NO)
+
+fetch_scb_se_data(keywords) (SE)
+
+fetch_gus_pl_data(keywords) (PL)
+
+fetch_czso_data(keywords) (CZ)
+
+fetch_ksh_hu_data(keywords) (HU)
+
+fetch_stat_ee_data(keywords) (EE)
+
+fetch_kosis_kr_data(keywords) (KR)
+
+fetch_singstat_data(keywords) (SG)
+
+fetch_mospi_in_data(keywords) (IN)
+
+fetch_bps_id_data(keywords) (ID)
+
+fetch_ibge_br_data(keywords) (BR)
+
+fetch_inegi_mx_data(keywords) (MX)
+
+fetch_ine_cl_data(keywords) (CL)
+
+fetch_dane_co_data(keywords) (CO)
+
+fetch_stats_sa_data(keywords) (ZA)
+
+fetch_knbs_ke_data(keywords) (KE)
+
+fetch_cbs_il_data(keywords) (IL)
+
+fetch_tuik_tr_data(keywords) (TR)
+
+Hinweis: Gib in den Kommentaren an, dass API-Schlüssel und sensible Zugangsdaten über Replit Secrets verwaltet werden müssen.
+
+b) KI-Analyse mit OpenAI:
+Erstelle eine Funktion analyze_data_with_openai(raw_data: dict).
+
+Diese Funktion nimmt die gesammelten Daten aller Konnektoren entgegen.
+
+Sie formatiert die Daten für einen API-Aufruf an das OpenAI gpt-4o Modell.
+
+System-Prompt für die OpenAI-Analyse (wichtig!):
+
+Du bist ein Experte für Marktforschung und Trendanalyse in der Lebensmittelindustrie mit dem Spezialgebiet Cerealien und Frühstücksprodukte. Deine Aufgabe ist es, die folgenden Rohdaten (wissenschaftliche Abstracts, Suchtrends, Produktdaten, statistische Erhebungen aus verschiedenen Ländern) zu analysieren. Identifiziere und synthetisiere daraus die wichtigsten globalen und regionalen Trends. Strukturiere deine Ausgabe ausschließlich als JSON-Objekt mit den folgenden drei Hauptschlüsseln: 'verbrauchertrends', 'konsumtrends', 'innovationstrends'. Jeder Schlüssel soll eine Liste von prägnant formulierten Trendaussagen (Strings) enthalten. Gib nur das JSON-Objekt zurück, ohne einleitenden oder abschließenden Text.
+
+Die Funktion soll das von OpenAI zurückgegebene JSON-Objekt parsen und zurückgeben.
+
+c) API-Endpunkt:
+Modifiziere die Haupt-Backend-Datei (z.B. main.py), um einen neuen API-Endpunkt /api/generate-trend-report zu erstellen.
+
+Methode: POST.
+
+Request-Body (JSON): { "keywords": [], "topic": "...", "products": [], "countries": [] }.
+
+Der Endpunkt ruft fetch_all_data und anschließend analyze_data_with_openai auf.
+
+Bei Erfolg gibt er den von OpenAI generierten Report als JSON mit dem Statuscode 200 zurück.
+
+Implementiere eine saubere Fehlerbehandlung.
+
+Schritt 3.2: Frontend (Anpassung der bestehenden "Food Trends"-Seite)
+Modifiziere die relevanten HTML- und JavaScript-Dateien der "Food Trends"-Seite.
+
+a) UI-Anpassungen (HTML):
+
+Füge einen neuen Button mit der ID create-report-btn und dem Text "Create your own trend report" direkt neben der existierenden Suchleiste ein.
+
+Füge am Ende des <body>-Tags die HTML-Struktur für ein Modal-Fenster (Pop-up) mit der ID create-report-modal hinzu. Dieses Modal sollte standardmäßig per CSS (display: none;) ausgeblendet sein.
+
+Inhalt des Modals:
+
+Ein Titel, z.B. "Create a New Trend Report".
+
+Ein Formular mit folgenden Feldern:
+
+Text-Input für "Keywords" (id="keywords-input").
+
+Textarea für "Topic / Description" (id="topic-input").
+
+Text-Input für "Products" (id="products-input").
+
+Ein Multi-Select-Feld oder eine Checkbox-Gruppe für "Countries" (id="countries-select"), das alle Zielländer auflistet.
+
+Ein "Generate Report"-Button (id="submit-report-btn") und ein "Cancel"-Button, um das Modal zu schließen.
+
+Ein Lade-Indikator (Spinner) innerhalb des Modals, der standardmäßig versteckt ist.
+
+b) Interaktivität (JavaScript):
+Modifiziere die zugehörige JavaScript-Datei.
+
+Modal-Logik:
+
+Ein Event-Listener auf #create-report-btn zeigt das Modal an (display: flex; oder block;).
+
+Ein Event-Listener auf den "Cancel"-Button (und ggf. auf den Modal-Hintergrund) schließt das Modal.
+
+API-Aufruf-Logik:
+
+Füge einen Event-Listener zum #submit-report-btn hinzu.
+
+Bei Klick:
+
+Sammle die Daten aus allen Formularfeldern im Modal.
+
+Zeige den Lade-Indikator im Modal an, deaktiviere den Submit-Button.
+
+Sende eine fetch-Anfrage (POST) an /api/generate-trend-report mit den gesammelten Daten.
+
+Erfolgsfall:
+
+Parse die JSON-Antwort.
+
+Rufe eine (ggf. neu zu erstellende) Funktion prependNewReport(reportData) auf. Diese Funktion muss die Logik enthalten, um aus den Report-Daten ein neues HTML-Element zu erstellen (im selben Format wie die bestehenden Reports) und es an den Anfang der Report-Liste (.trend-report-container o.ä.) einzufügen.
+
+Schließe das Modal und setze das Formular zurück.
+
+Verstecke den Lade-Indikator.
+
+Fehlerfall:
+
+Zeige eine Fehlermeldung innerhalb des Modals an.
+
+Verstecke den Lade-Indikator und reaktiviere den Submit-Button.
+
+4. Zusammenfassende Checkliste
+[ ] Backend-Logik ist in einer neuen Datei trend_report_generator.py gekapselt.
+
+[ ] Für alle spezifizierten Datenbanken wurden Konnektor-Funktionen als Stubs angelegt.
+
+[ ] Bestehende Frontend-Dateien wurden minimalinvasiv angepasst, um Button und Modal zu integrieren.
+
+[ ] Das Modal ist voll funktionsfähig (öffnen, schließen, Formular-Interaktion).
+
+[ ] Der API-Call vom Frontend sendet alle neuen Felder (Keywords, Länder etc.).
+
+[ ] Nach erfolgreicher Generierung wird der neue Report dynamisch zur bestehenden Ansicht hinzugefügt.
+
+[ ] Lade- und Fehlerzustände werden dem Nutzer klar kommuniziert.
