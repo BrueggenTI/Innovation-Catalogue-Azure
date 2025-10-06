@@ -902,7 +902,7 @@ def fetch_tuik_tr_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
-def fetch_all_data(keywords: List[str], countries: List[str], products: List[str] = None) -> Dict[str, Any]:
+def fetch_all_data(keywords: List[str], countries: List[str], products: List[str] = []) -> Dict[str, Any]:
     """
     Main orchestration function to fetch data from all relevant sources.
     

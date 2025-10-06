@@ -1392,6 +1392,71 @@ def get_trend_details(trend_id):
             'error': 'Failed to fetch trend details.'
         }), 500
 
+@app.route('/api/generate-trend-report', methods=['POST'])
+@csrf.exempt
+@login_required
+def generate_trend_report():
+    """API endpoint for generating custom trend reports using multi-source data and AI analysis"""
+    try:
+        from trend_report_generator import fetch_all_data, analyze_data_with_openai
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        keywords = data.get('keywords', [])
+        topic = data.get('topic', '').strip()
+        products = data.get('products', [])
+        countries = data.get('countries', [])
+        
+        if isinstance(keywords, str):
+            keywords = [k.strip() for k in keywords.split(',') if k.strip()]
+        if isinstance(products, str):
+            products = [p.strip() for p in products.split(',') if p.strip()]
+        if isinstance(countries, str):
+            countries = [c.strip() for c in countries.split(',') if c.strip()]
+        
+        if not keywords:
+            return jsonify({'success': False, 'error': 'Keywords are required'}), 400
+        
+        if not countries:
+            countries = ['DE']
+        
+        raw_data = fetch_all_data(keywords, countries, products)
+        
+        report = analyze_data_with_openai(raw_data, topic)
+        
+        if 'error' in report:
+            logging.error(f"OpenAI analysis error: {report.get('error')}")
+        
+        response_data = {
+            'success': True,
+            'report': report,
+            'keywords': keywords,
+            'topic': topic,
+            'products': products,
+            'countries': countries,
+            'metadata': {
+                'generated_at': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'data_sources_count': (
+                    len(raw_data.get('general_sources', [])) +
+                    len(raw_data.get('ai_research', [])) +
+                    len(raw_data.get('country_specific', []))
+                )
+            }
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logging.error(f"Generate trend report error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': 'Failed to generate trend report. Please try again.'
+        }), 500
+
 @app.route('/api/generate-image', methods=['POST'])
 @csrf.exempt
 @login_required
