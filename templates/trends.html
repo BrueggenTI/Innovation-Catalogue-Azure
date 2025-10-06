@@ -40,6 +40,9 @@
                         <button class="btn btn-primary" type="button" id="createTrendIcon" title="Create Your Own Trend" data-bs-toggle="modal" data-bs-target="#uploadTrendModal">
                             <i class="fas fa-plus me-1"></i>Create
                         </button>
+                        <button class="btn btn-success" type="button" id="createReportBtn" title="Create your own trend report" data-bs-toggle="modal" data-bs-target="#customReportModal">
+                            <i class="fas fa-chart-line me-1"></i>Generate Report
+                        </button>
                     </div>
                     <!-- Search Results Dropdown -->
                     <div class="search-results" id="trendsSearchResults" style="display: none;">
@@ -415,6 +418,110 @@
                 <a href="{{ url_for('cocreation') }}?trend=6" class="btn btn-apply-trend rounded-pill">
                     <i class="fas fa-plus me-2"></i>Trend Anwenden
                 </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Trend Report Modal -->
+<div class="modal fade" id="customReportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-chart-line me-2"></i>Create a New Trend Report
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">
+                    Generate a comprehensive trend report by specifying your research parameters. 
+                    Our AI will analyze data from multiple sources including scientific databases, market statistics, and consumer insights.
+                </p>
+                
+                <form id="customReportForm">
+                    <!-- Keywords Input -->
+                    <div class="mb-4">
+                        <label for="keywords-input" class="form-label fw-semibold">
+                            <i class="fas fa-key me-2 text-primary"></i>Keywords
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="keywords-input" 
+                               placeholder="e.g., organic oats, plant-based protein, gluten-free" 
+                               required>
+                        <small class="form-text text-muted">Enter comma-separated keywords for your trend analysis</small>
+                    </div>
+                    
+                    <!-- Topic/Description -->
+                    <div class="mb-4">
+                        <label for="topic-input" class="form-label fw-semibold">
+                            <i class="fas fa-align-left me-2 text-primary"></i>Topic / Description
+                        </label>
+                        <textarea class="form-control" id="topic-input" rows="3" 
+                                  placeholder="Describe the focus of your trend analysis..."></textarea>
+                        <small class="form-text text-muted">Optional: Provide additional context for more targeted insights</small>
+                    </div>
+                    
+                    <!-- Products Input -->
+                    <div class="mb-4">
+                        <label for="products-input" class="form-label fw-semibold">
+                            <i class="fas fa-box me-2 text-primary"></i>Product Categories
+                        </label>
+                        <input type="text" class="form-control" id="products-input" 
+                               placeholder="e.g., breakfast cereals, granola bars, muesli">
+                        <small class="form-text text-muted">Specify product categories to focus the analysis</small>
+                    </div>
+                    
+                    <!-- Countries Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-globe me-2 text-primary"></i>Target Countries
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="countries-grid" style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem;">
+                            <div class="row g-2">
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="DE" id="country-de" checked><label class="form-check-label" for="country-de">🇩🇪 Germany</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="USA" id="country-usa"><label class="form-check-label" for="country-usa">🇺🇸 USA</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="UK" id="country-uk"><label class="form-check-label" for="country-uk">🇬🇧 UK</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="FR" id="country-fr"><label class="form-check-label" for="country-fr">🇫🇷 France</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="IT" id="country-it"><label class="form-check-label" for="country-it">🇮🇹 Italy</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="ES" id="country-es"><label class="form-check-label" for="country-es">🇪🇸 Spain</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="NL" id="country-nl"><label class="form-check-label" for="country-nl">🇳🇱 Netherlands</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="CH" id="country-ch"><label class="form-check-label" for="country-ch">🇨🇭 Switzerland</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="AT" id="country-at"><label class="form-check-label" for="country-at">🇦🇹 Austria</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="CA" id="country-ca"><label class="form-check-label" for="country-ca">🇨🇦 Canada</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="AU" id="country-au"><label class="form-check-label" for="country-au">🇦🇺 Australia</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="JP" id="country-jp"><label class="form-check-label" for="country-jp">🇯🇵 Japan</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="KR" id="country-kr"><label class="form-check-label" for="country-kr">🇰🇷 South Korea</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="SG" id="country-sg"><label class="form-check-label" for="country-sg">🇸🇬 Singapore</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="BR" id="country-br"><label class="form-check-label" for="country-br">🇧🇷 Brazil</label></div></div>
+                                <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" value="MX" id="country-mx"><label class="form-check-label" for="country-mx">🇲🇽 Mexico</label></div></div>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Select one or more countries for market-specific data</small>
+                    </div>
+                    
+                    <!-- Loading Indicator -->
+                    <div class="text-center py-3" id="reportLoadingIndicator" style="display: none;">
+                        <div class="spinner-border text-success mb-2" role="status"></div>
+                        <p class="text-muted mb-0">Analyzing data from multiple sources...</p>
+                        <small class="text-muted">This may take a few moments</small>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div class="alert alert-danger" id="reportErrorMessage" style="display: none;" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span id="reportErrorText"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelReportBtn">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-success" id="submit-report-btn">
+                    <i class="fas fa-magic me-2"></i>Generate Report
+                </button>
             </div>
         </div>
     </div>
