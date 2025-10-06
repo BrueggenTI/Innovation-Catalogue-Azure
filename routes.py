@@ -1392,15 +1392,15 @@ def get_trend_details(trend_id):
             'error': 'Failed to fetch trend details.'
         }), 500
 
-@app.route('/api/generate-trend-report', methods=['POST'])
+@app.route('/api/generate-trend-report-stream', methods=['POST'])
 @csrf.exempt
 @login_required
-def generate_trend_report():
-    """API endpoint for generating custom trend reports using multi-source data and AI analysis"""
+def generate_trend_report_stream():
+    """SSE endpoint for generating custom trend reports with real-time progress updates"""
+    from trend_report_generator import generate_report_with_streaming
+    from flask import Response
+    
     try:
-        from trend_report_generator import fetch_all_data, analyze_data_with_openai, generate_trend_report_pdf
-        from models import Trend
-        
         data = request.get_json()
         if not data:
             return jsonify({'success': False, 'error': 'No data provided'}), 400
@@ -1423,22 +1423,53 @@ def generate_trend_report():
         if not countries:
             countries = ['DE']
         
-        raw_data = fetch_all_data(keywords, countries, products)
+        def event_stream():
+            for event_data in generate_report_with_streaming(keywords, countries, products, topic):
+                yield f"data: {event_data}\n\n"
         
-        report = analyze_data_with_openai(raw_data, topic, keywords, products, countries)
+        return Response(event_stream(), mimetype='text/event-stream', headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        })
         
-        if 'error' in report:
-            logging.error(f"OpenAI analysis error: {report.get('error')}")
+    except Exception as e:
+        logging.error(f"Generate trend report stream error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': 'Failed to generate trend report. Please try again.'
+        }), 500
+
+@app.route('/api/publish-trend-report', methods=['POST'])
+@csrf.exempt
+@login_required
+def publish_trend_report():
+    """Publish a generated trend report to the database"""
+    try:
+        from models import Trend
         
-        pdf_path = generate_trend_report_pdf(report, keywords, countries)
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        report_data = data.get('report', {})
+        key_facts = data.get('key_facts', [])
+        pdf_path = data.get('pdf_path', '')
+        
+        # Create trend card description from key facts
+        if key_facts and len(key_facts) >= 2:
+            card_description = f"Key Facts: {key_facts[0]} | {key_facts[1]}"
+        else:
+            card_description = report_data.get('description', '')[:200]
         
         new_trend = Trend(
-            title=report.get('title', 'Custom Trend Report'),
+            title=report_data.get('title', 'Custom Trend Report'),
             category='innovation',
             report_type='produktentwicklung',
-            description=report.get('description', ''),
-            market_data=report.get('market_data', ''),
-            consumer_insights=report.get('consumer_insights', ''),
+            description=card_description,
+            market_data=report_data.get('market_data', ''),
+            consumer_insights=report_data.get('consumer_insights', ''),
             image_url=None,
             pdf_path=pdf_path
         )
@@ -1446,37 +1477,19 @@ def generate_trend_report():
         db.session.add(new_trend)
         db.session.commit()
         
-        response_data = {
+        return jsonify({
             'success': True,
             'trend_id': new_trend.id,
-            'title': new_trend.title,
-            'description': new_trend.description,
-            'market_data': new_trend.market_data,
-            'consumer_insights': new_trend.consumer_insights,
-            'pdf_path': new_trend.pdf_path,
-            'category': new_trend.category,
-            'report_type': new_trend.report_type,
-            'keywords': keywords,
-            'countries': countries,
-            'metadata': {
-                'generated_at': time.strftime('%Y-%m-%d %H:%M:%S'),
-                'data_sources_count': (
-                    len(raw_data.get('general_sources', [])) +
-                    len(raw_data.get('ai_research', [])) +
-                    len(raw_data.get('country_specific', []))
-                )
-            }
-        }
-        
-        return jsonify(response_data)
+            'message': 'Trend report successfully published!'
+        })
         
     except Exception as e:
-        logging.error(f"Generate trend report error: {str(e)}")
+        logging.error(f"Publish trend report error: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({
             'success': False,
-            'error': 'Failed to generate trend report. Please try again.'
+            'error': 'Failed to publish trend report. Please try again.'
         }), 500
 
 @app.route('/api/generate-image', methods=['POST'])

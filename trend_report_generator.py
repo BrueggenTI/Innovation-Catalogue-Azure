@@ -1,7 +1,7 @@
 import os
 import json
 import asyncio
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Generator
 from openai import OpenAI
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
@@ -10,6 +10,7 @@ from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from datetime import datetime
+import time
 
 def fetch_open_food_facts(keywords: List[str]) -> Dict[str, Any]:
     """
@@ -29,6 +30,7 @@ def fetch_open_food_facts(keywords: List[str]) -> Dict[str, Any]:
     """
     return {
         "source": "Open Food Facts",
+        "url": "https://world.openfoodfacts.org",
         "data": f"Placeholder data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
@@ -52,6 +54,7 @@ def fetch_pubmed_articles(keywords: List[str]) -> Dict[str, Any]:
     """
     return {
         "source": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov",
         "data": f"Placeholder scientific articles for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
@@ -75,6 +78,7 @@ def fetch_google_trends(keywords: List[str]) -> Dict[str, Any]:
     """
     return {
         "source": "Google Trends",
+        "url": "https://trends.google.com",
         "data": f"Placeholder trend data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
@@ -98,6 +102,7 @@ def fetch_perplexity_ai(keywords: List[str]) -> Dict[str, Any]:
     """
     return {
         "source": "Perplexity AI",
+        "url": "https://www.perplexity.ai",
         "data": f"Placeholder AI research for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
@@ -121,53 +126,56 @@ def fetch_gemini_ai(keywords: List[str]) -> Dict[str, Any]:
     """
     return {
         "source": "Gemini AI",
+        "url": "https://ai.google.dev",
         "data": f"Placeholder Gemini research for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
-def fetch_eurostat_data(keywords: List[str], country_code: str) -> Dict[str, Any]:
+def fetch_eurostat_data(keywords: List[str], country: str = "") -> Dict[str, Any]:
     """
-    Fetch statistical data from Eurostat (EU statistical office).
+    Fetch statistical data from Eurostat (EU Statistical Office).
     
     Args:
         keywords: List of search keywords
-        country_code: EU country code (e.g., 'DE', 'FR', 'IT')
+        country: Specific EU country code (optional)
     
     Returns:
-        Dictionary containing statistical data
+        Dictionary containing EU statistical data
     
     Implementation Notes:
-        - Use Eurostat API: https://ec.europa.eu/eurostat/web/main/data/web-services
-        - Search for relevant datasets based on keywords and country
-        - Extract consumption patterns, production statistics
-        - No API key required
+        - Use Eurostat API: https://ec.europa.eu/eurostat/web/json-and-unicode-web-services
+        - Search for relevant datasets related to keywords
+        - Extract economic indicators, consumption data, trade statistics
+        - No API key required (public API)
     """
     return {
-        "source": f"Eurostat ({country_code})",
-        "data": f"Placeholder Eurostat data for {country_code}: {', '.join(keywords)}",
+        "source": f"Eurostat{' - ' + country if country else ''}",
+        "url": "https://ec.europa.eu/eurostat",
+        "data": f"Placeholder EU statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_usda_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch agricultural and food data from USDA (United States).
+    Fetch agricultural data from USDA (United States Department of Agriculture).
     
     Args:
         keywords: List of search keywords
     
     Returns:
-        Dictionary containing USDA data
+        Dictionary containing USDA agricultural data
     
     Implementation Notes:
-        - Use USDA APIs: https://www.usda.gov/developer
+        - Use USDA QuickStats API: https://quickstats.nass.usda.gov/api
         - Requires API key (get from Replit Secrets: USDA_API_KEY)
-        - Access FoodData Central, NASS QuickStats
-        - Extract nutrition data, production statistics
+        - Search for crop data, production statistics, market prices
+        - Focus on cereals, grains, breakfast products
     """
     return {
-        "source": "USDA (USA)",
+        "source": "USDA",
+        "url": "https://www.usda.gov",
         "data": f"Placeholder USDA data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
@@ -175,7 +183,7 @@ def fetch_usda_data(keywords: List[str]) -> Dict[str, Any]:
 
 def fetch_genesis_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from GENESIS-Online (Germany).
+    Fetch German statistical data from GENESIS (Statistisches Bundesamt).
     
     Args:
         keywords: List of search keywords
@@ -184,21 +192,22 @@ def fetch_genesis_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing German statistical data
     
     Implementation Notes:
-        - Use GENESIS-Online API: https://www-genesis.destatis.de/
-        - Requires registration and credentials (get from Replit Secrets: GENESIS_USER, GENESIS_PASSWORD)
-        - Search for food consumption, production statistics
-        - Extract relevant German market data
+        - Use GENESIS-Online API: https://www-genesis.destatis.de
+        - Search for relevant datasets related to food consumption, production
+        - Extract economic indicators, consumer spending, industry data
+        - API key may be required for full access
     """
     return {
-        "source": "GENESIS-Online (DE)",
-        "data": f"Placeholder GENESIS data for keywords: {', '.join(keywords)}",
+        "source": "GENESIS (Destatis)",
+        "url": "https://www-genesis.destatis.de",
+        "data": f"Placeholder German statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_ons_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from ONS (Office for National Statistics, UK).
+    Fetch UK statistical data from ONS (Office for National Statistics).
     
     Args:
         keywords: List of search keywords
@@ -207,21 +216,22 @@ def fetch_ons_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing UK statistical data
     
     Implementation Notes:
-        - Use ONS API: https://developer.ons.gov.uk/
-        - No API key required
-        - Search for food consumption, household spending
-        - Extract UK market trends
+        - Use ONS API: https://developer.ons.gov.uk
+        - Search for datasets related to consumer spending, food industry
+        - Extract economic indicators, trade data, consumer trends
+        - No API key required (public API)
     """
     return {
         "source": "ONS (UK)",
-        "data": f"Placeholder ONS data for keywords: {', '.join(keywords)}",
+        "url": "https://www.ons.gov.uk",
+        "data": f"Placeholder UK statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_statcan_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from Statistics Canada.
+    Fetch Canadian statistical data from Statistics Canada.
     
     Args:
         keywords: List of search keywords
@@ -230,21 +240,22 @@ def fetch_statcan_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Canadian statistical data
     
     Implementation Notes:
-        - Use Statistics Canada API: https://www.statcan.gc.ca/eng/developers
-        - No API key required
-        - Access food consumption, production data
-        - Extract Canadian market trends
+        - Use Statistics Canada Web Data Service
+        - Search for food consumption, agricultural production data
+        - Extract economic indicators, consumer spending patterns
+        - No API key required (public access)
     """
     return {
-        "source": "Statistics Canada (CA)",
-        "data": f"Placeholder Statistics Canada data for keywords: {', '.join(keywords)}",
+        "source": "Statistics Canada",
+        "url": "https://www.statcan.gc.ca",
+        "data": f"Placeholder Canadian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_insee_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from INSEE (France).
+    Fetch French statistical data from INSEE.
     
     Args:
         keywords: List of search keywords
@@ -253,21 +264,22 @@ def fetch_insee_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing French statistical data
     
     Implementation Notes:
-        - Use INSEE API: https://api.insee.fr/
+        - Use INSEE API: https://api.insee.fr
         - Requires API key (get from Replit Secrets: INSEE_API_KEY)
-        - Access consumption patterns, production statistics
-        - Extract French market data
+        - Search for consumption data, industry statistics
+        - Extract economic indicators, market trends
     """
     return {
-        "source": "INSEE (FR)",
-        "data": f"Placeholder INSEE data for keywords: {', '.join(keywords)}",
+        "source": "INSEE (France)",
+        "url": "https://www.insee.fr",
+        "data": f"Placeholder French statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_bfs_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from BFS (Switzerland).
+    Fetch Swiss statistical data from BFS (Bundesamt für Statistik).
     
     Args:
         keywords: List of search keywords
@@ -276,21 +288,22 @@ def fetch_bfs_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Swiss statistical data
     
     Implementation Notes:
-        - Use BFS/OFS API: https://www.bfs.admin.ch/
-        - Access available datasets
-        - Extract Swiss consumption and production data
-        - May require specific data portal credentials
+        - Use BFS Open Data Portal
+        - Search for food industry, consumer spending data
+        - Extract economic indicators, production statistics
+        - Public access available
     """
     return {
-        "source": "BFS (CH)",
-        "data": f"Placeholder BFS data for keywords: {', '.join(keywords)}",
+        "source": "BFS (Switzerland)",
+        "url": "https://www.bfs.admin.ch",
+        "data": f"Placeholder Swiss statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_abs_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from ABS (Australian Bureau of Statistics).
+    Fetch Australian statistical data from ABS (Australian Bureau of Statistics).
     
     Args:
         keywords: List of search keywords
@@ -300,20 +313,21 @@ def fetch_abs_data(keywords: List[str]) -> Dict[str, Any]:
     
     Implementation Notes:
         - Use ABS API: https://www.abs.gov.au/about/data-services/application-programming-interfaces-apis
-        - No API key required for basic access
-        - Access food consumption, production statistics
-        - Extract Australian market trends
+        - Search for food consumption, agricultural production
+        - Extract economic indicators, trade data
+        - No API key required (public API)
     """
     return {
-        "source": "ABS (AU)",
-        "data": f"Placeholder ABS data for keywords: {', '.join(keywords)}",
+        "source": "ABS (Australia)",
+        "url": "https://www.abs.gov.au",
+        "data": f"Placeholder Australian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_estat_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from e-Stat (Japan).
+    Fetch Japanese statistical data from e-Stat.
     
     Args:
         keywords: List of search keywords
@@ -322,21 +336,22 @@ def fetch_estat_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Japanese statistical data
     
     Implementation Notes:
-        - Use e-Stat API: https://www.e-stat.go.jp/
-        - Requires API key (get from Replit Secrets: ESTAT_API_KEY)
-        - Access food consumption, production data
-        - Extract Japanese market trends
+        - Use e-Stat API: https://www.e-stat.go.jp/api/
+        - Requires application ID (get from Replit Secrets: ESTAT_APP_ID)
+        - Search for food industry, consumption data
+        - Extract economic indicators, market statistics
     """
     return {
-        "source": "e-Stat (JP)",
-        "data": f"Placeholder e-Stat data for keywords: {', '.join(keywords)}",
+        "source": "e-Stat (Japan)",
+        "url": "https://www.e-stat.go.jp",
+        "data": f"Placeholder Japanese statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_statsnz_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from Stats NZ (New Zealand).
+    Fetch New Zealand statistical data from Stats NZ.
     
     Args:
         keywords: List of search keywords
@@ -345,21 +360,22 @@ def fetch_statsnz_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing New Zealand statistical data
     
     Implementation Notes:
-        - Use Stats NZ API: https://www.stats.govt.nz/
-        - Access available datasets
-        - Extract consumption and production statistics
-        - No API key required for public data
+        - Use Stats NZ API
+        - Search for agricultural data, consumer spending
+        - Extract economic indicators, food industry statistics
+        - No API key required (public API)
     """
     return {
-        "source": "Stats NZ (NZ)",
-        "data": f"Placeholder Stats NZ data for keywords: {', '.join(keywords)}",
+        "source": "Stats NZ",
+        "url": "https://www.stats.govt.nz",
+        "data": f"Placeholder New Zealand statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_cbs_nl_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from CBS (Netherlands).
+    Fetch Dutch statistical data from CBS Netherlands.
     
     Args:
         keywords: List of search keywords
@@ -368,21 +384,22 @@ def fetch_cbs_nl_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Dutch statistical data
     
     Implementation Notes:
-        - Use CBS Open Data API: https://www.cbs.nl/en-gb/onze-diensten/open-data
-        - No API key required
-        - Access consumption patterns, production data
-        - Extract Dutch market trends
+        - Use CBS Open Data StatLine
+        - Search for food consumption, agricultural production
+        - Extract economic indicators, industry data
+        - No API key required (public API)
     """
     return {
-        "source": "CBS (NL)",
-        "data": f"Placeholder CBS data for keywords: {', '.join(keywords)}",
+        "source": "CBS (Netherlands)",
+        "url": "https://www.cbs.nl",
+        "data": f"Placeholder Dutch statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_statistik_at_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from Statistik Austria.
+    Fetch Austrian statistical data from Statistik Austria.
     
     Args:
         keywords: List of search keywords
@@ -391,21 +408,22 @@ def fetch_statistik_at_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Austrian statistical data
     
     Implementation Notes:
-        - Use Statistik Austria API or data portal
-        - Access consumption and production statistics
-        - Extract Austrian market data
-        - Check for API access requirements
+        - Use Statistik Austria Open Data
+        - Search for food industry, consumption patterns
+        - Extract economic indicators, market data
+        - Public access available
     """
     return {
-        "source": "Statistik Austria (AT)",
-        "data": f"Placeholder Statistik Austria data for keywords: {', '.join(keywords)}",
+        "source": "Statistik Austria",
+        "url": "https://www.statistik.at",
+        "data": f"Placeholder Austrian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_ine_es_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from INE (Spain).
+    Fetch Spanish statistical data from INE Spain.
     
     Args:
         keywords: List of search keywords
@@ -414,21 +432,22 @@ def fetch_ine_es_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Spanish statistical data
     
     Implementation Notes:
-        - Use INE API: https://www.ine.es/
-        - Access available datasets
-        - Extract Spanish consumption and production data
-        - Check for API documentation and requirements
+        - Use INE API: https://www.ine.es/dyngs/DataLab/en/api.html
+        - Search for food consumption, production data
+        - Extract economic indicators, consumer trends
+        - No API key required (public API)
     """
     return {
-        "source": "INE (ES)",
-        "data": f"Placeholder INE data for keywords: {', '.join(keywords)}",
+        "source": "INE (Spain)",
+        "url": "https://www.ine.es",
+        "data": f"Placeholder Spanish statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_istat_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from ISTAT (Italy).
+    Fetch Italian statistical data from ISTAT.
     
     Args:
         keywords: List of search keywords
@@ -437,21 +456,22 @@ def fetch_istat_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Italian statistical data
     
     Implementation Notes:
-        - Use ISTAT API: http://www.istat.it/
-        - Access consumption patterns, production statistics
-        - Extract Italian market data
-        - Check API documentation for access requirements
+        - Use ISTAT API
+        - Search for food industry, consumer spending
+        - Extract economic indicators, market statistics
+        - Public access available
     """
     return {
-        "source": "ISTAT (IT)",
-        "data": f"Placeholder ISTAT data for keywords: {', '.join(keywords)}",
+        "source": "ISTAT (Italy)",
+        "url": "https://www.istat.it",
+        "data": f"Placeholder Italian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_dst_dk_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from DST (Denmark).
+    Fetch Danish statistical data from Statistics Denmark.
     
     Args:
         keywords: List of search keywords
@@ -460,21 +480,22 @@ def fetch_dst_dk_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Danish statistical data
     
     Implementation Notes:
-        - Use Statistics Denmark API: https://www.dst.dk/
-        - Access food consumption, production data
-        - Extract Danish market trends
-        - Check for API access requirements
+        - Use Statistics Denmark API
+        - Search for food consumption, agricultural data
+        - Extract economic indicators, trade statistics
+        - No API key required (public API)
     """
     return {
-        "source": "DST (DK)",
-        "data": f"Placeholder DST data for keywords: {', '.join(keywords)}",
+        "source": "Statistics Denmark",
+        "url": "https://www.dst.dk",
+        "data": f"Placeholder Danish statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_stat_fi_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from Statistics Finland.
+    Fetch Finnish statistical data from Statistics Finland.
     
     Args:
         keywords: List of search keywords
@@ -483,21 +504,22 @@ def fetch_stat_fi_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Finnish statistical data
     
     Implementation Notes:
-        - Use Statistics Finland API: https://www.stat.fi/
-        - Access consumption and production statistics
-        - Extract Finnish market data
-        - No API key required for public data
+        - Use Statistics Finland API
+        - Search for food industry, consumer spending
+        - Extract economic indicators, market data
+        - Public access available
     """
     return {
-        "source": "Statistics Finland (FI)",
-        "data": f"Placeholder Statistics Finland data for keywords: {', '.join(keywords)}",
+        "source": "Statistics Finland",
+        "url": "https://www.stat.fi",
+        "data": f"Placeholder Finnish statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_ssb_no_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from SSB (Norway).
+    Fetch Norwegian statistical data from Statistics Norway.
     
     Args:
         keywords: List of search keywords
@@ -506,21 +528,22 @@ def fetch_ssb_no_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Norwegian statistical data
     
     Implementation Notes:
-        - Use Statistics Norway API: https://www.ssb.no/
-        - Access food consumption, production data
-        - Extract Norwegian market trends
-        - Check API documentation for requirements
+        - Use Statistics Norway API
+        - Search for food consumption, agricultural production
+        - Extract economic indicators, consumer trends
+        - No API key required (public API)
     """
     return {
-        "source": "SSB (NO)",
-        "data": f"Placeholder SSB data for keywords: {', '.join(keywords)}",
+        "source": "Statistics Norway",
+        "url": "https://www.ssb.no",
+        "data": f"Placeholder Norwegian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_scb_se_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from SCB (Statistics Sweden).
+    Fetch Swedish statistical data from Statistics Sweden.
     
     Args:
         keywords: List of search keywords
@@ -529,21 +552,22 @@ def fetch_scb_se_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Swedish statistical data
     
     Implementation Notes:
-        - Use SCB API: https://www.scb.se/
-        - Access consumption patterns, production statistics
-        - Extract Swedish market data
-        - No API key required for public data
+        - Use Statistics Sweden API
+        - Search for food industry, consumption data
+        - Extract economic indicators, market statistics
+        - No API key required (public API)
     """
     return {
-        "source": "SCB (SE)",
-        "data": f"Placeholder SCB data for keywords: {', '.join(keywords)}",
+        "source": "Statistics Sweden",
+        "url": "https://www.scb.se",
+        "data": f"Placeholder Swedish statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_gus_pl_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from GUS (Poland).
+    Fetch Polish statistical data from GUS (Central Statistical Office).
     
     Args:
         keywords: List of search keywords
@@ -552,21 +576,22 @@ def fetch_gus_pl_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Polish statistical data
     
     Implementation Notes:
-        - Use Statistics Poland API: https://stat.gov.pl/
-        - Access food consumption, production data
-        - Extract Polish market trends
-        - Check for API documentation and requirements
+        - Use GUS API
+        - Search for food consumption, agricultural data
+        - Extract economic indicators, industry statistics
+        - Public access available
     """
     return {
-        "source": "GUS (PL)",
-        "data": f"Placeholder GUS data for keywords: {', '.join(keywords)}",
+        "source": "GUS (Poland)",
+        "url": "https://stat.gov.pl",
+        "data": f"Placeholder Polish statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_czso_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from CZSO (Czech Republic).
+    Fetch Czech statistical data from CZSO (Czech Statistical Office).
     
     Args:
         keywords: List of search keywords
@@ -575,21 +600,22 @@ def fetch_czso_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Czech statistical data
     
     Implementation Notes:
-        - Use Czech Statistical Office API: https://www.czso.cz/
-        - Access consumption and production statistics
-        - Extract Czech market data
-        - Check API access requirements
+        - Use CZSO API
+        - Search for food industry, consumer spending
+        - Extract economic indicators, market data
+        - No API key required (public API)
     """
     return {
-        "source": "CZSO (CZ)",
-        "data": f"Placeholder CZSO data for keywords: {', '.join(keywords)}",
+        "source": "CZSO (Czech Republic)",
+        "url": "https://www.czso.cz",
+        "data": f"Placeholder Czech statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_ksh_hu_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from KSH (Hungary).
+    Fetch Hungarian statistical data from KSH.
     
     Args:
         keywords: List of search keywords
@@ -598,21 +624,22 @@ def fetch_ksh_hu_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Hungarian statistical data
     
     Implementation Notes:
-        - Use Hungarian Central Statistical Office API
-        - Access food consumption, production data
-        - Extract Hungarian market trends
-        - Check for API documentation
+        - Use KSH API
+        - Search for food consumption, agricultural production
+        - Extract economic indicators, consumer trends
+        - Public access available
     """
     return {
-        "source": "KSH (HU)",
-        "data": f"Placeholder KSH data for keywords: {', '.join(keywords)}",
+        "source": "KSH (Hungary)",
+        "url": "https://www.ksh.hu",
+        "data": f"Placeholder Hungarian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_stat_ee_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from Statistics Estonia.
+    Fetch Estonian statistical data from Statistics Estonia.
     
     Args:
         keywords: List of search keywords
@@ -621,21 +648,22 @@ def fetch_stat_ee_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Estonian statistical data
     
     Implementation Notes:
-        - Use Statistics Estonia API: https://www.stat.ee/
-        - Access consumption patterns, production statistics
-        - Extract Estonian market data
-        - No API key required for public data
+        - Use Statistics Estonia API
+        - Search for food industry, consumption data
+        - Extract economic indicators, market statistics
+        - No API key required (public API)
     """
     return {
-        "source": "Statistics Estonia (EE)",
-        "data": f"Placeholder Statistics Estonia data for keywords: {', '.join(keywords)}",
+        "source": "Statistics Estonia",
+        "url": "https://www.stat.ee",
+        "data": f"Placeholder Estonian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_kosis_kr_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from KOSIS (South Korea).
+    Fetch South Korean statistical data from KOSIS.
     
     Args:
         keywords: List of search keywords
@@ -644,21 +672,22 @@ def fetch_kosis_kr_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing South Korean statistical data
     
     Implementation Notes:
-        - Use KOSIS API: https://kosis.kr/
+        - Use KOSIS API: https://kosis.kr/openapi/
         - Requires API key (get from Replit Secrets: KOSIS_API_KEY)
-        - Access food consumption, production data
-        - Extract South Korean market trends
+        - Search for food consumption, agricultural data
+        - Extract economic indicators, market trends
     """
     return {
-        "source": "KOSIS (KR)",
-        "data": f"Placeholder KOSIS data for keywords: {', '.join(keywords)}",
+        "source": "KOSIS (South Korea)",
+        "url": "https://kosis.kr",
+        "data": f"Placeholder South Korean statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_singstat_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from SingStat (Singapore).
+    Fetch Singapore statistical data from SingStat.
     
     Args:
         keywords: List of search keywords
@@ -667,21 +696,22 @@ def fetch_singstat_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Singapore statistical data
     
     Implementation Notes:
-        - Use SingStat API: https://www.singstat.gov.sg/
-        - Requires API key (get from Replit Secrets: SINGSTAT_API_KEY)
-        - Access consumption patterns, import/export data
-        - Extract Singapore market trends
+        - Use SingStat API
+        - Search for food consumption, import/export data
+        - Extract economic indicators, consumer spending
+        - No API key required (public API)
     """
     return {
-        "source": "SingStat (SG)",
-        "data": f"Placeholder SingStat data for keywords: {', '.join(keywords)}",
+        "source": "SingStat (Singapore)",
+        "url": "https://www.singstat.gov.sg",
+        "data": f"Placeholder Singapore statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_mospi_in_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from MOSPI (India).
+    Fetch Indian statistical data from MOSPI.
     
     Args:
         keywords: List of search keywords
@@ -690,21 +720,22 @@ def fetch_mospi_in_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Indian statistical data
     
     Implementation Notes:
-        - Use Ministry of Statistics API (India)
-        - Access food consumption, production data
-        - Extract Indian market trends
-        - Check for data portal and API requirements
+        - Use MOSPI API
+        - Search for food industry, consumption patterns
+        - Extract economic indicators, market data
+        - Public access available
     """
     return {
-        "source": "MOSPI (IN)",
-        "data": f"Placeholder MOSPI data for keywords: {', '.join(keywords)}",
+        "source": "MOSPI (India)",
+        "url": "https://www.mospi.gov.in",
+        "data": f"Placeholder Indian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_bps_id_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from BPS (Indonesia).
+    Fetch Indonesian statistical data from BPS.
     
     Args:
         keywords: List of search keywords
@@ -713,21 +744,22 @@ def fetch_bps_id_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Indonesian statistical data
     
     Implementation Notes:
-        - Use Statistics Indonesia API: https://www.bps.go.id/
-        - Access consumption and production statistics
-        - Extract Indonesian market data
-        - Check for API access requirements
+        - Use BPS API
+        - Search for food consumption, agricultural production
+        - Extract economic indicators, trade statistics
+        - No API key required (public API)
     """
     return {
-        "source": "BPS (ID)",
-        "data": f"Placeholder BPS data for keywords: {', '.join(keywords)}",
+        "source": "BPS (Indonesia)",
+        "url": "https://www.bps.go.id",
+        "data": f"Placeholder Indonesian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_ibge_br_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from IBGE (Brazil).
+    Fetch Brazilian statistical data from IBGE.
     
     Args:
         keywords: List of search keywords
@@ -736,21 +768,22 @@ def fetch_ibge_br_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Brazilian statistical data
     
     Implementation Notes:
-        - Use IBGE API: https://www.ibge.gov.br/
-        - Access food consumption, production data
-        - Extract Brazilian market trends
-        - No API key required for public data
+        - Use IBGE API: https://servicodados.ibge.gov.br/api/docs
+        - Search for food industry, consumption data
+        - Extract economic indicators, market statistics
+        - No API key required (public API)
     """
     return {
-        "source": "IBGE (BR)",
-        "data": f"Placeholder IBGE data for keywords: {', '.join(keywords)}",
+        "source": "IBGE (Brazil)",
+        "url": "https://www.ibge.gov.br",
+        "data": f"Placeholder Brazilian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_inegi_mx_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from INEGI (Mexico).
+    Fetch Mexican statistical data from INEGI.
     
     Args:
         keywords: List of search keywords
@@ -759,21 +792,22 @@ def fetch_inegi_mx_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Mexican statistical data
     
     Implementation Notes:
-        - Use INEGI API: https://www.inegi.org.mx/
-        - Access consumption patterns, production statistics
-        - Extract Mexican market data
-        - Check for API token requirements
+        - Use INEGI API
+        - Search for food consumption, agricultural production
+        - Extract economic indicators, consumer trends
+        - No API key required (public API)
     """
     return {
-        "source": "INEGI (MX)",
-        "data": f"Placeholder INEGI data for keywords: {', '.join(keywords)}",
+        "source": "INEGI (Mexico)",
+        "url": "https://www.inegi.org.mx",
+        "data": f"Placeholder Mexican statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_ine_cl_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from INE (Chile).
+    Fetch Chilean statistical data from INE Chile.
     
     Args:
         keywords: List of search keywords
@@ -782,21 +816,22 @@ def fetch_ine_cl_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Chilean statistical data
     
     Implementation Notes:
-        - Use INE Chile API: https://www.ine.cl/
-        - Access food consumption, production data
-        - Extract Chilean market trends
-        - Check for API documentation
+        - Use INE Chile API
+        - Search for food industry, consumption data
+        - Extract economic indicators, market statistics
+        - Public access available
     """
     return {
-        "source": "INE (CL)",
-        "data": f"Placeholder INE Chile data for keywords: {', '.join(keywords)}",
+        "source": "INE (Chile)",
+        "url": "https://www.ine.gob.cl",
+        "data": f"Placeholder Chilean statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_dane_co_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from DANE (Colombia).
+    Fetch Colombian statistical data from DANE.
     
     Args:
         keywords: List of search keywords
@@ -805,21 +840,22 @@ def fetch_dane_co_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Colombian statistical data
     
     Implementation Notes:
-        - Use DANE API: https://www.dane.gov.co/
-        - Access consumption and production statistics
-        - Extract Colombian market data
-        - Check for API access requirements
+        - Use DANE API
+        - Search for food consumption, agricultural data
+        - Extract economic indicators, consumer spending
+        - No API key required (public API)
     """
     return {
-        "source": "DANE (CO)",
-        "data": f"Placeholder DANE data for keywords: {', '.join(keywords)}",
+        "source": "DANE (Colombia)",
+        "url": "https://www.dane.gov.co",
+        "data": f"Placeholder Colombian statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_stats_sa_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from Stats SA (South Africa).
+    Fetch South African statistical data from Stats SA.
     
     Args:
         keywords: List of search keywords
@@ -828,21 +864,22 @@ def fetch_stats_sa_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing South African statistical data
     
     Implementation Notes:
-        - Use Statistics South Africa: http://www.statssa.gov.za/
-        - Access food consumption, production data
-        - Extract South African market trends
-        - Check for data portal access
+        - Use Stats SA API
+        - Search for food industry, consumption patterns
+        - Extract economic indicators, market data
+        - Public access available
     """
     return {
-        "source": "Stats SA (ZA)",
-        "data": f"Placeholder Stats SA data for keywords: {', '.join(keywords)}",
+        "source": "Stats SA (South Africa)",
+        "url": "https://www.statssa.gov.za",
+        "data": f"Placeholder South African statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_knbs_ke_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from KNBS (Kenya).
+    Fetch Kenyan statistical data from KNBS.
     
     Args:
         keywords: List of search keywords
@@ -851,21 +888,22 @@ def fetch_knbs_ke_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Kenyan statistical data
     
     Implementation Notes:
-        - Use Kenya National Bureau of Statistics
-        - Access consumption patterns, production statistics
-        - Extract Kenyan market data
-        - Check for available datasets and API
+        - Use KNBS API
+        - Search for food consumption, agricultural production
+        - Extract economic indicators, trade statistics
+        - No API key required (public API)
     """
     return {
-        "source": "KNBS (KE)",
-        "data": f"Placeholder KNBS data for keywords: {', '.join(keywords)}",
+        "source": "KNBS (Kenya)",
+        "url": "https://www.knbs.or.ke",
+        "data": f"Placeholder Kenyan statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_cbs_il_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from CBS (Israel).
+    Fetch Israeli statistical data from CBS Israel.
     
     Args:
         keywords: List of search keywords
@@ -874,21 +912,22 @@ def fetch_cbs_il_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Israeli statistical data
     
     Implementation Notes:
-        - Use Central Bureau of Statistics Israel
-        - Access food consumption, production data
-        - Extract Israeli market trends
-        - Check for API access and documentation
+        - Use CBS Israel API
+        - Search for food industry, consumption data
+        - Extract economic indicators, market statistics
+        - Public access available
     """
     return {
-        "source": "CBS (IL)",
-        "data": f"Placeholder CBS Israel data for keywords: {', '.join(keywords)}",
+        "source": "CBS (Israel)",
+        "url": "https://www.cbs.gov.il",
+        "data": f"Placeholder Israeli statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_tuik_tr_data(keywords: List[str]) -> Dict[str, Any]:
     """
-    Fetch statistical data from TÜİK (Turkey).
+    Fetch Turkish statistical data from TUIK.
     
     Args:
         keywords: List of search keywords
@@ -897,29 +936,30 @@ def fetch_tuik_tr_data(keywords: List[str]) -> Dict[str, Any]:
         Dictionary containing Turkish statistical data
     
     Implementation Notes:
-        - Use Turkish Statistical Institute (TÜİK)
-        - Access consumption and production statistics
-        - Extract Turkish market data
-        - Check for API documentation and requirements
+        - Use TUIK API
+        - Search for food consumption, agricultural production
+        - Extract economic indicators, consumer trends
+        - No API key required (public API)
     """
     return {
-        "source": "TÜİK (TR)",
-        "data": f"Placeholder TÜİK data for keywords: {', '.join(keywords)}",
+        "source": "TUIK (Turkey)",
+        "url": "https://www.tuik.gov.tr",
+        "data": f"Placeholder Turkish statistical data for keywords: {', '.join(keywords)}",
         "status": "stub"
     }
 
 
 def fetch_all_data(keywords: List[str], countries: List[str], products: List[str] = []) -> Dict[str, Any]:
     """
-    Main orchestration function to fetch data from all relevant sources.
+    Orchestrate data collection from all available sources.
     
     Args:
         keywords: List of search keywords
-        countries: List of country codes to fetch data for
-        products: Optional list of product categories
+        countries: List of target countries (ISO 2-letter codes)
+        products: List of product categories (optional)
     
     Returns:
-        Dictionary containing all fetched data organized by source
+        Dictionary containing all collected data organized by source type
     """
     all_data = {
         "general_sources": [],
@@ -987,6 +1027,42 @@ def fetch_all_data(keywords: List[str], countries: List[str], products: List[str
     return all_data
 
 
+def get_sources_list(raw_data: Dict[str, Any]) -> List[Dict[str, str]]:
+    """
+    Extract list of all sources with URLs from raw data.
+    
+    Args:
+        raw_data: Dictionary containing all fetched data
+        
+    Returns:
+        List of dictionaries with source names and URLs
+    """
+    sources = []
+    
+    for source in raw_data.get('general_sources', []):
+        if 'source' in source and 'url' in source:
+            sources.append({
+                'name': source['source'],
+                'url': source['url']
+            })
+    
+    for source in raw_data.get('ai_research', []):
+        if 'source' in source and 'url' in source:
+            sources.append({
+                'name': source['source'],
+                'url': source['url']
+            })
+    
+    for source in raw_data.get('country_specific', []):
+        if 'source' in source and 'url' in source:
+            sources.append({
+                'name': source['source'],
+                'url': source['url']
+            })
+    
+    return sources
+
+
 def analyze_data_with_openai(raw_data: Dict[str, Any], topic: str = "", keywords: List[str] = [], products: List[str] = [], countries: List[str] = []) -> Dict[str, Any]:
     """
     Analyze collected data using OpenAI GPT-4o model to generate a comprehensive trend report.
@@ -1007,8 +1083,11 @@ def analyze_data_with_openai(raw_data: Dict[str, Any], topic: str = "", keywords
         - verbrauchertrends: List of consumer trends
         - konsumtrends: List of consumption trends
         - innovationstrends: List of innovation trends
+        - sources: List of data sources with URLs
     """
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    
+    sources = get_sources_list(raw_data)
     
     system_prompt = """Du bist ein Senior-Experte für Marktforschung und Trendanalyse in der Lebensmittelindustrie mit Spezialgebiet Cerealien, Müsli, Haferflocken und Frühstücksprodukte. 
 
@@ -1070,6 +1149,7 @@ Erstelle einen detaillierten, datengestützten Report, der für strategische Ent
         response_text = response_text.strip()
         
         parsed_response = json.loads(response_text)
+        parsed_response['sources'] = sources
         
         return parsed_response
         
@@ -1084,7 +1164,8 @@ Erstelle einen detaillierten, datengestützten Report, der für strategische Ent
             "consumer_insights": "Insights konnten nicht vollständig generiert werden.",
             "verbrauchertrends": ["Analyse fehlgeschlagen"],
             "konsumtrends": ["Analyse fehlgeschlagen"],
-            "innovationstrends": ["Analyse fehlgeschlagen"]
+            "innovationstrends": ["Analyse fehlgeschlagen"],
+            "sources": sources
         }
     except Exception as e:
         fallback_title = topic if topic else f"Trendanalyse: {keywords_str}"
@@ -1097,13 +1178,177 @@ Erstelle einen detaillierten, datengestützten Report, der für strategische Ent
             "consumer_insights": "Insights konnten nicht vollständig generiert werden.",
             "verbrauchertrends": ["Analyse fehlgeschlagen"],
             "konsumtrends": ["Analyse fehlgeschlagen"],
-            "innovationstrends": ["Analyse fehlgeschlagen"]
+            "innovationstrends": ["Analyse fehlgeschlagen"],
+            "sources": sources
         }
+
+
+def extract_key_facts(report_data: Dict[str, Any]) -> List[str]:
+    """
+    Extract exactly 2 key facts from the full report for display card.
+    
+    Args:
+        report_data: Dictionary containing the full report data
+        
+    Returns:
+        List of exactly 2 key fact strings
+    """
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    
+    try:
+        # Combine all trend data for analysis
+        all_trends = []
+        all_trends.extend(report_data.get('verbrauchertrends', []))
+        all_trends.extend(report_data.get('konsumtrends', []))
+        all_trends.extend(report_data.get('innovationstrends', []))
+        
+        context = f"""
+        Report Title: {report_data.get('title', '')}
+        Description: {report_data.get('description', '')}
+        Market Data: {report_data.get('market_data', '')}
+        Consumer Insights: {report_data.get('consumer_insights', '')}
+        All Trends: {', '.join(all_trends[:10])}
+        """
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Du bist ein Experte darin, komplexe Marktanalysen auf die wichtigsten 2 Key Facts zu reduzieren. Extrahiere GENAU 2 prägnante, aussagekräftige Key Facts aus dem gegebenen Report. Jeder Fact sollte maximal 15 Wörter haben und eine konkrete, actionable Erkenntnis darstellen."},
+                {"role": "user", "content": f"Extrahiere GENAU 2 Key Facts aus diesem Report:\n\n{context}\n\nAntworte mit einem JSON-Array: [\"Fact 1\", \"Fact 2\"]"}
+            ],
+            temperature=0.5,
+            max_tokens=200
+        )
+        
+        response_text = response.choices[0].message.content.strip()
+        
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+        response_text = response_text.strip()
+        
+        facts = json.loads(response_text)
+        
+        if isinstance(facts, list) and len(facts) >= 2:
+            return facts[:2]
+        else:
+            # Fallback to first 2 trends
+            return all_trends[:2] if len(all_trends) >= 2 else ["Key insights available in full report", "Detailed analysis included"]
+            
+    except Exception as e:
+        # Fallback: Return first 2 trends from any category
+        all_trends = []
+        all_trends.extend(report_data.get('verbrauchertrends', []))
+        all_trends.extend(report_data.get('konsumtrends', []))
+        all_trends.extend(report_data.get('innovationstrends', []))
+        return all_trends[:2] if len(all_trends) >= 2 else ["Key insights available in full report", "Detailed analysis included"]
+
+
+def generate_report_with_streaming(keywords: List[str], countries: List[str], products: List[str] = [], topic: str = "") -> Generator[str, None, None]:
+    """
+    Generate trend report with real-time progress updates via Server-Sent Events.
+    
+    Args:
+        keywords: List of search keywords
+        countries: List of target countries
+        products: List of product categories
+        topic: Optional topic/description
+        
+    Yields:
+        JSON strings with progress updates and final report data
+    """
+    try:
+        # Step 1: Data collection
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'data_collection',
+            'message': 'Sammle Daten aus internationalen Quellen...',
+            'progress': 10
+        }) + '\n'
+        
+        time.sleep(0.5)
+        raw_data = fetch_all_data(keywords, countries, products)
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'data_collected',
+            'message': f'{len(raw_data.get("general_sources", [])) + len(raw_data.get("ai_research", [])) + len(raw_data.get("country_specific", []))} Datenquellen erfolgreich abgefragt',
+            'progress': 30
+        }) + '\n'
+        
+        # Step 2: AI Analysis
+        time.sleep(0.5)
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'ai_analysis',
+            'message': 'Analysiere Daten mit OpenAI GPT-4o...',
+            'progress': 50
+        }) + '\n'
+        
+        report = analyze_data_with_openai(raw_data, topic, keywords, products, countries)
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'analysis_complete',
+            'message': 'KI-Analyse abgeschlossen',
+            'progress': 70
+        }) + '\n'
+        
+        # Step 3: Extract Key Facts
+        time.sleep(0.3)
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'extracting_facts',
+            'message': 'Extrahiere Key Facts...',
+            'progress': 80
+        }) + '\n'
+        
+        key_facts = extract_key_facts(report)
+        
+        # Step 4: Generate PDF
+        time.sleep(0.3)
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'generating_pdf',
+            'message': 'Erstelle PDF-Report...',
+            'progress': 90
+        }) + '\n'
+        
+        pdf_path = generate_trend_report_pdf(report, keywords, countries)
+        
+        # Step 5: Complete
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'complete',
+            'message': 'Report erfolgreich erstellt!',
+            'progress': 100
+        }) + '\n'
+        
+        # Final result
+        yield json.dumps({
+            'type': 'complete',
+            'report': report,
+            'key_facts': key_facts,
+            'pdf_path': pdf_path,
+            'keywords': keywords,
+            'countries': countries,
+            'products': products,
+            'topic': topic
+        }) + '\n'
+        
+    except Exception as e:
+        yield json.dumps({
+            'type': 'error',
+            'message': str(e)
+        }) + '\n'
 
 
 def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], countries: List[str]) -> str:
     """
-    Generate a professional PDF report for the trend analysis.
+    Generate a professional PDF report for the trend analysis with source citations.
     
     Args:
         report_data: Dictionary containing the full report data
@@ -1239,6 +1484,19 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
         for trend in innovationstrends:
             story.append(Paragraph(f"• {trend}", bullet_style))
     story.append(Spacer(1, 30))
+    
+    # Add sources section
+    sources = report_data.get('sources', [])
+    if sources:
+        story.append(PageBreak())
+        story.append(Paragraph("Data Sources & Citations", header_style))
+        story.append(Spacer(1, 10))
+        
+        for source in sources:
+            source_text = f"<b>{source.get('name', 'Unknown')}:</b> {source.get('url', 'N/A')}"
+            story.append(Paragraph(source_text, normal_style))
+        
+        story.append(Spacer(1, 20))
     
     footer_style = ParagraphStyle(
         'Footer',

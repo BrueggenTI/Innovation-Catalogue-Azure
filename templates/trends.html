@@ -1700,7 +1700,9 @@ function highlightTrendsText(text, query) {
     }
 }
 
-// Custom Trend Report Generation Logic
+// Custom Trend Report Generation Logic with Streaming
+let generatedReportData = null;
+
 document.getElementById('submit-report-btn').addEventListener('click', async function() {
     const keywordsInput = document.getElementById('keywords-input').value.trim();
     const topicInput = document.getElementById('topic-input').value.trim();
@@ -1729,10 +1731,13 @@ document.getElementById('submit-report-btn').addEventListener('click', async fun
     
     submitButton.disabled = true;
     cancelButton.disabled = true;
+    loadingIndicator.innerHTML = '<div class="analysis-progress-container"></div>';
     loadingIndicator.style.display = 'block';
     
+    const progressContainer = document.querySelector('.analysis-progress-container');
+    
     try {
-        const response = await fetch('/api/generate-trend-report', {
+        const response = await fetch('/api/generate-trend-report-stream', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1745,29 +1750,245 @@ document.getElementById('submit-report-btn').addEventListener('click', async fun
             })
         });
         
-        const data = await response.json();
-        
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || 'Failed to generate trend report');
+        if (!response.ok) {
+            throw new Error('Failed to start report generation');
         }
         
-        const modal = bootstrap.Modal.getInstance(document.getElementById('customReportModal'));
-        modal.hide();
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
         
-        document.getElementById('customReportForm').reset();
-        document.getElementById('country-de').checked = true;
-        
-        window.location.reload();
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            
+            const lines = buffer.split('\n\n');
+            buffer = lines.pop();
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.substring(6));
+                        
+                        if (data.type === 'progress') {
+                            addProgressStep(progressContainer, data);
+                        } else if (data.type === 'complete') {
+                            generatedReportData = data;
+                            showReportPreview(data);
+                            return;
+                        } else if (data.type === 'error') {
+                            throw new Error(data.message);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing SSE data:', e);
+                    }
+                }
+            }
+        }
         
     } catch (error) {
         console.error('Error generating trend report:', error);
         showReportError(error.message || 'Failed to generate trend report. Please try again.');
-    } finally {
         submitButton.disabled = false;
         cancelButton.disabled = false;
         loadingIndicator.style.display = 'none';
     }
 });
+
+function addProgressStep(container, data) {
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'progress-step';
+    stepDiv.innerHTML = `
+        <div class="progress-step-icon">
+            <i class="fas fa-check-circle text-success"></i>
+        </div>
+        <div class="progress-step-content">
+            <div class="progress-step-title">${data.message}</div>
+            <div class="progress-bar mt-2">
+                <div class="progress-bar-fill" style="width: ${data.progress}%"></div>
+            </div>
+        </div>
+    `;
+    container.appendChild(stepDiv);
+    
+    setTimeout(() => {
+        stepDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 100);
+}
+
+function showReportPreview(data) {
+    const modal = document.getElementById('customReportModal');
+    const modalContent = modal.querySelector('.modal-body');
+    
+    const sources = data.report.sources || [];
+    const sourcesHTML = sources.map(s => 
+        `<li><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></li>`
+    ).join('');
+    
+    modalContent.innerHTML = `
+        <div class="report-preview-container">
+            <div class="alert alert-success mb-4">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Report erfolgreich erstellt!</strong> Überprüfen Sie die Vorschau und veröffentlichen Sie den Report.
+            </div>
+            
+            <div class="report-preview-content">
+                <h3 class="mb-3">${escapeHtml(data.report.title)}</h3>
+                
+                <div class="key-facts-preview mb-4 p-3" style="background: #f8f9fa; border-left: 4px solid #661c31; border-radius: 8px;">
+                    <strong style="color: #661c31;">Key Facts für Trend-Karte:</strong>
+                    <ul class="mt-2 mb-0">
+                        ${data.key_facts.map(fact => `<li>${escapeHtml(fact)}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h5 style="color: #661c31;"><i class="fas fa-info-circle me-2"></i>Executive Summary</h5>
+                    <p>${escapeHtml(data.report.description).substring(0, 300)}...</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h5 style="color: #661c31;"><i class="fas fa-database me-2"></i>Datenquellen</h5>
+                    <ul class="sources-list">
+                        ${sourcesHTML || '<li>Keine Quellen verfügbar</li>'}
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <a href="${data.pdf_path}" target="_blank" class="btn btn-outline-secondary">
+                        <i class="fas fa-file-pdf me-2"></i>PDF Preview
+                    </a>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2 mt-4">
+                <button type="button" class="btn btn-secondary flex-fill" id="cancelPreviewBtn">
+                    <i class="fas fa-times me-2"></i>Abbrechen
+                </button>
+                <button type="button" class="btn btn-primary flex-fill" id="publishReportBtn" style="background: #661c31; border-color: #661c31;">
+                    <i class="fas fa-check me-2"></i>Report veröffentlichen
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('cancelPreviewBtn').addEventListener('click', function() {
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        modalInstance.hide();
+        resetReportModal();
+    });
+    
+    document.getElementById('publishReportBtn').addEventListener('click', async function() {
+        await publishReport(data);
+    });
+}
+
+async function publishReport(data) {
+    const publishBtn = document.getElementById('publishReportBtn');
+    publishBtn.disabled = true;
+    publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Veröffentliche...';
+    
+    try {
+        const response = await fetch('/api/publish-trend-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                report: data.report,
+                key_facts: data.key_facts,
+                pdf_path: data.pdf_path
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to publish report');
+        }
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('customReportModal'));
+        modal.hide();
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+        
+    } catch (error) {
+        console.error('Error publishing report:', error);
+        alert('Fehler beim Veröffentlichen des Reports: ' + error.message);
+        publishBtn.disabled = false;
+        publishBtn.innerHTML = '<i class="fas fa-check me-2"></i>Report veröffentlichen';
+    }
+}
+
+function resetReportModal() {
+    const modal = document.getElementById('customReportModal');
+    const modalBody = modal.querySelector('.modal-body');
+    
+    modalBody.innerHTML = `
+        <form id="customReportForm">
+            <div class="mb-4">
+                <label for="keywords-input" class="form-label fw-semibold">Keywords / Suchbegriffe <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="keywords-input" placeholder="z.B. Protein, Bio, Vegan" required>
+                <div class="form-text">Mehrere Keywords mit Komma trennen</div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="topic-input" class="form-label fw-semibold">Thema / Beschreibung (optional)</label>
+                <textarea class="form-control" id="topic-input" rows="3" placeholder="Optionale Beschreibung des gewünschten Trend-Reports"></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label for="products-input" class="form-label fw-semibold">Produktkategorien (optional)</label>
+                <input type="text" class="form-control" id="products-input" placeholder="z.B. Müsli, Haferflocken, Frühstückscerealien">
+                <div class="form-text">Mehrere Kategorien mit Komma trennen</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Zielmärkte / Länder <span class="text-danger">*</span></label>
+                <div class="countries-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="DE" id="country-de" checked>
+                        <label class="form-check-label" for="country-de">Deutschland</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="USA" id="country-usa">
+                        <label class="form-check-label" for="country-usa">USA</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="UK" id="country-uk">
+                        <label class="form-check-label" for="country-uk">UK</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="FR" id="country-fr">
+                        <label class="form-check-label" for="country-fr">France</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="reportErrorMessage" class="alert alert-danger" style="display: none;">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span id="reportErrorText"></span>
+            </div>
+            
+            <div id="reportLoadingIndicator" style="display: none;">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Generating report...</span>
+                    </div>
+                    <p class="mt-2 mb-0 text-muted">Analysiere Daten und erstelle Report...</p>
+                </div>
+            </div>
+        </form>
+    `;
+    
+    generatedReportData = null;
+    document.getElementById('submit-report-btn').disabled = false;
+    document.getElementById('cancelReportBtn').disabled = false;
+}
 
 function showReportError(message) {
     const errorMessage = document.getElementById('reportErrorMessage');
@@ -2051,3 +2272,102 @@ function escapeHtml(text) {
 
 </style>
 {% endblock %}
+
+/* Real-time Analysis Progress Styling (Perplexity-inspired) */
+.analysis-progress-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.progress-step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.progress-step-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+}
+
+.progress-step-content {
+    flex: 1;
+}
+
+.progress-step-title {
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #661c31 0%, #ff4143 100%);
+    transition: width 0.5s ease-out;
+    border-radius: 4px;
+}
+
+.report-preview-container {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.sources-list {
+    padding-left: 24px;
+    margin-bottom: 0;
+}
+
+.sources-list li {
+    margin-bottom: 8px;
+}
+
+.sources-list a {
+    color: #661c31;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.sources-list a:hover {
+    border-bottom-color: #661c31;
+}
+
+.key-facts-preview ul {
+    list-style-type: disc;
+    padding-left: 24px;
+}
+
+.key-facts-preview li {
+    margin-bottom: 8px;
+    color: #2d3748;
+}
