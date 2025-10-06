@@ -1751,29 +1751,13 @@ document.getElementById('submit-report-btn').addEventListener('click', async fun
             throw new Error(data.error || 'Failed to generate trend report');
         }
         
-        const report = data.report;
-        const keywords = data.keywords;
-        const topic = data.topic || 'Custom Trend Analysis';
-        
-        const trendsContainer = document.querySelector('.trends-section .row');
-        if (!trendsContainer) {
-            throw new Error('Could not find trends container');
-        }
-        
-        const trendCard = createTrendCard(report, topic, keywords);
-        
-        trendsContainer.insertAdjacentHTML('afterbegin', trendCard);
-        
         const modal = bootstrap.Modal.getInstance(document.getElementById('customReportModal'));
         modal.hide();
         
         document.getElementById('customReportForm').reset();
         document.getElementById('country-de').checked = true;
         
-        window.scrollTo({
-            top: document.querySelector('.trends-section').offsetTop - 100,
-            behavior: 'smooth'
-        });
+        window.location.reload();
         
     } catch (error) {
         console.error('Error generating trend report:', error);
@@ -1784,69 +1768,6 @@ document.getElementById('submit-report-btn').addEventListener('click', async fun
         loadingIndicator.style.display = 'none';
     }
 });
-
-function createTrendCard(report, title, keywords) {
-    const verbrauchertrends = report.verbrauchertrends || [];
-    const konsumtrends = report.konsumtrends || [];
-    const innovationstrends = report.innovationstrends || [];
-    
-    const marketData = `Consumer Trends: ${verbrauchertrends.slice(0, 2).join('; ')}`;
-    const consumerInsights = `Key Insights: ${[...konsumtrends, ...innovationstrends].slice(0, 2).join('; ')}`;
-    
-    const description = `Generated analysis for keywords: ${keywords.join(', ')}. This report synthesizes data from multiple international sources to provide comprehensive market insights.`;
-    
-    return `
-        <div class="col-lg-6">
-            <div class="trend-card h-100 border-0 shadow-sm" style="border: 2px solid #10b981;">
-                <div class="trend-image-container">
-                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="trend-category-badge" style="background: #10b981;">
-                        <i class="fas fa-magic me-2"></i>AI Generated
-                    </div>
-                    <div class="trend-report-type-badge trend-report-produktentwicklung">
-                        <i class="fas fa-flask me-2"></i>Custom Report
-                    </div>
-                </div>
-                
-                <div class="card-body p-4">
-                    <h4 class="card-title fw-semibold mb-3" style="color: #1f2937; line-height: 1.4;">${escapeHtml(title)}</h4>
-                    <p class="card-text mb-4" style="color: #6b7280; font-size: 15px; line-height: 1.6;">${escapeHtml(description)}</p>
-                    
-                    <div class="trend-insights mb-4">
-                        <div class="insight-item mb-3 p-3">
-                            <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
-                                <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
-                                    <path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5v12h-2V2h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/>
-                                </svg>Consumer & Market Trends
-                            </div>
-                            <div class="insight-content" style="font-size: 14px; color: #4b5563;">${escapeHtml(marketData)}</div>
-                        </div>
-                        
-                        <div class="insight-item p-3">
-                            <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
-                                <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
-                                    <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
-                                </svg>Innovation & Consumption Insights
-                            </div>
-                            <div class="insight-content" style="font-size: 14px; color: #4b5563;">${escapeHtml(consumerInsights)}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="trend-actions d-flex gap-2">
-                        <button class="btn btn-outline-secondary flex-fill rounded-pill view-full-report-btn" style="border-color: #661c31; color: #661c31; font-weight: 500; padding: 8px 16px; font-size: 14px;">
-                            <i class="fas fa-eye me-2"></i>View Full Report
-                        </button>
-                        <a href="{{ url_for('cocreation') }}" class="btn btn-primary flex-fill rounded-pill" style="background: #ff4143; border-color: #ff4143; font-weight: 500; padding: 8px 16px; font-size: 14px;">
-                            <i class="fas fa-plus me-2"></i>Apply Trend
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
 
 function showReportError(message) {
     const errorMessage = document.getElementById('reportErrorMessage');

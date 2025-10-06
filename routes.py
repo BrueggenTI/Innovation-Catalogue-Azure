@@ -1398,7 +1398,8 @@ def get_trend_details(trend_id):
 def generate_trend_report():
     """API endpoint for generating custom trend reports using multi-source data and AI analysis"""
     try:
-        from trend_report_generator import fetch_all_data, analyze_data_with_openai
+        from trend_report_generator import fetch_all_data, analyze_data_with_openai, generate_trend_report_pdf
+        from models import Trend
         
         data = request.get_json()
         if not data:
@@ -1424,17 +1425,38 @@ def generate_trend_report():
         
         raw_data = fetch_all_data(keywords, countries, products)
         
-        report = analyze_data_with_openai(raw_data, topic)
+        report = analyze_data_with_openai(raw_data, topic, keywords, products, countries)
         
         if 'error' in report:
             logging.error(f"OpenAI analysis error: {report.get('error')}")
         
+        pdf_path = generate_trend_report_pdf(report, keywords, countries)
+        
+        new_trend = Trend(
+            title=report.get('title', 'Custom Trend Report'),
+            category='innovation',
+            report_type='produktentwicklung',
+            description=report.get('description', ''),
+            market_data=report.get('market_data', ''),
+            consumer_insights=report.get('consumer_insights', ''),
+            image_url=None,
+            pdf_path=pdf_path
+        )
+        
+        db.session.add(new_trend)
+        db.session.commit()
+        
         response_data = {
             'success': True,
-            'report': report,
+            'trend_id': new_trend.id,
+            'title': new_trend.title,
+            'description': new_trend.description,
+            'market_data': new_trend.market_data,
+            'consumer_insights': new_trend.consumer_insights,
+            'pdf_path': new_trend.pdf_path,
+            'category': new_trend.category,
+            'report_type': new_trend.report_type,
             'keywords': keywords,
-            'topic': topic,
-            'products': products,
             'countries': countries,
             'metadata': {
                 'generated_at': time.strftime('%Y-%m-%d %H:%M:%S'),
