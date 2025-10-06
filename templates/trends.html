@@ -24,8 +24,13 @@
 <!-- Trends Search Section -->
 <div class="search-section py-3 bg-white border-bottom">
     <div class="container-fluid px-4">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-auto mb-2 mb-lg-0">
+                <button class="btn btn-success" type="button" id="createReportBtn" title="Create your own trend report" data-bs-toggle="modal" data-bs-target="#customReportModal">
+                    <i class="fas fa-chart-line me-1"></i>Generate Report
+                </button>
+            </div>
+            <div class="col-lg-7">
                 <div class="search-container position-relative">
                     <div class="input-group input-group-lg">
                         <span class="input-group-text bg-white border-end-0">
@@ -39,9 +44,6 @@
                         </button>
                         <button class="btn btn-primary" type="button" id="createTrendIcon" title="Create Your Own Trend" data-bs-toggle="modal" data-bs-target="#uploadTrendModal">
                             <i class="fas fa-plus me-1"></i>Create
-                        </button>
-                        <button class="btn btn-success" type="button" id="createReportBtn" title="Create your own trend report" data-bs-toggle="modal" data-bs-target="#customReportModal">
-                            <i class="fas fa-chart-line me-1"></i>Generate Report
                         </button>
                     </div>
                     <!-- Search Results Dropdown -->
