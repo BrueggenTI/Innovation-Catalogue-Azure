@@ -1450,15 +1450,28 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'progress': 5
         }) + '\n'
 
-        # Add flush to ensure message is sent immediately
-        time.sleep(0.1)
-
-        keyword_strategy = create_keyword_strategy({
-            'keywords': keywords,
-            'countries': countries,
-            'products': products,
-            'topic': topic
-        })
+        # Create keyword strategy with immediate progress update
+        try:
+            keyword_strategy = create_keyword_strategy({
+                'keywords': keywords,
+                'countries': countries,
+                'products': products,
+                'topic': topic
+            })
+        except Exception as e:
+            # Fallback to original keywords if strategy creation fails
+            keyword_strategy = {
+                "statistical_databases": keywords,
+                "scientific_sources": keywords,
+                "industry_websites": keywords,
+                "general_search": keywords
+            }
+            yield json.dumps({
+                'type': 'progress',
+                'step': 'strategy_fallback',
+                'message': '⚠️ Keyword-Strategie verwendet Fallback - verwende Original-Keywords',
+                'progress': 8
+            }) + '\n'
 
         # Confirm strategy was created
         yield json.dumps({
@@ -1728,7 +1741,21 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'progress': 55
         }) + '\n'
 
-        report = analyze_data_with_openai(all_data, topic, keywords, products, countries)
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'ai_analyzing',
+            'message': 'GPT-4o verarbeitet Marktdaten, Trends und Consumer Insights...',
+            'progress': 60
+        }) + '\n'
+
+        try:
+            report = analyze_data_with_openai(all_data, topic, keywords, products, countries)
+        except Exception as e:
+            yield json.dumps({
+                'type': 'error',
+                'message': f'KI-Analyse fehlgeschlagen: {str(e)}'
+            }) + '\n'
+            return
 
         yield json.dumps({
             'type': 'progress',
@@ -1746,7 +1773,29 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'progress': 82
         }) + '\n'
 
-        key_facts = extract_key_facts(report)
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'processing_facts',
+            'message': 'GPT-4o analysiert wichtigste Erkenntnisse...',
+            'progress': 85
+        }) + '\n'
+
+        try:
+            key_facts = extract_key_facts(report)
+        except Exception as e:
+            # Fallback to first 2 trends if extraction fails
+            all_trends = []
+            all_trends.extend(report.get('verbrauchertrends', []))
+            all_trends.extend(report.get('konsumtrends', []))
+            all_trends.extend(report.get('innovationstrends', []))
+            key_facts = all_trends[:2] if len(all_trends) >= 2 else ["Key insights available in full report", "Detailed analysis included"]
+            
+            yield json.dumps({
+                'type': 'progress',
+                'step': 'facts_fallback',
+                'message': '⚠️ Key Facts: Verwende Trend-Daten als Fallback',
+                'progress': 87
+            }) + '\n'
 
         yield json.dumps({
             'type': 'progress',
@@ -1764,7 +1813,21 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'progress': 93
         }) + '\n'
 
-        pdf_path = generate_trend_report_pdf(report, keywords, countries)
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'pdf_creating',
+            'message': 'Formatiere Report, füge Quellen hinzu...',
+            'progress': 96
+        }) + '\n'
+
+        try:
+            pdf_path = generate_trend_report_pdf(report, keywords, countries)
+        except Exception as e:
+            yield json.dumps({
+                'type': 'error',
+                'message': f'PDF-Generierung fehlgeschlagen: {str(e)}'
+            }) + '\n'
+            return
 
         # Step 5: Complete
         yield json.dumps({
