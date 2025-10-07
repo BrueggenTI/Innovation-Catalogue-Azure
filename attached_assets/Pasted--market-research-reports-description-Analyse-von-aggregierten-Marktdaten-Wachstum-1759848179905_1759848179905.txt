@@ -1,0 +1,66 @@
+{
+  "market_research_reports": {
+    "description": "Analyse von aggregierten Marktdaten, Wachstumsraten, Marktanteilen und Konsumentendemografien.",
+    "sources": [
+      "Mintel",
+      "Euromonitor International",
+      "NielsenIQ",
+      "Statista Consumer Market Outlook"
+    ],
+    "expected_data_points": 40
+  },
+  "academic_and_scientific_publications": {
+    "description": "Recherche nach wissenschaftlichen Studien zum Konsumverhalten, Ernährungspsychologie und der Wirksamkeit von Inhaltsstoffen.",
+    "sources": [
+      "Google Scholar",
+      "PubMed",
+      "ResearchGate",
+      "ScienceDirect"
+    ],
+    "search_queries": [
+      "consumer behavior protein bar",
+      "healthy muesli trends",
+      "sports nutrition market consumer",
+      "food marketing health claims"
+    ],
+    "expected_data_points": 35
+  },
+  "social_media_and_influencer_analysis": {
+    "description": "Identifikation von Trends, Konsumentenstimmungen und visueller Sprache durch die Analyse von nutzergenerierten Inhalten und Influencer-Marketing.",
+    "sources": [
+      "Instagram",
+      "TikTok",
+      "YouTube",
+      "Fitness-Blogs"
+    ],
+    "hashtags_to_track": [
+      "#proteinbar",
+      "#highprotein",
+      "#eiweissriegel",
+      "#gesundesmüsli",
+      "#fitnessfood",
+      "#gymlife",
+      "#healthylifestyle"
+    ],
+    "expected_data_points": 100
+  },
+  "consumer_reviews_and_forums": {
+    "description": "Sammlung von direktem Konsumentenfeedback zu spezifischen Produkten, Geschmacksrichtungen und Kaufmotivationen.",
+    "sources": [
+      "Amazon Produktrezensionen",
+      "Online-Shop-Bewertungen (z.B. Foodspring, MyMuesli)",
+      "Fitness-Foren (z.B. Team-Andro)"
+    ],
+    "expected_data_points": 60
+  },
+  "industry_and_trade_publications": {
+    "description": "Erfassung von Branchennachrichten, neuen Produkteinführungen, Experteninterviews und regulatorischen Änderungen.",
+    "sources": [
+      "Lebensmittel Zeitung",
+      "FoodNavigator",
+      "Rundschau für den Lebensmittelhandel",
+      "The Grocer"
+    ],
+    "expected_data_points": 30
+  }
+}

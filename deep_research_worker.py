@@ -372,17 +372,47 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
 def generate_research_plan(description: str, keywords: List[str], categories: List[str]) -> Dict:
     """Generiert einen detaillierten Research-Plan, den der Nutzer bestätigen kann"""
     
-    system_instruction = """Du bist ein Experte für Food-Trend-Forschung und erstellst detaillierte Research-Pläne.
+    # Erstelle Liste aller verfügbaren Datenquellen
+    available_sources = {
+        "general": [s['name'] for s in DATA_SOURCES['general']],
+        "ai_deep_research": [s['name'] for s in DATA_SOURCES['ai_deep_research']],
+        "statistical_dbs": list(DATA_SOURCES['statistical_dbs'].keys()),
+        "industry_websites": [s['name'] for s in DATA_SOURCES['industry_websites']]
+    }
     
-    Erstelle einen umfassenden Plan mit:
-    1. research_objectives: Die Hauptziele der Research (Array von Strings)
-    2. data_sources_plan: Welche Datenquellen durchsucht werden (gruppiert nach Typ)
-    3. expected_data_points: Wie viele Datenpunkte/Dokumente pro Quelle erwartet werden
-    4. analysis_approach: Wie die Daten analysiert werden
-    5. report_structure: Welche Abschnitte der finale Report haben wird
-    6. estimated_duration: Geschätzte Dauer in Minuten
+    sources_text = f"""
+VERFÜGBARE DATENQUELLEN (NUR DIESE VERWENDEN!):
+
+Allgemeine Quellen:
+- {', '.join(available_sources['general'])}
+
+AI Deep Research APIs:
+- {', '.join(available_sources['ai_deep_research'])}
+
+Statistische Datenbanken (nach Ländercode):
+- {', '.join(available_sources['statistical_dbs'])}
+
+Industry Websites:
+- {', '.join(available_sources['industry_websites'])}
+
+GESAMT: 43 Datenquellen verfügbar!
+"""
     
-    Sei spezifisch und detailliert. Antworte in JSON Format."""
+    system_instruction = f"""Du bist ein Experte für Food-Trend-Forschung und erstellst detaillierte Research-Pläne.
+
+{sources_text}
+
+WICHTIG: Verwende NUR die oben genannten Datenquellen! KEINE anderen Quellen!
+
+Erstelle einen umfassenden Plan mit:
+1. research_objectives: Die Hauptziele der Research (Array von Strings)
+2. data_sources_plan: Welche der VERFÜGBAREN Datenquellen durchsucht werden (gruppiert nach Typ)
+3. expected_data_points: Wie viele Datenpunkte/Dokumente pro Quellentyp erwartet werden
+4. analysis_approach: Wie die Daten analysiert werden
+5. report_structure: Welche Abschnitte der finale Report haben wird
+6. estimated_duration: Geschätzte Dauer in Minuten
+
+Sei spezifisch und detailliert. Antworte in JSON Format."""
     
     user_prompt = f"""Erstelle einen detaillierten Research-Plan für folgende Anfrage:
 
@@ -390,7 +420,7 @@ Beschreibung: {description}
 Keywords: {', '.join(keywords) if keywords else 'keine'}
 Kategorien: {', '.join(categories) if categories else 'keine'}
 
-Plane eine umfassende Recherche mit mindestens 250 Datenpunkten aus verschiedenen Quellen."""
+Plane eine umfassende Recherche mit mindestens 250 Datenpunkten aus den VERFÜGBAREN Datenquellen."""
     
     try:
         logging.info("📋 Generiere Research-Plan mit Gemini 2.5 Pro...")
@@ -410,21 +440,23 @@ Plane eine umfassende Recherche mit mindestens 250 Datenpunkten aus verschiedene
         
     except Exception as e:
         logging.error(f"Plan generation error: {e}")
-        # Fallback plan
+        # Fallback plan mit ECHTEN verfügbaren Quellen
         return {
             "research_objectives": [
                 f"Analyse von {description}",
-                "Identifikation aktueller Trends",
-                "Erhebung von Marktdaten",
-                "Bewertung von Consumer Insights"
+                "Identifikation aktueller Trends durch wissenschaftliche Publikationen",
+                "Erhebung von Marktdaten aus statistischen Datenbanken",
+                "Sammlung von Industry Insights aus Fachportalen",
+                "KI-gestützte Deep Research für umfassende Analyse"
             ],
             "data_sources_plan": {
-                "scientific": ["PubMed", "Open Food Facts"],
-                "industry": ["NutraIngredients", "Food Ingredients First"],
-                "statistical": ["Eurostat", "USDA"]
+                "general": available_sources['general'],
+                "ai_deep_research": available_sources['ai_deep_research'],
+                "statistical_dbs": ["EU", "USA", "DE", "UK", "FR", "CA"],
+                "industry_websites": available_sources['industry_websites']
             },
-            "expected_data_points": 250,
-            "analysis_approach": "Multi-source synthesis mit KI-gestützter Analyse",
+            "expected_data_points": 300,
+            "analysis_approach": "Multi-source synthesis mit KI-gestützter Analyse über 43 Datenquellen",
             "report_structure": ["Einleitung", "Hauptanalyse", "Marktanalyse", "Consumer Insights", "Zukunftsausblick", "Fazit"],
             "estimated_duration": 5
         }
