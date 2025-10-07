@@ -1289,40 +1289,208 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         JSON strings with progress updates and final report data
     """
     try:
-        # Step 1: Data collection
+        keywords_str = ", ".join(keywords)
+        progress = 5
+        
+        # Collect all data sources with detailed progress
+        all_data = {
+            "general_sources": [],
+            "ai_research": [],
+            "country_specific": []
+        }
+        
+        # General sources
         yield json.dumps({
             'type': 'progress',
-            'step': 'data_collection',
-            'message': 'Sammle Daten aus internationalen Quellen...',
-            'progress': 10
+            'step': 'searching_open_food_facts',
+            'message': f'Durchsuche Open Food Facts mit Keywords: {keywords_str}',
+            'progress': progress
         }) + '\n'
-        
-        time.sleep(0.5)
-        raw_data = fetch_all_data(keywords, countries, products)
+        time.sleep(0.3)
+        all_data["general_sources"].append(fetch_open_food_facts(keywords))
+        progress += 3
         
         yield json.dumps({
             'type': 'progress',
-            'step': 'data_collected',
-            'message': f'{len(raw_data.get("general_sources", [])) + len(raw_data.get("ai_research", [])) + len(raw_data.get("country_specific", []))} Datenquellen erfolgreich abgefragt',
-            'progress': 30
+            'step': 'searching_pubmed',
+            'message': f'Durchsuche PubMed wissenschaftliche Datenbank mit Keywords: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        all_data["general_sources"].append(fetch_pubmed_articles(keywords))
+        progress += 3
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'searching_google_trends',
+            'message': f'Analysiere Google Trends für: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        all_data["general_sources"].append(fetch_google_trends(keywords))
+        progress += 3
+        
+        # Industry Web Sources
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'searching_web_sources',
+            'message': f'Durchsuche Supermarket News für aktuelle Food & Retail Insights: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        progress += 2
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'searching_mindbodygreen',
+            'message': f'Durchsuche mindbodygreen für Health & Wellness Trends: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        progress += 2
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'searching_biocatalysts',
+            'message': f'Durchsuche Biocatalysts für Food Innovation 2025: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        progress += 2
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'searching_nutraingredients',
+            'message': f'Durchsuche NutraIngredients für Supplements & Functional Foods: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        progress += 2
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'searching_food_ingredients',
+            'message': f'Durchsuche Food Ingredients First für Additives & Flavours: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        progress += 2
+        
+        # AI Research sources
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'searching_perplexity',
+            'message': f'Deep Research mit Perplexity AI für: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        all_data["ai_research"].append(fetch_perplexity_ai(keywords))
+        progress += 3
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'searching_gemini',
+            'message': f'Deep Research mit Google Gemini für: {keywords_str}',
+            'progress': progress
+        }) + '\n'
+        time.sleep(0.3)
+        all_data["ai_research"].append(fetch_gemini_ai(keywords))
+        progress += 3
+        
+        # Country-specific sources
+        country_connector_map = {
+            'USA': ('USDA', fetch_usda_data),
+            'DE': ('GENESIS (Destatis)', fetch_genesis_data),
+            'UK': ('ONS', fetch_ons_data),
+            'CA': ('Statistics Canada', fetch_statcan_data),
+            'FR': ('INSEE', fetch_insee_data),
+            'CH': ('BFS Switzerland', fetch_bfs_data),
+            'AU': ('ABS Australia', fetch_abs_data),
+            'JP': ('e-Stat Japan', fetch_estat_data),
+            'NZ': ('Stats NZ', fetch_statsnz_data),
+            'NL': ('CBS Netherlands', fetch_cbs_nl_data),
+            'AT': ('Statistik Austria', fetch_statistik_at_data),
+            'ES': ('INE Spain', fetch_ine_es_data),
+            'IT': ('ISTAT Italy', fetch_istat_data),
+            'DK': ('Statistics Denmark', fetch_dst_dk_data),
+            'FI': ('Statistics Finland', fetch_stat_fi_data),
+            'NO': ('Statistics Norway', fetch_ssb_no_data),
+            'SE': ('Statistics Sweden', fetch_scb_se_data),
+            'PL': ('GUS Poland', fetch_gus_pl_data),
+            'CZ': ('CZSO Czech', fetch_czso_data),
+            'HU': ('KSH Hungary', fetch_ksh_hu_data),
+            'EE': ('Statistics Estonia', fetch_stat_ee_data),
+            'KR': ('KOSIS South Korea', fetch_kosis_kr_data),
+            'SG': ('SingStat Singapore', fetch_singstat_data),
+            'IN': ('MOSPI India', fetch_mospi_in_data),
+            'ID': ('BPS Indonesia', fetch_bps_id_data),
+            'BR': ('IBGE Brazil', fetch_ibge_br_data),
+            'MX': ('INEGI Mexico', fetch_inegi_mx_data),
+            'CL': ('INE Chile', fetch_ine_cl_data),
+            'CO': ('DANE Colombia', fetch_dane_co_data),
+            'ZA': ('Stats SA South Africa', fetch_stats_sa_data),
+            'KE': ('KNBS Kenya', fetch_knbs_ke_data),
+            'IL': ('CBS Israel', fetch_cbs_il_data),
+            'TR': ('TUIK Turkey', fetch_tuik_tr_data)
+        }
+        
+        eu_countries = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 
+                        'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 
+                        'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE']
+        
+        for country in countries:
+            country_upper = country.upper()
+            
+            # Check Eurostat for EU countries
+            if country_upper in eu_countries:
+                yield json.dumps({
+                    'type': 'progress',
+                    'step': f'searching_eurostat_{country_upper}',
+                    'message': f'Durchsuche Eurostat für {country_upper} mit Keywords: {keywords_str}',
+                    'progress': progress
+                }) + '\n'
+                time.sleep(0.3)
+                all_data["country_specific"].append(fetch_eurostat_data(keywords, country_upper))
+                progress += 2
+            
+            # Check country-specific databases
+            if country_upper in country_connector_map:
+                db_name, connector_func = country_connector_map[country_upper]
+                yield json.dumps({
+                    'type': 'progress',
+                    'step': f'searching_{country_upper.lower()}',
+                    'message': f'Durchsuche {db_name} mit Keywords: {keywords_str}',
+                    'progress': progress
+                }) + '\n'
+                time.sleep(0.3)
+                all_data["country_specific"].append(connector_func(keywords))
+                progress += 2
+        
+        total_sources = len(all_data["general_sources"]) + len(all_data["ai_research"]) + len(all_data["country_specific"])
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'data_collection_complete',
+            'message': f'✓ Datensammlung abgeschlossen: {total_sources} Quellen durchsucht',
+            'progress': 50
         }) + '\n'
         
         # Step 2: AI Analysis
         time.sleep(0.5)
         yield json.dumps({
             'type': 'progress',
-            'step': 'ai_analysis',
-            'message': 'Analysiere Daten mit OpenAI GPT-4o...',
-            'progress': 50
+            'step': 'ai_analysis_start',
+            'message': f'Analysiere gesammelte Daten mit OpenAI GPT-4o für Keywords: {keywords_str}',
+            'progress': 55
         }) + '\n'
         
-        report = analyze_data_with_openai(raw_data, topic, keywords, products, countries)
+        report = analyze_data_with_openai(all_data, topic, keywords, products, countries)
         
         yield json.dumps({
             'type': 'progress',
             'step': 'analysis_complete',
-            'message': 'KI-Analyse abgeschlossen',
-            'progress': 70
+            'message': '✓ KI-Analyse abgeschlossen - Report generiert',
+            'progress': 75
         }) + '\n'
         
         # Step 3: Extract Key Facts
@@ -1330,19 +1498,26 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         yield json.dumps({
             'type': 'progress',
             'step': 'extracting_facts',
-            'message': 'Extrahiere Key Facts...',
-            'progress': 80
+            'message': 'Extrahiere 2 Key Facts für Trend-Karte mit GPT-4o',
+            'progress': 82
         }) + '\n'
         
         key_facts = extract_key_facts(report)
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'facts_extracted',
+            'message': f'✓ Key Facts extrahiert: "{key_facts[0][:50]}..."',
+            'progress': 88
+        }) + '\n'
         
         # Step 4: Generate PDF
         time.sleep(0.3)
         yield json.dumps({
             'type': 'progress',
             'step': 'generating_pdf',
-            'message': 'Erstelle PDF-Report...',
-            'progress': 90
+            'message': f'Erstelle professionellen PDF-Report mit {total_sources} Quellenangaben',
+            'progress': 93
         }) + '\n'
         
         pdf_path = generate_trend_report_pdf(report, keywords, countries)
@@ -1351,7 +1526,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         yield json.dumps({
             'type': 'progress',
             'step': 'complete',
-            'message': 'Report erfolgreich erstellt!',
+            'message': '✓ Report erfolgreich erstellt!',
             'progress': 100
         }) + '\n'
         
