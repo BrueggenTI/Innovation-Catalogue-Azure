@@ -1,0 +1,50 @@
+Klar, hier ist ein umfassender Prompt, den du direkt in Replit (z.B. im Chat mit dem AI-Assistenten) verwenden kannst, um die besprochene Logik generieren zu lassen.
+
+Dieser Prompt ist so detailliert, dass die KI genau versteht, was zu tun ist, inklusive der entscheidenden Anforderung, keine externe Vektordatenbank zu nutzen.
+
+## Prompt für Replit AI
+Du bist ein erfahrener Python-Entwickler. Deine Aufgabe ist es, ein vollständiges und sofort einsetzbares Python-Skript namens research_logic.py für ein Deep Research Tool zu schreiben.
+
+Die zentrale Anforderung ist, dass das Skript keine externe Vektordatenbank wie Pinecone, ChromaDB oder ähnliche Dienste verwenden darf. Stattdessen soll es die semantische Suche für jede Anfrage vollständig im Arbeitsspeicher (in-memory) durchführen.
+
+Das Skript soll den gesamten Rechercheprozess in logische Funktionen unterteilen. Bitte implementiere die folgende Struktur:
+
+1. Planungs-Funktion:
+
+Erstelle eine Funktion create_research_plan(description: str, keywords: List[str]) -> Dict.
+
+Diese Funktion soll die Nutzereingaben an ein OpenAI-Modell (z.B. gpt-4-turbo) senden und es anweisen, einen JSON-Plan mit einer Gliederung (report_outline) und einer zentralen Forschungsfrage (main_question) zu erstellen.
+
+2. Funktionen zur Datenerfassung und -verarbeitung:
+
+Implementiere eine Funktion scrape_urls(urls: List[str]) -> List[Dict], die mit der firecrawl-py-Bibliothek den sauberen Markdown-Inhalt von Webseiten extrahiert.
+
+Erstelle eine Hilfsfunktion chunk_text(text: str) -> List[str], um lange Texte in kleinere Abschnitte zu unterteilen.
+
+Schreibe eine Funktion build_in_memory_knowledge_base(data_sources: List[Dict]) -> List[Dict], die die gesammelten und zerteilten Texte in einer einfachen Liste von Diktionären speichert (z.B. [{'text': '...', 'source': '...'}, ...]).
+
+3. Funktionen für die In-Memory-Analyse (Kernstück):
+
+Dies ist der wichtigste Teil: Erstelle eine Funktion find_relevant_chunks(query: str, knowledge_base: List[Dict], top_k: int = 5) -> str.
+
+Diese Funktion soll:
+
+Ein Embedding für die query erstellen.
+
+Für alle Texte in der knowledge_base ebenfalls Embeddings erstellen.
+
+Mit numpy und scikit-learn die Cosine-Ähnlichkeit zwischen dem Query-Embedding und allen Chunk-Embeddings berechnen.
+
+Die top_k ähnlichsten Text-Chunks identifizieren und als einen einzigen Kontext-String zurückgeben.
+
+Erstelle eine Funktion write_report_section(topic: str, main_question: str, knowledge_base: List[Dict]) -> str. Diese Funktion soll find_relevant_chunks aufrufen, um den relevanten Kontext zu finden, und diesen Kontext dann mittels Retrieval-Augmented Generation (RAG) an ein OpenAI-Modell senden, um einen fertigen Textabschnitt zu verfassen.
+
+4. Funktion zur finalen Berichterstellung:
+
+Implementiere eine Funktion compile_final_report(sections: Dict[str, str], main_question: str) -> str.
+
+Diese Funktion soll die einzelnen geschriebenen Abschnitte nehmen und ein OpenAI-Modell bitten, eine passende Einleitung und ein Fazit zu schreiben sowie alles zu einem kohärenten finalen Bericht im Markdown-Format zusammenzufügen.
+
+5. Orchestrierungs-Funktion:
+
+Bündle den gesamten Ablauf in einer Hauptfunktion run_deep_research_local(...), die alle oben genannten Schritte in der richtigen Reihenfolge aufruft und am Ende den fertigen Bericht als String zurückgibt.

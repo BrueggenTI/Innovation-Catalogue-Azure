@@ -963,16 +963,23 @@ def fetch_all_data(keywords: List[str], countries: List[str], products: List[str
     """
     all_data = {
         "general_sources": [],
-        "ai_research": [],
+        "web_sources": [],
         "country_specific": []
     }
     
+    # 3 General statistical sources
     all_data["general_sources"].append(fetch_open_food_facts(keywords))
     all_data["general_sources"].append(fetch_pubmed_articles(keywords))
     all_data["general_sources"].append(fetch_google_trends(keywords))
     
-    all_data["ai_research"].append(fetch_perplexity_ai(keywords))
-    all_data["ai_research"].append(fetch_gemini_ai(keywords))
+    # 5 Industry-specific web sources (placeholder - actual scraping done by OpenAI)
+    all_data["web_sources"] = [
+        {'name': 'Supermarket News', 'url': 'https://www.supermarketnews.com', 'status': 'referenced'},
+        {'name': 'mindbodygreen', 'url': 'https://www.mindbodygreen.com', 'status': 'referenced'},
+        {'name': 'Biocatalysts', 'url': 'https://www.biocatalysts.com', 'status': 'referenced'},
+        {'name': 'NutraIngredients', 'url': 'https://www.nutraingredients.com', 'status': 'referenced'},
+        {'name': 'Food Ingredients First', 'url': 'https://www.foodingredientsfirst.com', 'status': 'referenced'}
+    ]
     
     country_connector_map = {
         'USA': fetch_usda_data,
@@ -1039,16 +1046,7 @@ def get_sources_list(raw_data: Dict[str, Any]) -> List[Dict[str, str]]:
     """
     sources = []
     
-    # Add industry-specific web sources used for deep research
-    web_sources = [
-        {'name': 'Supermarket News', 'url': 'https://www.supermarketnews.com'},
-        {'name': 'mindbodygreen', 'url': 'https://www.mindbodygreen.com'},
-        {'name': 'Biocatalysts - Ingredient Innovation', 'url': 'https://www.biocatalysts.com'},
-        {'name': 'NutraIngredients', 'url': 'https://www.nutraingredients.com'},
-        {'name': 'Food Ingredients First', 'url': 'https://www.foodingredientsfirst.com'}
-    ]
-    sources.extend(web_sources)
-    
+    # Add general statistical sources
     for source in raw_data.get('general_sources', []):
         if 'source' in source and 'url' in source:
             sources.append({
@@ -1056,13 +1054,15 @@ def get_sources_list(raw_data: Dict[str, Any]) -> List[Dict[str, str]]:
                 'url': source['url']
             })
     
-    for source in raw_data.get('ai_research', []):
-        if 'source' in source and 'url' in source:
+    # Add industry-specific web sources
+    for source in raw_data.get('web_sources', []):
+        if 'name' in source and 'url' in source:
             sources.append({
-                'name': source['source'],
+                'name': source['name'],
                 'url': source['url']
             })
     
+    # Add country-specific statistical sources
     for source in raw_data.get('country_specific', []):
         if 'source' in source and 'url' in source:
             sources.append({
@@ -1295,7 +1295,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         # Collect all data sources with detailed progress
         all_data = {
             "general_sources": [],
-            "ai_research": [],
+            "web_sources": [],
             "country_specific": []
         }
         
@@ -1330,7 +1330,15 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         all_data["general_sources"].append(fetch_google_trends(keywords))
         progress += 3
         
-        # Industry Web Sources
+        # Industry Web Sources (5 spezifische Branchen-Websites)
+        all_data["web_sources"] = [
+            {'name': 'Supermarket News', 'url': 'https://www.supermarketnews.com'},
+            {'name': 'mindbodygreen', 'url': 'https://www.mindbodygreen.com'},
+            {'name': 'Biocatalysts', 'url': 'https://www.biocatalysts.com'},
+            {'name': 'NutraIngredients', 'url': 'https://www.nutraingredients.com'},
+            {'name': 'Food Ingredients First', 'url': 'https://www.foodingredientsfirst.com'}
+        ]
+        
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_web_sources',
@@ -1375,27 +1383,6 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         }) + '\n'
         time.sleep(0.3)
         progress += 2
-        
-        # AI Research sources
-        yield json.dumps({
-            'type': 'progress',
-            'step': 'searching_perplexity',
-            'message': f'Deep Research mit Perplexity AI für: {keywords_str}',
-            'progress': progress
-        }) + '\n'
-        time.sleep(0.3)
-        all_data["ai_research"].append(fetch_perplexity_ai(keywords))
-        progress += 3
-        
-        yield json.dumps({
-            'type': 'progress',
-            'step': 'searching_gemini',
-            'message': f'Deep Research mit Google Gemini für: {keywords_str}',
-            'progress': progress
-        }) + '\n'
-        time.sleep(0.3)
-        all_data["ai_research"].append(fetch_gemini_ai(keywords))
-        progress += 3
         
         # Country-specific sources
         country_connector_map = {
@@ -1466,7 +1453,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                 all_data["country_specific"].append(connector_func(keywords))
                 progress += 2
         
-        total_sources = len(all_data["general_sources"]) + len(all_data["ai_research"]) + len(all_data["country_specific"])
+        total_sources = len(all_data["general_sources"]) + len(all_data["web_sources"]) + len(all_data["country_specific"])
         
         yield json.dumps({
             'type': 'progress',
