@@ -24,8 +24,9 @@
 <!-- Trends Search Section -->
 <div class="search-section py-3 bg-white border-bottom">
     <div class="container-fluid px-4">
-        <div class="row justify-content-center align-items-center">
-            <div class="col-lg-7">
+        <div class="row align-items-center">
+            <!-- Left: Search Bar -->
+            <div class="col-lg-6 col-md-6 mb-2 mb-md-0">
                 <div class="search-container position-relative">
                     <div class="input-group input-group-lg">
                         <span class="input-group-text bg-white border-end-0">
@@ -37,18 +38,22 @@
                         <button class="btn btn-outline-secondary" type="button" id="clearTrendsSearch" style="display: none;">
                             <i class="fas fa-times"></i>
                         </button>
-                        <button class="btn btn-primary" type="button" id="createTrendIcon" title="Create Your Own Trend" data-bs-toggle="modal" data-bs-target="#uploadTrendModal">
-                            <i class="fas fa-plus me-1"></i>Create
-                        </button>
-                        <button class="btn btn-success ms-2" type="button" id="deepResearchBtn" title="Start Deep Research" data-bs-toggle="modal" data-bs-target="#deepResearchModal">
-                            <i class="fas fa-search-plus me-1"></i>Deep Research
-                        </button>
                     </div>
                     <!-- Search Results Dropdown -->
                     <div class="search-results" id="trendsSearchResults" style="display: none;">
                         <!-- Results will be populated here directly (Innovation Catalogue style) -->
                     </div>
                 </div>
+            </div>
+            
+            <!-- Right: Action Buttons -->
+            <div class="col-lg-6 col-md-6 text-end">
+                <button class="btn btn-primary btn-lg" type="button" id="createTrendIcon" title="Create Your Own Trend" data-bs-toggle="modal" data-bs-target="#uploadTrendModal">
+                    <i class="fas fa-plus me-2"></i>Create
+                </button>
+                <button class="btn btn-success btn-lg ms-2" type="button" id="deepResearchBtn" title="Start Deep Research" data-bs-toggle="modal" data-bs-target="#deepResearchModal">
+                    <i class="fas fa-search-plus me-2"></i>Deep Research
+                </button>
             </div>
         </div>
     </div>
