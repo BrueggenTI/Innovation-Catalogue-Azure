@@ -502,8 +502,9 @@ Wähle die relevantesten Datenquellen aus den 43 verfügbaren und füge eigene E
         )
         
         plan = json.loads(response.text)
+        logging.info(f"🔍 DEBUG: Gemini Response: {json.dumps(plan, indent=2, ensure_ascii=False)[:500]}...")
         
-        # Zähle ausgewählte Quellen
+        # Validiere Plan - wenn leer oder ungültig, verwende ALLE Quellen
         automated = plan.get('automated_sources', {})
         recommended = plan.get('recommended_sources', {})
         
@@ -515,6 +516,11 @@ Wähle die relevantesten Datenquellen aus den 43 verfügbaren und füge eigene E
             elif isinstance(sources, dict):
                 auto_count += len(sources)
         
+        # Wenn Plan leer oder zu wenig Quellen: Verwende DEFAULT mit ALLEN Quellen
+        if auto_count < 5:
+            logging.warning(f"⚠️ Gemini-Plan hat nur {auto_count} Quellen - verwende DEFAULT mit ALLEN 43 Quellen")
+            return get_default_research_plan(description, keywords, categories)
+        
         logging.info(f"✓ Research-Plan erstellt: {auto_count} relevante Quellen aus 43 verfügbaren ausgewählt")
         logging.info(f"  💡 {len(recommended)} zusätzliche Quellentypen empfohlen")
         
@@ -522,29 +528,58 @@ Wähle die relevantesten Datenquellen aus den 43 verfügbaren und füge eigene E
         
     except Exception as e:
         logging.error(f"Plan generation error: {e}")
-        # Fallback: Verwende wichtigste Quellen
-        return {
-            "research_objectives": [
-                f"Analyse von {description}",
-                "Identifikation wissenschaftlicher Erkenntnisse",
-                "Erhebung aktueller Marktdaten",
-                "Analyse von Industry Trends"
-            ],
-            "automated_sources": {
-                "general": ["Open Food Facts", "PubMed", "Google Trends"],
-                "ai_deep_research": ["Perplexity API", "Gemini API"],
-                "statistical_dbs": {"EU": "Eurostat", "USA": "USDA FoodData Central", "DE": "GENESIS Datenbank"},
-                "industry_websites": ["NutraIngredients", "Food Ingredients First"]
-            },
-            "recommended_sources": {
-                "social_media": ["Instagram", "TikTok", "YouTube"],
-                "market_research": ["Mintel", "Euromonitor"]
-            },
-            "expected_data_points": 250,
-            "analysis_approach": "Multi-Source-Synthese mit KI-Analyse",
-            "report_structure": ["Einleitung", "Analyse", "Marktdaten", "Trends", "Fazit"],
-            "estimated_duration": 5
-        }
+        logging.info("→ Verwende DEFAULT-Plan mit allen 43 Quellen")
+        return get_default_research_plan(description, keywords, categories)
+
+
+def get_default_research_plan(description: str, keywords: List[str], categories: List[str]) -> Dict:
+    """Erstellt einen Standard-Plan mit ALLEN 43 verfügbaren Quellen"""
+    
+    # Alle verfügbaren Quellen einsammeln
+    all_general = [s['name'] for s in DATA_SOURCES['general']]
+    all_ai = [s['name'] for s in DATA_SOURCES['ai_deep_research']]
+    all_statistical = {code: DATA_SOURCES['statistical_dbs'][code]['name'] 
+                      for code in DATA_SOURCES['statistical_dbs'].keys()}
+    all_industry = [s['name'] for s in DATA_SOURCES['industry_websites']]
+    
+    total_count = len(all_general) + len(all_ai) + len(all_statistical) + len(all_industry)
+    
+    logging.info(f"📋 DEFAULT-Plan: {total_count} Quellen (alle verfügbaren)")
+    
+    return {
+        "research_objectives": [
+            f"Umfassende Analyse: {description}",
+            "Wissenschaftliche Erkenntnisse aus PubMed-Studien",
+            "Produktdaten und Markttrends aus Open Food Facts",
+            "Statistische Daten aus 33 internationalen Datenbanken",
+            "Industry Insights von führenden Fachportalen",
+            "KI-gestützte Deep Research für Zukunftsprognosen"
+        ],
+        "automated_sources": {
+            "general": all_general,
+            "ai_deep_research": all_ai,
+            "statistical_dbs": all_statistical,
+            "industry_websites": all_industry
+        },
+        "recommended_sources": {
+            "social_media_analysis": ["Instagram Food Trends", "TikTok Health Hashtags", "YouTube Nutrition Channels"],
+            "market_research_reports": ["Mintel Food & Drink", "Euromonitor Health & Wellness", "NielsenIQ Consumer Insights"],
+            "consumer_reviews": ["Amazon Product Reviews", "Trustpilot Food Brands", "Reddit r/nutrition", "MyFitnessPal Community"]
+        },
+        "expected_data_points": total_count * 10,
+        "analysis_approach": f"Multi-Source Deep Research: Automatisierte Analyse von {total_count} APIs & Datenbanken kombiniert mit KI-Synthese für umfassende Trendanalyse",
+        "report_structure": [
+            "Executive Summary",
+            "Einleitung & Forschungsfrage",
+            "Wissenschaftliche Grundlagen",
+            "Marktdaten & Statistiken",
+            "Consumer Insights & Verbraucherverhalten",
+            "Industry Trends & Innovationen",
+            "Zukunftsausblick & Prognosen",
+            "Fazit & Handlungsempfehlungen"
+        ],
+        "estimated_duration": 8
+    }
 
 
 def create_research_strategy(description: str, keywords: List[str], categories: List[str]) -> Dict:
