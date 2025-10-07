@@ -1725,13 +1725,18 @@ let generatedReportData = null;
 
 // Initialize Custom Report Generation - must be called after DOM is loaded
 function initializeCustomReportGeneration() {
+    console.log('Initializing Custom Report Generation...');
     const submitReportBtn = document.getElementById('submit-report-btn');
+    console.log('Submit button element:', submitReportBtn);
+    
     if (!submitReportBtn) {
-        console.warn('Submit report button not found');
+        console.error('Submit report button not found! ID: submit-report-btn');
         return;
     }
-
+    
+    console.log('Adding click event listener to submit button...');
     submitReportBtn.addEventListener('click', async function() {
+        console.log('Submit button clicked!');
         const keywordsInput = document.getElementById('keywords-input').value.trim();
         const topicInput = document.getElementById('topic-input').value.trim();
         const productsInput = document.getElementById('products-input').value.trim();
