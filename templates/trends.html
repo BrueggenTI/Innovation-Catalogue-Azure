@@ -1044,11 +1044,18 @@ function showResearchPlan(plan) {
     html += '<button class="btn btn-sm btn-outline-primary mt-2" type="button" onclick="addObjective()"><i class="fas fa-plus me-1"></i>Ziel hinzufügen</button>';
     html += '</div>';
     
-    // Data Sources Plan (Editable - as JSON for simplicity)
+    // Automated Sources (43 APIs - Editable as JSON)
     html += '<div class="mb-4">';
-    html += '<label class="form-label fw-semibold text-primary"><i class="fas fa-database me-2"></i>Geplante Datenquellen</label>';
-    html += '<small class="d-block text-muted mb-2">Bearbeiten Sie die Quellen im JSON-Format</small>';
-    html += `<textarea class="form-control font-monospace" id="dataSourcesInput" rows="4">${JSON.stringify(plan.data_sources_plan || {}, null, 2)}</textarea>`;
+    html += '<label class="form-label fw-semibold text-primary"><i class="fas fa-robot me-2"></i>Automatisierte Datenquellen (43 APIs)</label>';
+    html += '<small class="d-block text-muted mb-2">Diese Quellen werden automatisch durchsucht - Bearbeiten Sie die Quellen im JSON-Format</small>';
+    html += `<textarea class="form-control font-monospace" id="automatedSourcesInput" rows="6">${JSON.stringify(plan.automated_sources || {}, null, 2)}</textarea>`;
+    html += '</div>';
+    
+    // Recommended Sources (Additional - Editable as JSON)
+    html += '<div class="mb-4">';
+    html += '<label class="form-label fw-semibold text-success"><i class="fas fa-lightbulb me-2"></i>Empfohlene Zusatzquellen (Optional)</label>';
+    html += '<small class="d-block text-muted mb-2">Zusätzliche Quellen für manuelle Recherche - Bearbeiten Sie die Quellen im JSON-Format</small>';
+    html += `<textarea class="form-control font-monospace" id="recommendedSourcesInput" rows="4">${JSON.stringify(plan.recommended_sources || {}, null, 2)}</textarea>`;
     html += '</div>';
     
     // Expected Data Points (Editable)
@@ -1142,13 +1149,22 @@ function getEditedPlan() {
         if (value) objectives.push(value);
     });
     
-    // Parse data sources
-    let dataSources = {};
+    // Parse automated sources (43 APIs)
+    let automatedSources = {};
     try {
-        dataSources = JSON.parse(document.getElementById('dataSourcesInput').value);
+        automatedSources = JSON.parse(document.getElementById('automatedSourcesInput').value);
     } catch (e) {
-        console.error('Invalid JSON in data sources:', e);
-        dataSources = currentPlan.data_sources_plan || {};
+        console.error('Invalid JSON in automated sources:', e);
+        automatedSources = currentPlan.automated_sources || {};
+    }
+    
+    // Parse recommended sources (additional)
+    let recommendedSources = {};
+    try {
+        recommendedSources = JSON.parse(document.getElementById('recommendedSourcesInput').value);
+    } catch (e) {
+        console.error('Invalid JSON in recommended sources:', e);
+        recommendedSources = currentPlan.recommended_sources || {};
     }
     
     // Get data points
@@ -1166,7 +1182,8 @@ function getEditedPlan() {
     
     return {
         research_objectives: objectives,
-        data_sources_plan: dataSources,
+        automated_sources: automatedSources,
+        recommended_sources: recommendedSources,
         expected_data_points: dataPoints,
         analysis_approach: analysisApproach,
         report_structure: reportStructure,

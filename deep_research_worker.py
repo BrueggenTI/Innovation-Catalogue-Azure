@@ -439,7 +439,13 @@ Plane eine umfassende Recherche mit mindestens 250 Datenpunkten aus den VERFÜGB
         )
         
         plan = json.loads(response.text)
-        logging.info(f"✓ Research-Plan erstellt: {len(plan.get('data_sources_plan', {}))} Quellentypen")
+        
+        # Zähle Quellentypen (neue Struktur mit automated_sources)
+        automated = plan.get('automated_sources', {})
+        recommended = plan.get('recommended_sources', {})
+        total_types = len(automated) + len(recommended)
+        
+        logging.info(f"✓ Research-Plan erstellt: {len(automated)} automatisierte Quellentypen, {len(recommended)} empfohlene Quellentypen")
         return plan
         
     except Exception as e:
