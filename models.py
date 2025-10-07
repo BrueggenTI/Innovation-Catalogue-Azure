@@ -44,7 +44,7 @@ class ConceptSession(db.Model):
 
 class Trend(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(300), nullable=False)
     category = db.Column(db.String(50), nullable=False)  # health, sustainability, innovation
     report_type = db.Column(db.String(50), nullable=False, default='produktentwicklung')  # produktentwicklung, marktdaten
     description = db.Column(db.Text)

@@ -366,7 +366,7 @@ Die Fußnoten sollen auf die oben genannten Quellen verweisen."""
     
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.0-flash-thinking-exp-01-21",
+            model="gemini-2.0-flash-exp",
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
