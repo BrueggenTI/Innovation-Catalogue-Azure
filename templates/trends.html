@@ -1720,634 +1720,126 @@ function highlightTrendsText(text, query) {
 // Custom Trend Report Generation Logic with Streaming
 let generatedReportData = null;
 
-document.getElementById('submit-report-btn').addEventListener('click', async function() {
-    const keywordsInput = document.getElementById('keywords-input').value.trim();
-    const topicInput = document.getElementById('topic-input').value.trim();
-    const productsInput = document.getElementById('products-input').value.trim();
+// Ensure button exists before adding event listener
+const submitReportBtn = document.getElementById('submit-report-btn');
+if (submitReportBtn) {
+    submitReportBtn.addEventListener('click', async function() {
+        const keywordsInput = document.getElementById('keywords-input').value.trim();
+        const topicInput = document.getElementById('topic-input').value.trim();
+        const productsInput = document.getElementById('products-input').value.trim();
 
-    const selectedCountries = [];
-    document.querySelectorAll('.countries-grid input[type="checkbox"]:checked').forEach(checkbox => {
-        selectedCountries.push(checkbox.value);
-    });
-
-    if (!keywordsInput) {
-        showReportError('Please enter at least one keyword');
-        return;
-    }
-
-    if (selectedCountries.length === 0) {
-        showReportError('Please select at least one country');
-        return;
-    }
-
-    hideReportError();
-
-    const submitButton = document.getElementById('submit-report-btn');
-    const cancelButton = document.getElementById('cancelReportBtn');
-    const loadingIndicator = document.getElementById('reportLoadingIndicator');
-    const liveLogsContainer = document.getElementById('liveLogsContainer'); // Get the logs container
-
-    submitButton.disabled = true;
-    cancelButton.disabled = true;
-    loadingIndicator.style.display = 'block';
-    liveLogsContainer.style.display = 'none'; // Hide logs initially
-    loadingIndicator.innerHTML = `
-        <div class="analysis-progress-container">
-            <div class="research-progress-header mb-3">
-                <h6 class="mb-0 fw-semibold" style="color: #661c31;">
-                    <i class="fas fa-tasks me-2" style="color: #661c31;"></i>Rechercheprozess
-                </h6>
-            </div>
-            <div class="research-progress-list">
-                <div class="progress-phase" id="phase-keyword_strategy" data-status="pending">
-                    <div class="phase-icon">⏳</div>
-                    <div class="phase-content">
-                        <div class="phase-title">Keyword-Strategie erstellen</div>
-                        <div class="phase-details" id="details-keyword_strategy" style="display: none;"></div>
-                    </div>
-                </div>
-                <div class="progress-phase" id="phase-data_collection" data-status="pending">
-                    <div class="phase-icon">⏳</div>
-                    <div class="phase-content">
-                        <div class="phase-title">Datenquellen durchsuchen</div>
-                        <div class="phase-details" id="details-data_collection" style="display: none;"></div>
-                    </div>
-                </div>
-                <div class="progress-phase" id="phase-ai_analysis" data-status="pending">
-                    <div class="phase-icon">⏳</div>
-                    <div class="phase-content">
-                        <div class="phase-title">KI-Analyse durchführen</div>
-                        <div class="phase-details" id="details-ai_analysis" style="display: none;"></div>
-                    </div>
-                </div>
-                <div class="progress-phase" id="phase-extract_facts" data-status="pending">
-                    <div class="phase-icon">⏳</div>
-                    <div class="phase-content">
-                        <div class="phase-title">Key Facts extrahieren</div>
-                        <div class="phase-details" id="details-extract_facts" style="display: none;"></div>
-                    </div>
-                </div>
-                <div class="progress-phase" id="phase-generate_pdf" data-status="pending">
-                    <div class="phase-icon">⏳</div>
-                    <div class="phase-content">
-                        <div class="phase-title">PDF-Report erstellen</div>
-                        <div class="phase-details" id="details-generate_pdf" style="display: none;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="progress-bar-container mt-3">
-                <div class="progress" style="height: 8px; border-radius: 4px;">
-                    <div class="progress-bar bg-success" id="overall-progress-bar" role="progressbar" style="width: 0%; transition: width 0.3s ease; background: #661c31 !important;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <small class="text-muted mt-1 d-block text-end" id="progress-percentage">0%</small>
-            </div>
-        </div>
-    `;
-    const progressContainer = document.querySelector('.analysis-progress-container');
-
-    // Add toggle functionality for logs
-    document.getElementById('toggleLogs').addEventListener('click', function() {
-        const logsContent = document.getElementById('liveLogsContent');
-        const icon = this.querySelector('i');
-        if (logsContent.style.display === 'none' || logsContent.style.display === '') {
-            logsContent.style.display = 'block';
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-up');
-        } else {
-            logsContent.style.display = 'none';
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-        }
-    });
-
-
-    try {
-        const response = await fetch('/api/generate-trend-report-stream', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                keywords: keywordsInput,
-                topic: topicInput,
-                products: productsInput,
-                countries: selectedCountries
-            })
+        const selectedCountries = [];
+        document.querySelectorAll('.countries-grid input[type="checkbox"]:checked').forEach(checkbox => {
+            selectedCountries.push(checkbox.value);
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to start report generation');
+        if (!keywordsInput) {
+            showReportError('Please enter at least one keyword');
+            return;
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-
-            const lines = buffer.split('\n'); // Split by single newline for logs
-            buffer = lines.pop();
-
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.substring(6));
-
-                        if (data.type === 'progress') {
-                            updateProgressStep(data); // Use the new updateProgressStep function
-                            addLogMessage(data.message); // Add log message
-                        } else if (data.type === 'complete') {
-                            generatedReportData = data;
-                            showReportPreview(data);
-                            return;
-                        } else if (data.type === 'error') {
-                            throw new Error(data.message);
-                        }
-                    } catch (e) {
-                        console.error('Error parsing SSE data:', e);
-                        addLogMessage(`Error parsing log data: ${line}`);
-                    }
-                } else if (line.trim() !== '') { // Handle non-data lines as logs
-                    addLogMessage(line);
-                }
-            }
+        if (selectedCountries.length === 0) {
+            showReportError('Please select at least one country');
+            return;
         }
 
-    } catch (error) {
-        console.error('Error generating trend report:', error);
-        showReportError(error.message || 'Failed to generate trend report. Please try again.');
-        submitButton.disabled = false;
-        cancelButton.disabled = false;
-        loadingIndicator.style.display = 'none';
-        liveLogsContainer.style.display = 'block'; // Show logs container on error
-    }
-});
+        hideReportError();
 
-// Function to add log messages to the live log display
-function addLogMessage(message) {
-    const liveLogsContent = document.getElementById('liveLogsContent');
-    if (!liveLogsContent) return;
+        const submitButton = document.getElementById('submit-report-btn');
+        const cancelButton = document.getElementById('cancelReportBtn');
+        const loadingIndicator = document.getElementById('reportLoadingIndicator');
+        const liveLogsContainer = document.getElementById('liveLogsContainer');
 
-    const logElement = document.createElement('div');
-    logElement.textContent = message;
-    liveLogsContent.appendChild(logElement);
+        submitButton.disabled = true;
+        cancelButton.disabled = true;
+        loadingIndicator.style.display = 'block';
+        liveLogsContainer.style.display = 'block'; // Ensure logs container is visible
+        document.getElementById('liveLogsContent').innerHTML = ''; // Clear previous logs
 
-    // Auto-scroll to the bottom
-    liveLogsContent.scrollTop = liveLogsContent.scrollHeight;
-}
+        // Initialize progress steps
+        initializeProgressSteps(loadingIndicator);
 
-
-// Initialize progress steps and update progress
-function initializeProgressSteps(container) {
-    container.innerHTML = `
-        <div class="research-progress-header mb-3">
-            <h6 class="mb-0 fw-semibold" style="color: #661c31;">
-                <i class="fas fa-tasks me-2" style="color: #661c31;"></i>Rechercheprozess
-            </h6>
-        </div>
-        <div class="research-progress-list">
-            <div class="progress-phase" id="phase-keyword_strategy" data-status="pending">
-                <div class="phase-icon">⏳</div>
-                <div class="phase-content">
-                    <div class="phase-title">Keyword-Strategie erstellen</div>
-                    <div class="phase-details" id="details-keyword_strategy" style="display: none;"></div>
-                </div>
-            </div>
-            <div class="progress-phase" id="phase-data_collection" data-status="pending">
-                <div class="phase-icon">⏳</div>
-                <div class="phase-content">
-                    <div class="phase-title">Datenquellen durchsuchen</div>
-                    <div class="phase-details" id="details-data_collection" style="display: none;"></div>
-                </div>
-            </div>
-            <div class="progress-phase" id="phase-ai_analysis" data-status="pending">
-                <div class="phase-icon">⏳</div>
-                <div class="phase-content">
-                    <div class="phase-title">KI-Analyse durchführen</div>
-                    <div class="phase-details" id="details-ai_analysis" style="display: none;"></div>
-                </div>
-            </div>
-            <div class="progress-phase" id="phase-extract_facts" data-status="pending">
-                <div class="phase-icon">⏳</div>
-                <div class="phase-content">
-                    <div class="phase-title">Key Facts extrahieren</div>
-                    <div class="phase-details" id="details-extract_facts" style="display: none;"></div>
-                </div>
-            </div>
-            <div class="progress-phase" id="phase-generate_pdf" data-status="pending">
-                <div class="phase-icon">⏳</div>
-                <div class="phase-content">
-                    <div class="phase-title">PDF-Report erstellen</div>
-                    <div class="phase-details" id="details-generate_pdf" style="display: none;"></div>
-                </div>
-            </div>
-        </div>
-        <div class="progress-bar-container mt-3">
-            <div class="progress" style="height: 8px; border-radius: 4px;">
-                <div class="progress-bar bg-success" id="overall-progress-bar" role="progressbar" style="width: 0%; transition: width 0.3s ease; background: #661c31 !important;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-            <small class="text-muted mt-1 d-block text-end" id="progress-percentage">0%</small>
-        </div>
-    `;
-}
-
-function updateProgressStep(data) {
-    const step = data.step;
-    const message = data.message;
-    const progress = data.progress || 0;
-
-    const progressBar = document.getElementById('overall-progress-bar');
-    const progressPercentage = document.getElementById('progress-percentage');
-    if (progressBar) {
-        progressBar.style.width = progress + '%';
-        progressBar.setAttribute('aria-valuenow', progress);
-    }
-    if (progressPercentage) {
-        progressPercentage.textContent = progress + '%';
-    }
-
-    let phaseId = null;
-    let isComplete = false;
-
-    if (step.includes('_created') || step.includes('_complete') || step.includes('_extracted') ||
-        step === 'complete' || message.startsWith('✓')) {
-        isComplete = true;
-    }
-
-    if (step.includes('creating_keyword') || step.includes('keyword_strategy') || step.includes('displaying_strategy')) {
-        phaseId = 'keyword_strategy';
-    } else if (step.includes('searching') || step.includes('data_collection') || step.includes('durchsuche')) {
-        phaseId = 'data_collection';
-    } else if (step.includes('ai_analysis') || step.includes('analysis')) {
-        phaseId = 'ai_analysis';
-    } else if (step.includes('extracting') || step.includes('facts')) {
-        phaseId = 'extract_facts';
-    } else if (step.includes('generating_pdf') || step.includes('pdf') || step === 'complete') {
-        phaseId = 'generate_pdf';
-    }
-
-    if (!phaseId) return;
-
-    const phaseElement = document.getElementById(`phase-${phaseId}`);
-    const detailsElement = document.getElementById(`details-${phaseId}`);
-
-    if (!phaseElement) return;
-
-    const iconElement = phaseElement.querySelector('.phase-icon');
-    const currentStatus = phaseElement.getAttribute('data-status');
-
-    if (isComplete) {
-        phaseElement.setAttribute('data-status', 'completed');
-        if (iconElement) iconElement.textContent = '✅';
-        phaseElement.classList.remove('in-progress');
-        phaseElement.classList.add('completed');
-        if (detailsElement) {
-            detailsElement.style.display = 'block';
-            detailsElement.innerHTML = `<small class="text-success">${escapeHtml(message)}</small>`;
-        }
-    } else if (currentStatus !== 'completed') {
-        phaseElement.setAttribute('data-status', 'in-progress');
-        if (iconElement) iconElement.textContent = '⏳';
-        phaseElement.classList.remove('completed');
-        phaseElement.classList.add('in-progress');
-        if (detailsElement) {
-            detailsElement.style.display = 'block';
-            if (phaseId === 'data_collection' && currentStatus === 'in-progress') {
-                const existingText = detailsElement.innerHTML;
-                if (existingText && !existingText.includes(message)) {
-                    detailsElement.innerHTML = existingText + `<br><small class="text-muted">${escapeHtml(message)}</small>`;
-                } else if (!existingText) {
-                    detailsElement.innerHTML = `<small class="text-muted">${escapeHtml(message)}</small>`;
-                }
+        // Add toggle functionality for logs
+        document.getElementById('toggleLogs').addEventListener('click', function() {
+            const logsContent = document.getElementById('liveLogsContent');
+            const icon = this.querySelector('i');
+            if (logsContent.style.display === 'none' || logsContent.style.display === '') {
+                logsContent.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
             } else {
-                detailsElement.innerHTML = `<small class="text-muted">${escapeHtml(message)}</small>`;
+                logsContent.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
             }
-        }
-    }
-
-    setTimeout(() => {
-        phaseElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 100);
-}
-
-function showReportPreview(data) {
-    const modal = document.getElementById('customReportModal');
-    const modalBody = modal.querySelector('.modal-body');
-    const loadingIndicator = document.getElementById('reportLoadingIndicator');
-    const liveLogsContainer = document.getElementById('liveLogsContainer');
-
-    loadingIndicator.style.display = 'none'; // Hide loading indicator
-    liveLogsContainer.style.display = 'none'; // Hide logs container
-    modalBody.innerHTML = `
-        <div class="report-preview-container">
-            <div class="alert alert-success mb-4">
-                <i class="fas fa-check-circle me-2"></i>
-                <strong>Report erfolgreich erstellt!</strong> Überprüfen Sie die Vorschau und veröffentlichen Sie den Report.
-            </div>
-
-            <div class="report-preview-content">
-                <h3 class="mb-3">${escapeHtml(data.report.title)}</h3>
-
-                <div class="key-facts-preview mb-4 p-3" style="background: #f8f9fa; border-left: 4px solid #661c31; border-radius: 8px;">
-                    <strong style="color: #661c31;">Key Facts für Trend-Karte:</strong>
-                    <ul class="mt-2 mb-0">
-                        ${data.key_facts.map(fact => `<li>${escapeHtml(fact)}</li>`).join('')}
-                    </ul>
-                </div>
-
-                <div class="mb-4">
-                    <h5 style="color: #661c31;"><i class="fas fa-info-circle me-2"></i>Executive Summary</h5>
-                    <p>${escapeHtml(data.report.description).substring(0, 300)}...</p>
-                </div>
-
-                <div class="mb-4">
-                    <h5 style="color: #661c31;"><i class="fas fa-database me-2"></i>Datenquellen</h5>
-                    <ul class="sources-list">
-                        ${data.report.sources.map(s => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></li>`).join('') || '<li>Keine Quellen verfügbar</li>'}
-                    </ul>
-                </div>
-
-                <div class="mb-4">
-                    <a href="${data.pdf_path}" target="_blank" class="btn btn-outline-secondary">
-                        <i class="fas fa-file-pdf me-2"></i>PDF Preview
-                    </a>
-                </div>
-            </div>
-
-            <div class="d-flex gap-2 mt-4">
-                <button type="button" class="btn btn-secondary flex-fill" id="cancelPreviewBtn">
-                    <i class="fas fa-times me-2"></i>Abbrechen
-                </button>
-                <button type="button" class="btn btn-primary flex-fill" id="publishReportBtn" style="background: #661c31; border-color: #661c31;">
-                    <i class="fas fa-check me-2"></i>Report veröffentlichen
-                </button>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('cancelPreviewBtn').addEventListener('click', function() {
-        const modalInstance = bootstrap.Modal.getInstance(modal);
-        modalInstance.hide();
-        resetReportModal();
-    });
-
-    document.getElementById('publishReportBtn').addEventListener('click', async function() {
-        await publishReport(data);
-    });
-}
-
-async function publishReport(data) {
-    const publishBtn = document.getElementById('publishReportBtn');
-    publishBtn.disabled = true;
-    publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Veröffentliche...';
-
-    try {
-        const response = await fetch('/api/publish-trend-report', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                report: data.report,
-                key_facts: data.key_facts,
-                pdf_path: data.pdf_path
-            })
         });
 
-        const result = await response.json();
+        try {
+            const response = await fetch('/api/generate-trend-report-stream', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    keywords: keywordsInput,
+                    topic: topicInput,
+                    products: productsInput,
+                    countries: selectedCountries
+                })
+            });
 
-        if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Failed to publish report');
-        }
+            if (!response.ok) {
+                throw new Error('Failed to start report generation');
+            }
 
-        const modal = bootstrap.Modal.getInstance(document.getElementById('customReportModal'));
-        modal.hide();
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
 
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
 
-    } catch (error) {
-        console.error('Error publishing report:', error);
-        alert('Fehler beim Veröffentlichen des Reports: ' + error.message);
-        publishBtn.disabled = false;
-        publishBtn.innerHTML = '<i class="fas fa-check me-2"></i>Report veröffentlichen';
-    }
-}
+                buffer += decoder.decode(value, { stream: true });
 
-function resetReportModal() {
-    const modal = document.getElementById('customReportModal');
-    const modalBody = modal.querySelector('.modal-body');
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
 
-    modalBody.innerHTML = `
-        <form id="customReportForm">
-            <div class="mb-4">
-                <label for="keywords-input" class="form-label fw-semibold">Keywords / Suchbegriffe <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="keywords-input" placeholder="z.B. Protein, Bio, Vegan" required>
-                <div class="form-text">Mehrere Keywords mit Komma trennen</div>
-            </div>
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.substring(6));
 
-            <div class="mb-4">
-                <label for="topic-input" class="form-label fw-semibold">Thema / Beschreibung (optional)</label>
-                <textarea class="form-control" id="topic-input" rows="3" placeholder="Optionale Beschreibung des gewünschten Trend-Reports"></textarea>
-            </div>
-
-            <div class="mb-4">
-                <label for="products-input" class="form-label fw-semibold">Produktkategorien (optional)</label>
-                <input type="text" class="form-control" id="products-input" placeholder="z.B. Müsli, Haferflocken, Frühstückscerealien">
-                <div class="form-text">Mehrere Kategorien mit Komma trennen</div>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Zielmärkte / Länder <span class="text-danger">*</span></label>
-                <div class="countries-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="DE" id="country-de" checked>
-                        <label class="form-check-label" for="country-de">Deutschland</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="USA" id="country-usa">
-                        <label class="form-check-label" for="country-usa">USA</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="UK" id="country-uk">
-                        <label class="form-check-label" for="country-uk">UK</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="FR" id="country-fr">
-                        <label class="form-check-label" for="country-fr">France</label>
-                    </div>
-                </div>
-            </div>
-
-            <div id="reportErrorMessage" class="alert alert-danger" style="display: none;">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                <span id="reportErrorText"></span>
-            </div>
-
-            <div id="reportLoadingIndicator" style="display: none;">
-                <div class="text-center py-3">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Generating report...</span>
-                    </div>
-                    <p class="mt-2 mb-0 text-muted">Analysiere Daten und erstelle Report...</p>
-                </div>
-            </div>
-        </form>
-    `;
-
-    generatedReportData = null;
-    document.getElementById('submit-report-btn').disabled = false;
-    document.getElementById('cancelReportBtn').disabled = false;
-}
-
-function showReportError(message) {
-    const errorMessage = document.getElementById('reportErrorMessage');
-    const errorText = document.getElementById('reportErrorText');
-    errorText.textContent = message;
-    errorMessage.style.display = 'block';
-}
-
-function hideReportError() {
-    document.getElementById('reportErrorMessage').style.display = 'none';
-}
-
-// Trends Text Highlighting Function
-function highlightTrendsText(text, query) {
-    try {
-        // Escape special regex characters to prevent injection
-        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(${escapedQuery})`, 'gi');
-        return text.replace(regex, '<span class="search-highlight">$1</span>');
-    } catch (e) {
-        // Fallback if regex fails
-        return text;
-    }
-}
-
-// Custom Trend Report Generation Logic with Streaming
-let generatedReportData = null;
-
-document.getElementById('submit-report-btn').addEventListener('click', async function() {
-    const keywordsInput = document.getElementById('keywords-input').value.trim();
-    const topicInput = document.getElementById('topic-input').value.trim();
-    const productsInput = document.getElementById('products-input').value.trim();
-
-    const selectedCountries = [];
-    document.querySelectorAll('.countries-grid input[type="checkbox"]:checked').forEach(checkbox => {
-        selectedCountries.push(checkbox.value);
-    });
-
-    if (!keywordsInput) {
-        showReportError('Please enter at least one keyword');
-        return;
-    }
-
-    if (selectedCountries.length === 0) {
-        showReportError('Please select at least one country');
-        return;
-    }
-
-    hideReportError();
-
-    const submitButton = document.getElementById('submit-report-btn');
-    const cancelButton = document.getElementById('cancelReportBtn');
-    const loadingIndicator = document.getElementById('reportLoadingIndicator');
-    const liveLogsContainer = document.getElementById('liveLogsContainer');
-
-    submitButton.disabled = true;
-    cancelButton.disabled = true;
-    loadingIndicator.style.display = 'block';
-    liveLogsContainer.style.display = 'block'; // Ensure logs container is visible
-    document.getElementById('liveLogsContent').innerHTML = ''; // Clear previous logs
-
-    // Initialize progress steps
-    initializeProgressSteps(loadingIndicator);
-
-    // Add toggle functionality for logs
-    document.getElementById('toggleLogs').addEventListener('click', function() {
-        const logsContent = document.getElementById('liveLogsContent');
-        const icon = this.querySelector('i');
-        if (logsContent.style.display === 'none' || logsContent.style.display === '') {
-            logsContent.style.display = 'block';
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-up');
-        } else {
-            logsContent.style.display = 'none';
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-        }
-    });
-
-    try {
-        const response = await fetch('/api/generate-trend-report-stream', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                keywords: keywordsInput,
-                topic: topicInput,
-                products: productsInput,
-                countries: selectedCountries
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to start report generation');
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-
-            const lines = buffer.split('\n');
-            buffer = lines.pop();
-
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.substring(6));
-
-                        if (data.type === 'progress') {
-                            updateProgressStep(data);
-                            addLogMessage(data.message);
-                        } else if (data.type === 'complete') {
-                            generatedReportData = data;
-                            showReportPreview(data);
-                            return;
-                        } else if (data.type === 'error') {
-                            throw new Error(data.message);
+                            if (data.type === 'progress') {
+                                updateProgressStep(data);
+                                addLogMessage(data.message);
+                            } else if (data.type === 'complete') {
+                                generatedReportData = data;
+                                showReportPreview(data);
+                                return;
+                            } else if (data.type === 'error') {
+                                throw new Error(data.message);
+                            }
+                        } catch (e) {
+                            console.error('Error parsing SSE data:', e);
+                            addLogMessage(`Error parsing log data: ${line}`);
                         }
-                    } catch (e) {
-                        console.error('Error parsing SSE data:', e);
-                        addLogMessage(`Error parsing log data: ${line}`);
+                    } else if (line.trim() !== '') {
+                        addLogMessage(line);
                     }
-                } else if (line.trim() !== '') {
-                    addLogMessage(line);
                 }
             }
-        }
 
-    } catch (error) {
-        console.error('Error generating trend report:', error);
-        showReportError(error.message || 'Failed to generate trend report. Please try again.');
-        submitButton.disabled = false;
-        cancelButton.disabled = false;
-        loadingIndicator.style.display = 'none';
-        liveLogsContainer.style.display = 'block';
-    }
-});
+        } catch (error) {
+            console.error('Error generating trend report:', error);
+            showReportError(error.message || 'Failed to generate trend report. Please try again.');
+            submitButton.disabled = false;
+            cancelButton.disabled = false;
+            loadingIndicator.style.display = 'none';
+            liveLogsContainer.style.display = 'block';
+        }
+    });
+}
 
 // Function to add log messages to the live log display
 function addLogMessage(message) {
