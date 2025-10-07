@@ -1849,17 +1849,26 @@ function updateProgressStep(data) {
         progressPercentage.textContent = progress + '%';
     }
     
-    // Determine which phase this step belongs to
+    // Determine which phase this step belongs to (more precise matching)
     let phaseId = null;
-    if (step.includes('keyword') || step.includes('strategy')) {
+    let isComplete = false;
+    
+    // Check if step is marked as complete
+    if (step.includes('_created') || step.includes('_complete') || step.includes('_extracted') || 
+        step === 'complete' || message.startsWith('✓')) {
+        isComplete = true;
+    }
+    
+    // Map step to phase
+    if (step.includes('creating_keyword') || step.includes('keyword_strategy') || step.includes('displaying_strategy')) {
         phaseId = 'keyword_strategy';
-    } else if (step.includes('searching') || step.includes('data_collection')) {
+    } else if (step.includes('searching') || step.includes('data_collection') || step.includes('durchsuche')) {
         phaseId = 'data_collection';
     } else if (step.includes('ai_analysis') || step.includes('analysis')) {
         phaseId = 'ai_analysis';
     } else if (step.includes('extracting') || step.includes('facts')) {
         phaseId = 'extract_facts';
-    } else if (step.includes('generating_pdf') || step.includes('pdf')) {
+    } else if (step.includes('generating_pdf') || step.includes('pdf') || step === 'complete') {
         phaseId = 'generate_pdf';
     }
     
@@ -1874,24 +1883,36 @@ function updateProgressStep(data) {
     const iconElement = phaseElement.querySelector('.phase-icon');
     const currentStatus = phaseElement.getAttribute('data-status');
     
-    // If step is complete
-    if (step.includes('complete') || step.includes('created') || step.includes('abgeschlossen') || message.startsWith('✓')) {
+    // If this specific step is complete
+    if (isComplete) {
         phaseElement.setAttribute('data-status', 'completed');
         if (iconElement) iconElement.textContent = '✅';
+        phaseElement.classList.remove('in-progress');
         phaseElement.classList.add('completed');
         if (detailsElement) {
             detailsElement.style.display = 'block';
-            detailsElement.innerHTML = `<small class="text-success">${message}</small>`;
+            detailsElement.innerHTML = `<small class="text-success">${escapeHtml(message)}</small>`;
         }
     } 
-    // If step is in progress
-    else if (currentStatus === 'pending' || currentStatus === 'in-progress') {
+    // If step is in progress (not complete and phase not already completed)
+    else if (currentStatus !== 'completed') {
         phaseElement.setAttribute('data-status', 'in-progress');
         if (iconElement) iconElement.textContent = '⏳';
+        phaseElement.classList.remove('completed');
         phaseElement.classList.add('in-progress');
         if (detailsElement) {
             detailsElement.style.display = 'block';
-            detailsElement.innerHTML = `<small class="text-muted">${message}</small>`;
+            // Append multiple messages for data collection phase
+            if (phaseId === 'data_collection' && currentStatus === 'in-progress') {
+                const existingText = detailsElement.innerHTML;
+                if (existingText && !existingText.includes(message)) {
+                    detailsElement.innerHTML = existingText + `<br><small class="text-muted">${escapeHtml(message)}</small>`;
+                } else if (!existingText) {
+                    detailsElement.innerHTML = `<small class="text-muted">${escapeHtml(message)}</small>`;
+                }
+            } else {
+                detailsElement.innerHTML = `<small class="text-muted">${escapeHtml(message)}</small>`;
+            }
         }
     }
     
