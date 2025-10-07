@@ -32,4 +32,6 @@ dependencies = [
     "pymupdf>=1.26.4",
     "fitz>=0.0.1.dev2",
     "google-genai>=1.41.0",
+    "beautifulsoup4>=4.14.2",
+    "sift-stack-py>=0.9.1",
 ]
