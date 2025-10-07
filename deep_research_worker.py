@@ -372,60 +372,151 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
 def generate_research_plan(description: str, keywords: List[str], categories: List[str]) -> Dict:
     """Generiert einen detaillierten Research-Plan, den der Nutzer bestätigen kann"""
     
-    # Erstelle Liste aller verfügbaren Datenquellen - DIESE WERDEN GARANTIERT VERWENDET
-    available_sources = {
-        "general": [s['name'] for s in DATA_SOURCES['general']],
-        "ai_deep_research": [s['name'] for s in DATA_SOURCES['ai_deep_research']],
-        "statistical_dbs": {
-            country: DATA_SOURCES['statistical_dbs'][country]['name'] 
-            for country in DATA_SOURCES['statistical_dbs'].keys()
-        },
-        "industry_websites": [s['name'] for s in DATA_SOURCES['industry_websites']]
-    }
+    # Detaillierte Beschreibungen aller 43 verfügbaren Datenquellen
+    source_catalog = f"""
+VERFÜGBARE DATENQUELLEN (43 APIs & Datenbanken):
+
+**Allgemeine Quellen (3):**
+1. Open Food Facts - Offene Produktdatenbank mit 2M+ Lebensmitteln, Inhaltsstoffen, Nährwerten, Allergenen
+2. PubMed - Wissenschaftliche Publikationen zu Ernährung, Food Science, Gesundheit (30M+ Artikel)
+3. Google Trends - Suchtrend-Analysen für Consumer Interests und aufkommende Food Trends
+
+**AI Deep Research APIs (2):**
+4. Perplexity API - KI-gestützte Deep Research mit automatischer Quellensuche und Zitation
+5. Gemini API - Google's fortschrittliche KI für umfassende Trendanalyse und Synthese
+
+**Statistische Datenbanken nach Ländern (33):**
+6. Eurostat (EU) - EU-weite Statistiken zu Lebensmittelproduktion, Konsum, Handel
+7. USDA FoodData Central (USA) - US Lebensmitteldatenbank, Nährwerte, Marktdaten
+8. GENESIS Datenbank (DE) - Deutsche Statistiken zu Ernährung, Landwirtschaft, Konsum
+9. Office for National Statistics (UK) - UK Lebensmittel- und Konsumstatistiken
+10. Statistics Canada (CA) - Kanadische Food & Beverage Marktdaten
+11. INSEE API (FR) - Französische Ernährungs- und Konsumstatistiken
+12. Bundesamt für Statistik (CH) - Schweizer Food-Marktdaten
+13. Australian Bureau of Statistics (AU) - Australische Lebensmittelstatistiken
+14. e-Stat (JP) - Japanische Food Industry Daten
+15. Stats NZ (NZ) - Neuseeländische Agrar- und Food-Statistiken
+16. Centraal Bureau voor de Statistiek (NL) - Niederländische Food-Daten
+17. Statistik Austria (AT) - Österreichische Ernährungsstatistiken
+18. Instituto Nacional de Estadística (ES) - Spanische Lebensmittelmarktdaten
+19. Istituto Nazionale di Statistica (IT) - Italienische Food-Statistiken
+20. Statistics Denmark (DK) - Dänische Ernährungs- und Konsumtrends
+21. Statistics Finland (FI) - Finnische Food-Marktanalysen
+22. Statistics Norway (NO) - Norwegische Lebensmittelstatistiken
+23. Statistics Sweden (SE) - Schwedische Food & Beverage Daten
+24. Statistics Poland (PL) - Polnische Ernährungsmarktdaten
+25. Czech Statistical Office (CZ) - Tschechische Lebensmittelstatistiken
+26. Hungarian Central Statistical Office (HU) - Ungarische Food-Daten
+27. Statistics Estonia (EE) - Estnische Ernährungsstatistiken
+28. Korean Statistical Information Service (KR) - Südkoreanische Food-Trends
+29. Singapore Department of Statistics (SG) - Singapur Food-Marktdaten
+30. Ministry of Statistics India (IN) - Indische Ernährungs- und Konsumstatistiken
+31. BPS-Statistics Indonesia (ID) - Indonesische Food-Marktdaten
+32. IBGE Brazil (BR) - Brasilianische Lebensmittelstatistiken
+33. INEGI Mexico (MX) - Mexikanische Food Industry Daten
+34. INE Chile (CL) - Chilenische Ernährungsstatistiken
+35. DANE Colombia (CO) - Kolumbianische Food-Marktdaten
+36. Statistics South Africa (ZA) - Südafrikanische Lebensmittelstatistiken
+37. Kenya National Bureau of Statistics (KE) - Kenianische Food-Daten
+38. Israel Central Bureau of Statistics (IL) - Israelische Ernährungsstatistiken
+39. Turkish Statistical Institute (TR) - Türkische Food-Marktdaten
+
+**Industry & Fachportale (5):**
+40. Supermarket News - Aktuelle News aus Retail, Supermärkten, Food Trends
+41. mindbodygreen - Wellness, gesunde Ernährung, Lifestyle Trends
+42. Biocatalysts - Enzyme, Food Science, Produktinnovationen
+43. NutraIngredients - Functional Food, Supplements, Health Claims
+44. Food Ingredients First - Ingredient Innovation, Produktentwicklung
+
+TOTAL: 43 automatisierte Datenquellen verfügbar!
+"""
     
-    logging.info("📋 Erstelle Research-Plan mit allen 43 verfügbaren Datenquellen...")
+    system_instruction = f"""Du bist ein Experte für Food-Trend-Forschung und erstellst intelligente Research-Pläne.
+
+{source_catalog}
+
+AUFGABE:
+Analysiere die Forschungsanfrage und wähle die RELEVANTESTEN Datenquellen aus den 43 verfügbaren aus.
+Du kannst ZUSÄTZLICH eigene Quellen empfehlen (z.B. Social Media, Marktforschungsberichte).
+
+Erstelle einen umfassenden Plan mit:
+1. research_objectives: Die Hauptziele der Research (Array von Strings, 3-5 Ziele)
+2. automated_sources: Die RELEVANTEN Quellen aus den 43 verfügbaren (nach Typ gruppiert)
+   - Wähle nur die Quellen, die für diese spezifische Anfrage sinnvoll sind!
+   - Format: {{"general": [...], "ai_deep_research": [...], "statistical_dbs": {{"COUNTRY_CODE": "Name", ...}}, "industry_websites": [...]}}
+3. recommended_sources: ZUSÄTZLICHE Quellen, die du empfiehlst (optional, nach Typ gruppiert)
+   - z.B. Social Media, Marktforschung, Consumer Reviews, etc.
+4. expected_data_points: Geschätzte Anzahl Datenpunkte
+5. analysis_approach: Wie die Daten analysiert werden
+6. report_structure: Abschnitte des Reports (Array von Strings)
+7. estimated_duration: Geschätzte Dauer in Minuten
+
+Sei strategisch und zielgerichtet. Antworte in JSON Format."""
     
-    # Berechne erwartete Datenpunkte
-    num_keywords = len(keywords) if keywords else 1
-    total_sources = len(DATA_SOURCES['general']) + len(DATA_SOURCES['ai_deep_research']) + 5 + len(DATA_SOURCES['industry_websites'])
-    expected_points = num_keywords * total_sources * 25
+    user_prompt = f"""Erstelle einen optimalen Research-Plan für:
+
+Beschreibung: {description}
+Keywords: {', '.join(keywords) if keywords else 'keine'}
+Kategorien: {', '.join(categories) if categories else 'keine'}
+
+Wähle die relevantesten Datenquellen aus den 43 verfügbaren und füge eigene Empfehlungen hinzu."""
     
-    # Erstelle Plan direkt mit ALLEN verfügbaren Quellen
-    plan = {
-        "research_objectives": [
-            f"Umfassende Analyse von: {description}",
-            "Identifikation aktueller Trends durch wissenschaftliche Publikationen (PubMed)",
-            "Erhebung von Produktdaten aus Open Food Facts",
-            "Sammlung statistischer Marktdaten aus 33 Länder-Datenbanken",
-            "KI-gestützte Deep Research mit Perplexity & Gemini",
-            "Analyse von Industry News und Fachpublikationen"
-        ],
-        "automated_sources": available_sources,  # ALLE 43 Quellen!
-        "recommended_sources": {
-            "market_research_reports": ["Mintel", "Euromonitor International", "NielsenIQ", "Statista"],
-            "social_media_analysis": ["Instagram Hashtag-Analyse", "TikTok Trend-Tracking", "YouTube Food Channels"],
-            "consumer_reviews": ["Amazon Product Reviews", "Online Shop Bewertungen", "Fitness & Food Foren"]
-        },
-        "expected_data_points": expected_points,
-        "analysis_approach": f"Multi-Source-Synthese: Automatisierte Datensammlung aus {total_sources} APIs & Datenbanken mit anschließender KI-gestützter Analyse und Synthese durch Gemini 2.5 Pro",
-        "report_structure": [
-            "Executive Summary",
-            "Einleitung & Kontext",
-            "Wissenschaftliche Erkenntnisse",
-            "Marktanalyse & Statistiken",
-            "Consumer Insights & Trends",
-            "Industry Entwicklungen",
-            "Zukunftsausblick",
-            "Fazit & Handlungsempfehlungen"
-        ],
-        "estimated_duration": 5
-    }
-    
-    logging.info(f"✓ Research-Plan erstellt mit ALLEN 43 Datenquellen")
-    logging.info(f"  📊 Automatisiert: {len(available_sources['general'])} General + {len(available_sources['ai_deep_research'])} AI + 33 Statistical DBs + {len(available_sources['industry_websites'])} Industry")
-    logging.info(f"  💡 Empfohlen: {len(plan['recommended_sources'])} zusätzliche Quellentypen")
-    
-    return plan
+    try:
+        logging.info("📋 Generiere intelligenten Research-Plan mit Gemini 2.5 Pro...")
+        response = gemini_client.models.generate_content(
+            model="gemini-2.5-pro",
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                response_mime_type="application/json",
+                temperature=0.7
+            )
+        )
+        
+        plan = json.loads(response.text)
+        
+        # Zähle ausgewählte Quellen
+        automated = plan.get('automated_sources', {})
+        recommended = plan.get('recommended_sources', {})
+        
+        # Zähle Quellen in automated_sources
+        auto_count = 0
+        for source_type, sources in automated.items():
+            if isinstance(sources, list):
+                auto_count += len(sources)
+            elif isinstance(sources, dict):
+                auto_count += len(sources)
+        
+        logging.info(f"✓ Research-Plan erstellt: {auto_count} relevante Quellen aus 43 verfügbaren ausgewählt")
+        logging.info(f"  💡 {len(recommended)} zusätzliche Quellentypen empfohlen")
+        
+        return plan
+        
+    except Exception as e:
+        logging.error(f"Plan generation error: {e}")
+        # Fallback: Verwende wichtigste Quellen
+        return {
+            "research_objectives": [
+                f"Analyse von {description}",
+                "Identifikation wissenschaftlicher Erkenntnisse",
+                "Erhebung aktueller Marktdaten",
+                "Analyse von Industry Trends"
+            ],
+            "automated_sources": {
+                "general": ["Open Food Facts", "PubMed", "Google Trends"],
+                "ai_deep_research": ["Perplexity API", "Gemini API"],
+                "statistical_dbs": {"EU": "Eurostat", "USA": "USDA FoodData Central", "DE": "GENESIS Datenbank"},
+                "industry_websites": ["NutraIngredients", "Food Ingredients First"]
+            },
+            "recommended_sources": {
+                "social_media": ["Instagram", "TikTok", "YouTube"],
+                "market_research": ["Mintel", "Euromonitor"]
+            },
+            "expected_data_points": 250,
+            "analysis_approach": "Multi-Source-Synthese mit KI-Analyse",
+            "report_structure": ["Einleitung", "Analyse", "Marktdaten", "Trends", "Fazit"],
+            "estimated_duration": 5
+        }
 
 
 def create_research_strategy(description: str, keywords: List[str], categories: List[str]) -> Dict:
