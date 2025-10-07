@@ -679,7 +679,7 @@ Antworte in JSON Format."""
     
     data_summary = "\n\n".join([
         f"Quelle {i+1}: {d['source']}\nURL: {d['url']}\nErkenntnisse: {', '.join(d['findings'][:3])}"
-        for i, d in enumerate(collected_data[:10])
+        for i, d in enumerate(collected_data[:8])
     ])
     
     user_prompt = f"""Forschungsfrage: {description}
@@ -702,7 +702,8 @@ Die Fu√ünoten sollen auf die oben genannten Quellen verweisen."""
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 response_mime_type="application/json",
-                temperature=0.7
+                temperature=0.6,
+                max_output_tokens=8000
             )
         )
         
@@ -770,7 +771,8 @@ Erstelle die finale, professionelle Version. Behalte ALLE Abschnitte und die Fu√
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 response_mime_type="application/json",
-                temperature=0.5
+                temperature=0.5,
+                max_output_tokens=8000
             )
         )
         

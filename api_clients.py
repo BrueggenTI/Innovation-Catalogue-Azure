@@ -266,7 +266,7 @@ class GeminiDeepResearchClient(APIClientBase):
             query = f"Conduct deep research on food industry trends related to: {', '.join(keywords[:3])}. Include latest market data, consumer insights, and scientific research."
             
             response = self.gemini_client.models.generate_content(
-                model="gemini-2.5-pro",
+                model="gemini-2.5-flash",
                 contents=query
             )
             
@@ -278,7 +278,7 @@ class GeminiDeepResearchClient(APIClientBase):
                 'url': 'https://ai.google.dev',
                 'data': {
                     'full_content': content,
-                    'model': 'gemini-2.5-pro'
+                    'model': 'gemini-2.5-flash'
                 }
             })
             
