@@ -416,6 +416,133 @@
                     <i class="fas fa-plus me-2"></i>Trend Anwenden
                 </a>
             </div>
+            <div class="col-auto mb-2 mb-lg-0 ms-3">
+                <button class="btn btn-success" type="button" id="deepResearchBtn" title="Start Deep Research" data-bs-toggle="modal" data-bs-target="#deepResearchModal">
+                    <i class="fas fa-search-plus me-1"></i>Deep Research
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deep Research Modal -->
+<div class="modal fade" id="deepResearchModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #661c31 0%, #ff4143 100%); color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-search-plus me-2"></i>Deep Research - KI-gestützte Trendanalyse
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="deepResearchModalBody">
+                <!-- Initial Form View -->
+                <div id="researchFormView">
+                    <p class="text-muted mb-4">
+                        Beschreiben Sie Ihre Forschungsfrage und unsere KI durchsucht automatisch relevante Datenbanken, 
+                        statistische Quellen und Fachportale für einen umfassenden, zitierfähigen Trend-Report.
+                    </p>
+
+                    <form id="deepResearchForm">
+                        <!-- Description Input (Required) -->
+                        <div class="mb-4">
+                            <label for="researchDescription" class="form-label fw-semibold">
+                                <i class="fas fa-align-left me-2 text-primary"></i>Forschungsbeschreibung
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="researchDescription" rows="4" 
+                                      placeholder="Beschreiben Sie detailliert, welche Trends oder Erkenntnisse Sie erforschen möchten. Je präziser Ihre Beschreibung, desto gezielter die Ergebnisse.&#10;&#10;Beispiel: 'Analysiere aktuelle Verbrauchertrends im Bereich pflanzlicher Proteine für den deutschen und US-amerikanischen Markt, mit Fokus auf Frühstücksprodukte wie Müsli und Granola.'"
+                                      required></textarea>
+                            <small class="form-text text-muted">Mindestens 20 Zeichen erforderlich</small>
+                        </div>
+
+                        <!-- Optional: Keywords -->
+                        <div class="mb-4">
+                            <label for="researchKeywords" class="form-label fw-semibold">
+                                <i class="fas fa-tags me-2 text-primary"></i>Keywords (Optional)
+                            </label>
+                            <input type="text" class="form-control" id="researchKeywords"
+                                   placeholder="z.B. vegan, protein, nachhaltigkeit, bio">
+                            <small class="form-text text-muted">Kommagetrennte Keywords zur Verfeinerung der Suche</small>
+                        </div>
+
+                        <!-- Optional: Categories -->
+                        <div class="mb-4">
+                            <label for="researchCategories" class="form-label fw-semibold">
+                                <i class="fas fa-box me-2 text-primary"></i>Produktkategorien (Optional)
+                            </label>
+                            <input type="text" class="form-control" id="researchCategories"
+                                   placeholder="z.B. Müsli, Granola, Cerealien, Riegel">
+                            <small class="form-text text-muted">Spezifische Produktkategorien für gezielte Analyse</small>
+                        </div>
+
+                        <!-- Error Display -->
+                        <div class="alert alert-danger" id="researchErrorAlert" style="display: none;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="researchErrorText"></span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Progress View (Hidden initially) -->
+                <div id="researchProgressView" style="display: none;">
+                    <div class="row">
+                        <!-- Left: Source Status -->
+                        <div class="col-md-5">
+                            <div class="card border-0 shadow-sm" style="background: #f8f9fa;">
+                                <div class="card-header bg-white border-0">
+                                    <h6 class="mb-0 fw-semibold" style="color: #661c31;">
+                                        <i class="fas fa-database me-2"></i>Datenquellen-Status
+                                    </h6>
+                                </div>
+                                <div class="card-body p-3" id="sourcesStatusList" style="max-height: 500px; overflow-y: auto;">
+                                    <!-- Sources will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Live Logs -->
+                        <div class="col-md-7">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+                                    <h6 class="mb-0 fw-semibold" style="color: #661c31;">
+                                        <i class="fas fa-terminal me-2"></i>Live-Recherche-Log
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-secondary" id="toggleResearchLogs">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                </div>
+                                <div class="card-body p-3" id="researchLiveLog" 
+                                     style="max-height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; background: #1e1e1e; color: #d4d4d4; border-radius: 0 0 8px 8px;">
+                                    <!-- Logs will be appended here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Progress Bar -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-semibold" style="color: #661c31;">Gesamtfortschritt</span>
+                            <span id="overallProgressText" class="text-muted">0%</span>
+                        </div>
+                        <div class="progress" style="height: 12px; border-radius: 6px;">
+                            <div class="progress-bar" id="overallProgressBar" 
+                                 style="background: linear-gradient(90deg, #661c31 0%, #ff4143 100%); transition: width 0.3s ease;" 
+                                 role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelResearchBtn">
+                    <i class="fas fa-times me-2"></i>Abbrechen
+                </button>
+                <button type="button" class="btn btn-success" id="startResearchBtn">
+                    <i class="fas fa-play me-2"></i>Research Starten
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -666,6 +793,263 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize upload system
     initializeUploadSystem();
+    
+    // Initialize Deep Research
+    initializeDeepResearch();
+});
+
+// Deep Research System
+let currentJobId = null;
+let eventSource = null;
+
+function initializeDeepResearch() {
+    const startBtn = document.getElementById('startResearchBtn');
+    const cancelBtn = document.getElementById('cancelResearchBtn');
+    const toggleLogsBtn = document.getElementById('toggleResearchLogs');
+    
+    if (!startBtn) return;
+    
+    // Start Research Button
+    startBtn.addEventListener('click', async function() {
+        const description = document.getElementById('researchDescription').value.trim();
+        const keywords = document.getElementById('researchKeywords').value.trim();
+        const categories = document.getElementById('researchCategories').value.trim();
+        
+        // Validation
+        if (!description || description.length < 20) {
+            showResearchError('Bitte geben Sie eine Beschreibung mit mindestens 20 Zeichen ein.');
+            return;
+        }
+        
+        hideResearchError();
+        
+        // Switch to progress view
+        document.getElementById('researchFormView').style.display = 'none';
+        document.getElementById('researchProgressView').style.display = 'block';
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Läuft...';
+        
+        try {
+            // Start the research job
+            const response = await fetch('/api/deep-research/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description: description,
+                    keywords: keywords ? keywords.split(',').map(k => k.trim()) : [],
+                    categories: categories ? categories.split(',').map(c => c.trim()) : []
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Failed to start research');
+            }
+            
+            currentJobId = result.job_id;
+            
+            // Connect to SSE stream for live updates
+            connectToResearchStream(currentJobId);
+            
+        } catch (error) {
+            console.error('Error starting research:', error);
+            showResearchError(error.message);
+            resetResearchModal();
+        }
+    });
+    
+    // Cancel Button
+    cancelBtn.addEventListener('click', function() {
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+        currentJobId = null;
+        resetResearchModal();
+    });
+    
+    // Toggle Logs Button
+    if (toggleLogsBtn) {
+        toggleLogsBtn.addEventListener('click', function() {
+            const logsContent = document.getElementById('researchLiveLog');
+            const icon = this.querySelector('i');
+            if (logsContent.style.display === 'none') {
+                logsContent.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                logsContent.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        });
+    }
+}
+
+function connectToResearchStream(jobId) {
+    eventSource = new EventSource(`/api/deep-research/stream/${jobId}`);
+    
+    eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        handleResearchUpdate(data);
+    };
+    
+    eventSource.onerror = function(error) {
+        console.error('SSE Error:', error);
+        eventSource.close();
+        showResearchError('Verbindung zum Server unterbrochen.');
+    };
+}
+
+function handleResearchUpdate(data) {
+    const { type, message, progress, source, status } = data;
+    
+    // Update progress bar
+    if (progress !== undefined) {
+        const progressBar = document.getElementById('overallProgressBar');
+        const progressText = document.getElementById('overallProgressText');
+        progressBar.style.width = progress + '%';
+        progressBar.setAttribute('aria-valuenow', progress);
+        progressText.textContent = progress + '%';
+    }
+    
+    // Add to live log
+    if (message) {
+        addResearchLog(message, type);
+    }
+    
+    // Update source status
+    if (source) {
+        updateSourceStatus(source, status, data.foundItems || 0);
+    }
+    
+    // Handle completion
+    if (type === 'complete') {
+        handleResearchComplete(data);
+    } else if (type === 'error') {
+        handleResearchError(data);
+    }
+}
+
+function addResearchLog(message, type = 'info') {
+    const logContainer = document.getElementById('researchLiveLog');
+    const logEntry = document.createElement('div');
+    logEntry.className = 'log-entry mb-1';
+    
+    let color = '#d4d4d4';
+    if (type === 'success') color = '#4ade80';
+    else if (type === 'error') color = '#f87171';
+    else if (type === 'warning') color = '#fbbf24';
+    
+    logEntry.innerHTML = `<span style="color: #6b7280;">[${new Date().toLocaleTimeString()}]</span> <span style="color: ${color};">${escapeHtml(message)}</span>`;
+    logContainer.appendChild(logEntry);
+    logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+function updateSourceStatus(sourceName, status, foundItems) {
+    const statusList = document.getElementById('sourcesStatusList');
+    let sourceElement = document.getElementById(`source-${sourceName.replace(/\s+/g, '-')}`);
+    
+    if (!sourceElement) {
+        sourceElement = document.createElement('div');
+        sourceElement.id = `source-${sourceName.replace(/\s+/g, '-')}`;
+        sourceElement.className = 'source-status-item mb-2 p-2 rounded';
+        sourceElement.style.background = '#ffffff';
+        statusList.appendChild(sourceElement);
+    }
+    
+    let icon = '⏳';
+    let statusColor = '#6b7280';
+    let statusText = 'Wartet...';
+    
+    if (status === 'processing') {
+        icon = '🔄';
+        statusColor = '#3b82f6';
+        statusText = 'Verarbeitet...';
+    } else if (status === 'success') {
+        icon = '✅';
+        statusColor = '#10b981';
+        statusText = `${foundItems} Einträge gefunden`;
+    } else if (status === 'failed') {
+        icon = '❌';
+        statusColor = '#ef4444';
+        statusText = 'Fehlgeschlagen';
+    }
+    
+    sourceElement.innerHTML = `
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <span style="font-size: 1.2em;">${icon}</span>
+                <span class="ms-2 fw-semibold">${escapeHtml(sourceName)}</span>
+            </div>
+            <small style="color: ${statusColor};">${statusText}</small>
+        </div>
+    `;
+}
+
+function handleResearchComplete(data) {
+    if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+    }
+    
+    addResearchLog('✓ Research erfolgreich abgeschlossen!', 'success');
+    
+    // Show completion message and redirect
+    setTimeout(() => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deepResearchModal'));
+        modal.hide();
+        
+        // Show success notification
+        alert(`Research erfolgreich abgeschlossen!\n\nReport-ID: ${data.report_id}\n\nDie Seite wird neu geladen, um den neuen Trend anzuzeigen.`);
+        
+        window.location.reload();
+    }, 2000);
+}
+
+function handleResearchError(data) {
+    if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+    }
+    
+    addResearchLog(`✗ Fehler: ${data.message}`, 'error');
+    showResearchError(data.message);
+    
+    const startBtn = document.getElementById('startResearchBtn');
+    startBtn.disabled = false;
+    startBtn.innerHTML = '<i class="fas fa-play me-2"></i>Research Starten';
+}
+
+function showResearchError(message) {
+    const errorAlert = document.getElementById('researchErrorAlert');
+    const errorText = document.getElementById('researchErrorText');
+    errorText.textContent = message;
+    errorAlert.style.display = 'block';
+}
+
+function hideResearchError() {
+    document.getElementById('researchErrorAlert').style.display = 'none';
+}
+
+function resetResearchModal() {
+    document.getElementById('researchFormView').style.display = 'block';
+    document.getElementById('researchProgressView').style.display = 'none';
+    document.getElementById('researchDescription').value = '';
+    document.getElementById('researchKeywords').value = '';
+    document.getElementById('researchCategories').value = '';
+    document.getElementById('sourcesStatusList').innerHTML = '';
+    document.getElementById('researchLiveLog').innerHTML = '';
+    document.getElementById('overallProgressBar').style.width = '0%';
+    document.getElementById('overallProgressText').textContent = '0%';
+    
+    const startBtn = document.getElementById('startResearchBtn');
+    startBtn.disabled = false;
+    startBtn.innerHTML = '<i class="fas fa-play me-2"></i>Research Starten';
+    
+    hideResearchError();
+}
 });
 
 // Upload Functionality

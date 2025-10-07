@@ -1391,6 +1391,133 @@ def get_trend_details(trend_id):
             'error': 'Failed to fetch trend details.'
         }), 500
 
+# Deep Research Routes
+@app.route('/api/deep-research/start', methods=['POST'])
+@csrf.exempt
+@login_required
+def start_deep_research():
+    """Start a new deep research job"""
+    import uuid
+    import threading
+    from models import ResearchJob
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        description = data.get('description', '').strip()
+        keywords = data.get('keywords', [])
+        categories = data.get('categories', [])
+        
+        if not description or len(description) < 20:
+            return jsonify({'success': False, 'error': 'Description must be at least 20 characters'}), 400
+        
+        # Create unique job ID
+        job_id = str(uuid.uuid4())
+        
+        # Create job in database
+        new_job = ResearchJob(
+            job_id=job_id,
+            user_id=session.get('user_id'),
+            description=description,
+            keywords=json.dumps(keywords),
+            categories=json.dumps(categories),
+            status='queued',
+            progress=0,
+            status_log=json.dumps([])
+        )
+        db.session.add(new_job)
+        db.session.commit()
+        
+        # Start job in background thread
+        def run_job():
+            from deep_research_worker import process_research_job
+            # Store updates in memory for SSE streaming
+            job_updates[job_id] = []
+            
+            for update in process_research_job(job_id, description, keywords, categories):
+                if job_id in job_updates:
+                    job_updates[job_id].append(update)
+        
+        thread = threading.Thread(target=run_job, daemon=True)
+        thread.start()
+        
+        return jsonify({
+            'success': True,
+            'job_id': job_id,
+            'message': 'Research job started successfully'
+        })
+        
+    except Exception as e:
+        logging.error(f"Start deep research error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': 'Failed to start research job. Please try again.'
+        }), 500
+
+# Store job updates in memory for SSE
+job_updates = {}
+
+@app.route('/api/deep-research/stream/<job_id>')
+@login_required
+def stream_deep_research(job_id):
+    """SSE endpoint for streaming research job updates"""
+    from flask import Response, stream_with_context
+    
+    def event_stream():
+        # Wait for job to start generating updates
+        max_wait = 30  # 30 seconds timeout
+        waited = 0
+        while job_id not in job_updates and waited < max_wait:
+            time.sleep(0.1)
+            waited += 0.1
+        
+        if job_id not in job_updates:
+            yield f"data: {json.dumps({'type': 'error', 'message': 'Job not found or timed out'})}\n\n"
+            return
+        
+        sent_count = 0
+        max_iterations = 1000  # Prevent infinite loop
+        iterations = 0
+        
+        while iterations < max_iterations:
+            updates = job_updates.get(job_id, [])
+            
+            # Send any new updates
+            while sent_count < len(updates):
+                yield f"data: {updates[sent_count]}\n\n"
+                
+                # Check if this is a completion or error message
+                try:
+                    update_data = json.loads(updates[sent_count])
+                    if update_data.get('type') in ['complete', 'error']:
+                        # Clean up
+                        if job_id in job_updates:
+                            del job_updates[job_id]
+                        return
+                except:
+                    pass
+                
+                sent_count += 1
+            
+            time.sleep(0.1)  # Small delay between checks
+            iterations += 1
+        
+        # Cleanup if we hit max iterations
+        if job_id in job_updates:
+            del job_updates[job_id]
+    
+    return Response(stream_with_context(event_stream()), 
+                   mimetype='text/event-stream',
+                   headers={
+                       'Cache-Control': 'no-cache, no-transform',
+                       'X-Accel-Buffering': 'no',
+                       'Connection': 'keep-alive'
+                   })
+
 @app.route('/api/generate-image', methods=['POST'])
 @csrf.exempt
 @login_required

@@ -53,3 +53,34 @@ class Trend(db.Model):
     image_url = db.Column(db.String(200))
     pdf_path = db.Column(db.String(200))  # Path to uploaded PDF document
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ResearchJob(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.String(36), unique=True, nullable=False)  # UUID
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    description = db.Column(db.Text, nullable=False)
+    keywords = db.Column(db.Text)  # JSON array of keywords
+    categories = db.Column(db.Text)  # JSON array of categories
+    status = db.Column(db.String(50), default='queued')  # queued, processing_strategy, scraping_data, synthesizing_report, finalizing_report, generating_pdf, completed, failed, cancelled
+    progress = db.Column(db.Integer, default=0)
+    status_log = db.Column(db.Text)  # JSON array of status updates
+    result_trend_id = db.Column(db.Integer, db.ForeignKey('trend.id'), nullable=True)
+    error_message = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    
+    user = db.relationship('User', backref='research_jobs')
+    result_trend = db.relationship('Trend', backref='research_job')
+
+class ResearchSource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.String(36), db.ForeignKey('research_job.job_id'), nullable=False)
+    source_name = db.Column(db.String(100), nullable=False)
+    source_url = db.Column(db.String(500))
+    status = db.Column(db.String(50), default='pending')  # pending, processing, success, failed
+    found_items = db.Column(db.Integer, default=0)
+    cleaned_content = db.Column(db.Text)  # Extracted and cleaned data
+    error_message = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    research_job = db.relationship('ResearchJob', backref='sources')
