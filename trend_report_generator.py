@@ -1717,7 +1717,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         yield json.dumps({
             'type': 'progress',
             'step': 'ai_analysis_start',
-            'message': f'Analysiere gesammelte Daten mit OpenAI GPT-4o für Keywords: {keywords_str}',
+            'message': f'Analysiere gesammelte Daten mit OpenAI GPT-4o für Keywords: {", ".join(keywords)}',
             'progress': 55
         }) + '\n'
         
