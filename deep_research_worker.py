@@ -402,15 +402,19 @@ GESAMT: 43 Datenquellen verfügbar!
 
 {sources_text}
 
-WICHTIG: Verwende NUR die oben genannten Datenquellen! KEINE anderen Quellen!
+WICHTIG: 
+- VERWENDE IMMER die oben genannten 43 verfügbaren Datenquellen im Plan!
+- Du KANNST zusätzlich weitere relevante Quellen empfehlen (z.B. Mintel, Social Media, etc.)
+- Markiere die verfügbaren Quellen als "automated_sources" und zusätzliche als "recommended_sources"
 
 Erstelle einen umfassenden Plan mit:
 1. research_objectives: Die Hauptziele der Research (Array von Strings)
-2. data_sources_plan: Welche der VERFÜGBAREN Datenquellen durchsucht werden (gruppiert nach Typ)
-3. expected_data_points: Wie viele Datenpunkte/Dokumente pro Quellentyp erwartet werden
-4. analysis_approach: Wie die Daten analysiert werden
-5. report_structure: Welche Abschnitte der finale Report haben wird
-6. estimated_duration: Geschätzte Dauer in Minuten
+2. automated_sources: ALLE relevanten Quellen aus den 43 VERFÜGBAREN Datenquellen (gruppiert nach Typ)
+3. recommended_sources: ZUSÄTZLICHE empfohlene Quellen, die manuell konsultiert werden können (optional)
+4. expected_data_points: Wie viele Datenpunkte/Dokumente erwartet werden
+5. analysis_approach: Wie die Daten analysiert werden
+6. report_structure: Welche Abschnitte der finale Report haben wird
+7. estimated_duration: Geschätzte Dauer in Minuten
 
 Sei spezifisch und detailliert. Antworte in JSON Format."""
     
@@ -440,7 +444,7 @@ Plane eine umfassende Recherche mit mindestens 250 Datenpunkten aus den VERFÜGB
         
     except Exception as e:
         logging.error(f"Plan generation error: {e}")
-        # Fallback plan mit ECHTEN verfügbaren Quellen
+        # Fallback plan mit ECHTEN verfügbaren Quellen + empfohlene Quellen
         return {
             "research_objectives": [
                 f"Analyse von {description}",
@@ -449,14 +453,19 @@ Plane eine umfassende Recherche mit mindestens 250 Datenpunkten aus den VERFÜGB
                 "Sammlung von Industry Insights aus Fachportalen",
                 "KI-gestützte Deep Research für umfassende Analyse"
             ],
-            "data_sources_plan": {
+            "automated_sources": {
                 "general": available_sources['general'],
                 "ai_deep_research": available_sources['ai_deep_research'],
                 "statistical_dbs": ["EU", "USA", "DE", "UK", "FR", "CA"],
                 "industry_websites": available_sources['industry_websites']
             },
+            "recommended_sources": {
+                "market_research_reports": ["Mintel", "Euromonitor International", "NielsenIQ", "Statista"],
+                "social_media": ["Instagram", "TikTok", "YouTube", "Fitness Blogs"],
+                "consumer_reviews": ["Amazon Reviews", "Online Shop Bewertungen", "Fitness Foren"]
+            },
             "expected_data_points": 300,
-            "analysis_approach": "Multi-source synthesis mit KI-gestützter Analyse über 43 Datenquellen",
+            "analysis_approach": "Multi-source synthesis: Automatisierte Analyse über 43 Datenquellen + manuelle Konsultation empfohlener Quellen",
             "report_structure": ["Einleitung", "Hauptanalyse", "Marktanalyse", "Consumer Insights", "Zukunftsausblick", "Fazit"],
             "estimated_duration": 5
         }
