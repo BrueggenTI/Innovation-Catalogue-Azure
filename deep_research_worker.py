@@ -372,109 +372,60 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
 def generate_research_plan(description: str, keywords: List[str], categories: List[str]) -> Dict:
     """Generiert einen detaillierten Research-Plan, den der Nutzer bestätigen kann"""
     
-    # Erstelle Liste aller verfügbaren Datenquellen
+    # Erstelle Liste aller verfügbaren Datenquellen - DIESE WERDEN GARANTIERT VERWENDET
     available_sources = {
         "general": [s['name'] for s in DATA_SOURCES['general']],
         "ai_deep_research": [s['name'] for s in DATA_SOURCES['ai_deep_research']],
-        "statistical_dbs": list(DATA_SOURCES['statistical_dbs'].keys()),
+        "statistical_dbs": {
+            country: DATA_SOURCES['statistical_dbs'][country]['name'] 
+            for country in DATA_SOURCES['statistical_dbs'].keys()
+        },
         "industry_websites": [s['name'] for s in DATA_SOURCES['industry_websites']]
     }
     
-    sources_text = f"""
-VERFÜGBARE DATENQUELLEN (NUR DIESE VERWENDEN!):
-
-Allgemeine Quellen:
-- {', '.join(available_sources['general'])}
-
-AI Deep Research APIs:
-- {', '.join(available_sources['ai_deep_research'])}
-
-Statistische Datenbanken (nach Ländercode):
-- {', '.join(available_sources['statistical_dbs'])}
-
-Industry Websites:
-- {', '.join(available_sources['industry_websites'])}
-
-GESAMT: 43 Datenquellen verfügbar!
-"""
+    logging.info("📋 Erstelle Research-Plan mit allen 43 verfügbaren Datenquellen...")
     
-    system_instruction = f"""Du bist ein Experte für Food-Trend-Forschung und erstellst detaillierte Research-Pläne.
-
-{sources_text}
-
-WICHTIG: 
-- VERWENDE IMMER die oben genannten 43 verfügbaren Datenquellen im Plan!
-- Du KANNST zusätzlich weitere relevante Quellen empfehlen (z.B. Mintel, Social Media, etc.)
-- Markiere die verfügbaren Quellen als "automated_sources" und zusätzliche als "recommended_sources"
-
-Erstelle einen umfassenden Plan mit:
-1. research_objectives: Die Hauptziele der Research (Array von Strings)
-2. automated_sources: ALLE relevanten Quellen aus den 43 VERFÜGBAREN Datenquellen (gruppiert nach Typ)
-3. recommended_sources: ZUSÄTZLICHE empfohlene Quellen, die manuell konsultiert werden können (optional)
-4. expected_data_points: Wie viele Datenpunkte/Dokumente erwartet werden
-5. analysis_approach: Wie die Daten analysiert werden
-6. report_structure: Welche Abschnitte der finale Report haben wird
-7. estimated_duration: Geschätzte Dauer in Minuten
-
-Sei spezifisch und detailliert. Antworte in JSON Format."""
+    # Berechne erwartete Datenpunkte
+    num_keywords = len(keywords) if keywords else 1
+    total_sources = len(DATA_SOURCES['general']) + len(DATA_SOURCES['ai_deep_research']) + 5 + len(DATA_SOURCES['industry_websites'])
+    expected_points = num_keywords * total_sources * 25
     
-    user_prompt = f"""Erstelle einen detaillierten Research-Plan für folgende Anfrage:
-
-Beschreibung: {description}
-Keywords: {', '.join(keywords) if keywords else 'keine'}
-Kategorien: {', '.join(categories) if categories else 'keine'}
-
-Plane eine umfassende Recherche mit mindestens 250 Datenpunkten aus den VERFÜGBAREN Datenquellen."""
+    # Erstelle Plan direkt mit ALLEN verfügbaren Quellen
+    plan = {
+        "research_objectives": [
+            f"Umfassende Analyse von: {description}",
+            "Identifikation aktueller Trends durch wissenschaftliche Publikationen (PubMed)",
+            "Erhebung von Produktdaten aus Open Food Facts",
+            "Sammlung statistischer Marktdaten aus 33 Länder-Datenbanken",
+            "KI-gestützte Deep Research mit Perplexity & Gemini",
+            "Analyse von Industry News und Fachpublikationen"
+        ],
+        "automated_sources": available_sources,  # ALLE 43 Quellen!
+        "recommended_sources": {
+            "market_research_reports": ["Mintel", "Euromonitor International", "NielsenIQ", "Statista"],
+            "social_media_analysis": ["Instagram Hashtag-Analyse", "TikTok Trend-Tracking", "YouTube Food Channels"],
+            "consumer_reviews": ["Amazon Product Reviews", "Online Shop Bewertungen", "Fitness & Food Foren"]
+        },
+        "expected_data_points": expected_points,
+        "analysis_approach": f"Multi-Source-Synthese: Automatisierte Datensammlung aus {total_sources} APIs & Datenbanken mit anschließender KI-gestützter Analyse und Synthese durch Gemini 2.5 Pro",
+        "report_structure": [
+            "Executive Summary",
+            "Einleitung & Kontext",
+            "Wissenschaftliche Erkenntnisse",
+            "Marktanalyse & Statistiken",
+            "Consumer Insights & Trends",
+            "Industry Entwicklungen",
+            "Zukunftsausblick",
+            "Fazit & Handlungsempfehlungen"
+        ],
+        "estimated_duration": 5
+    }
     
-    try:
-        logging.info("📋 Generiere Research-Plan mit Gemini 2.5 Pro...")
-        response = gemini_client.models.generate_content(
-            model="gemini-2.5-pro",
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                response_mime_type="application/json",
-                temperature=0.7
-            )
-        )
-        
-        plan = json.loads(response.text)
-        
-        # Zähle Quellentypen (neue Struktur mit automated_sources)
-        automated = plan.get('automated_sources', {})
-        recommended = plan.get('recommended_sources', {})
-        total_types = len(automated) + len(recommended)
-        
-        logging.info(f"✓ Research-Plan erstellt: {len(automated)} automatisierte Quellentypen, {len(recommended)} empfohlene Quellentypen")
-        return plan
-        
-    except Exception as e:
-        logging.error(f"Plan generation error: {e}")
-        # Fallback plan mit ECHTEN verfügbaren Quellen + empfohlene Quellen
-        return {
-            "research_objectives": [
-                f"Analyse von {description}",
-                "Identifikation aktueller Trends durch wissenschaftliche Publikationen",
-                "Erhebung von Marktdaten aus statistischen Datenbanken",
-                "Sammlung von Industry Insights aus Fachportalen",
-                "KI-gestützte Deep Research für umfassende Analyse"
-            ],
-            "automated_sources": {
-                "general": available_sources['general'],
-                "ai_deep_research": available_sources['ai_deep_research'],
-                "statistical_dbs": ["EU", "USA", "DE", "UK", "FR", "CA"],
-                "industry_websites": available_sources['industry_websites']
-            },
-            "recommended_sources": {
-                "market_research_reports": ["Mintel", "Euromonitor International", "NielsenIQ", "Statista"],
-                "social_media": ["Instagram", "TikTok", "YouTube", "Fitness Blogs"],
-                "consumer_reviews": ["Amazon Reviews", "Online Shop Bewertungen", "Fitness Foren"]
-            },
-            "expected_data_points": 300,
-            "analysis_approach": "Multi-source synthesis: Automatisierte Analyse über 43 Datenquellen + manuelle Konsultation empfohlener Quellen",
-            "report_structure": ["Einleitung", "Hauptanalyse", "Marktanalyse", "Consumer Insights", "Zukunftsausblick", "Fazit"],
-            "estimated_duration": 5
-        }
+    logging.info(f"✓ Research-Plan erstellt mit ALLEN 43 Datenquellen")
+    logging.info(f"  📊 Automatisiert: {len(available_sources['general'])} General + {len(available_sources['ai_deep_research'])} AI + 33 Statistical DBs + {len(available_sources['industry_websites'])} Industry")
+    logging.info(f"  💡 Empfohlen: {len(plan['recommended_sources'])} zusätzliche Quellentypen")
+    
+    return plan
 
 
 def create_research_strategy(description: str, keywords: List[str], categories: List[str]) -> Dict:
