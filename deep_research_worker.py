@@ -285,7 +285,7 @@ Erstelle eine optimale Recherche-Strategie."""
     
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.5-pro",
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -366,7 +366,7 @@ Die Fu√ünoten sollen auf die oben genannten Quellen verweisen."""
     
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.5-pro",
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -434,7 +434,7 @@ Erstelle die finale, professionelle Version. Behalte ALLE Abschnitte und die Fu√
     
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.5-pro",
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
