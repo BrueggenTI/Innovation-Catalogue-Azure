@@ -792,6 +792,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize upload system
     initializeUploadSystem();
+    
+    // Initialize Custom Trend Report Generation
+    initializeCustomReportGeneration();
 });
 
 // Upload Functionality
@@ -1720,9 +1723,14 @@ function highlightTrendsText(text, query) {
 // Custom Trend Report Generation Logic with Streaming
 let generatedReportData = null;
 
-// Ensure button exists before adding event listener
-const submitReportBtn = document.getElementById('submit-report-btn');
-if (submitReportBtn) {
+// Initialize Custom Report Generation - must be called after DOM is loaded
+function initializeCustomReportGeneration() {
+    const submitReportBtn = document.getElementById('submit-report-btn');
+    if (!submitReportBtn) {
+        console.warn('Submit report button not found');
+        return;
+    }
+
     submitReportBtn.addEventListener('click', async function() {
         const keywordsInput = document.getElementById('keywords-input').value.trim();
         const topicInput = document.getElementById('topic-input').value.trim();
@@ -1753,26 +1761,29 @@ if (submitReportBtn) {
         submitButton.disabled = true;
         cancelButton.disabled = true;
         loadingIndicator.style.display = 'block';
-        liveLogsContainer.style.display = 'block'; // Ensure logs container is visible
-        document.getElementById('liveLogsContent').innerHTML = ''; // Clear previous logs
+        liveLogsContainer.style.display = 'block';
+        document.getElementById('liveLogsContent').innerHTML = '';
 
         // Initialize progress steps
         initializeProgressSteps(loadingIndicator);
 
         // Add toggle functionality for logs
-        document.getElementById('toggleLogs').addEventListener('click', function() {
-            const logsContent = document.getElementById('liveLogsContent');
-            const icon = this.querySelector('i');
-            if (logsContent.style.display === 'none' || logsContent.style.display === '') {
-                logsContent.style.display = 'block';
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            } else {
-                logsContent.style.display = 'none';
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            }
-        });
+        const toggleLogsBtn = document.getElementById('toggleLogs');
+        if (toggleLogsBtn) {
+            toggleLogsBtn.addEventListener('click', function() {
+                const logsContent = document.getElementById('liveLogsContent');
+                const icon = this.querySelector('i');
+                if (logsContent.style.display === 'none' || logsContent.style.display === '') {
+                    logsContent.style.display = 'block';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    logsContent.style.display = 'none';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+        }
 
         try {
             const response = await fetch('/api/generate-trend-report-stream', {
