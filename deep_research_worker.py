@@ -18,6 +18,7 @@ from typing import Dict, List, Any, Generator
 import os
 from google import genai
 from google.genai import types
+from api_clients import fetch_data_from_source
 
 # Initialize Gemini client (using blueprint:python_gemini)
 gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
@@ -190,28 +191,51 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                     "progress": int(current_progress)
                 })
                 
-                # Simuliere erweiterte Datensammlung (In Produktion: echtes Scraping/API-Calls)
-                time.sleep(0.3)  # Reduzierte Verzögerung für schnelleres Testing
-                
-                # Erweiterte Mock-Daten für 250+ Datenpunkte
-                found_items = len(keywords) * 25  # Erhöht von 10 auf 25 pro Keyword
-                logging.info(f"  ✓ Gefunden: {found_items} relevante Datenpunkte in {source_name}")
-                
-                mock_data = {
-                    "source": source_name,
-                    "url": source_url,
-                    "findings": [f"Trend {i+1} related to {', '.join(keywords[:2])}" for i in range(min(8, found_items))],
-                    "summary": f"Relevant insights from {source_name} regarding {description[:50]}...",
-                    "data_points": found_items
-                }
-                
-                research_source.status = 'success'
-                research_source.found_items = found_items
-                research_source.cleaned_content = json.dumps(mock_data)
-                db.session.commit()
-                
-                collected_data.append(mock_data)
-                total_items_found += found_items
+                # ECHTE API-CALLS - keine Mock-Daten mehr!
+                try:
+                    logging.info(f"  🌐 Starte echten API-Call für {source_name}...")
+                    
+                    # Hole echte Daten über die API-Clients
+                    api_results = fetch_data_from_source(source, keywords, limit=25)
+                    found_items = len(api_results)
+                    
+                    logging.info(f"  ✓ ECHT gefunden: {found_items} Datenpunkte in {source_name}")
+                    
+                    # Konvertiere API-Ergebnisse in unser Format
+                    findings = []
+                    for result in api_results[:8]:  # Top 8 für Summary
+                        findings.append(result.get('title', 'Unknown'))
+                    
+                    source_data = {
+                        "source": source_name,
+                        "url": source_url,
+                        "findings": findings,
+                        "summary": f"Relevante Daten aus {source_name}: {', '.join(findings[:3])}..." if findings else f"Daten aus {source_name}",
+                        "data_points": found_items,
+                        "raw_results": api_results  # Komplette API-Antworten für Synthese
+                    }
+                    
+                    research_source.status = 'success'
+                    research_source.found_items = found_items
+                    research_source.cleaned_content = json.dumps(source_data, ensure_ascii=False)
+                    db.session.commit()
+                    
+                    collected_data.append(source_data)
+                    total_items_found += found_items
+                    
+                except Exception as e:
+                    logging.error(f"  ❌ Fehler bei {source_name}: {e}")
+                    research_source.status = 'error'
+                    research_source.found_items = 0
+                    db.session.commit()
+                    
+                    yield json.dumps({
+                        "type": "warning",
+                        "message": f"⚠️ {source_name}: Fehler beim Abrufen ({str(e)[:50]}...)",
+                        "source": source_name,
+                        "status": "error"
+                    })
+                    continue
                 
                 logging.info(f"  💾 Gespeichert: {source_name} mit {found_items} Datenpunkten")
                 
