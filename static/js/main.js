@@ -712,7 +712,8 @@ function escapeHtml(text) {
 
 // Placeholder for submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, generatedReportData, showReportPreview, addProgressStep, initializeProgress
 // These are assumed to be defined in the scope where this script is used, likely within a function like 'generateReport' or similar.
-let submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, generatedReportData, showReportPreview, addProgressStep, initializeProgress;
+// Note: generatedReportData is now declared in trends.html to avoid conflicts
+let submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, showReportPreview, addProgressStep, initializeProgress;
 
 // Example of how the report generation might be initiated, including the new live log integration.
 async function generateReport(event) {
