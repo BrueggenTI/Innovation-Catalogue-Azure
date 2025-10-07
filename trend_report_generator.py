@@ -11,7 +11,119 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from datetime import datetime
 import time
+from concurrent.futures import TimeoutError
+import signal
+from functools import wraps
 
+
+def timeout_handler(seconds):
+    """Decorator to add timeout to functions."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            def timeout_error(signum, frame):
+                raise TimeoutError(f"Function {func.__name__} timed out after {seconds} seconds")
+            
+            # Set the signal handler and alarm
+            old_handler = signal.signal(signal.SIGALRM, timeout_error)
+            signal.alarm(seconds)
+            
+            try:
+                result = func(*args, **kwargs)
+            finally:
+                # Restore the old handler and cancel the alarm
+                signal.alarm(0)
+                signal.signal(signal.SIGALRM, old_handler)
+            
+            return result
+        return wrapper
+    return decorator
+
+
+def create_keyword_strategy(user_input: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Analyze user input and create an intelligent keyword strategy for different data sources.
+    
+    Args:
+        user_input: Dictionary with 'keywords', 'countries', 'products', 'topic'
+    
+    Returns:
+        Dictionary with optimized keywords for each source type
+    """
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    
+    keywords = user_input.get('keywords', [])
+    countries = user_input.get('countries', [])
+    products = user_input.get('products', [])
+    topic = user_input.get('topic', '')
+    
+    prompt = f"""Du bist ein Data Research Experte. Erstelle eine optimale Keyword-Strategie für eine Food Trend Recherche.
+
+**Nutzereingabe:**
+- Keywords: {', '.join(keywords)}
+- Länder: {', '.join(countries)}
+- Produkte: {', '.join(products)}
+- Thema: {topic}
+
+Erstelle eine JSON-Struktur mit optimierten Keywords für verschiedene Datenquellentypen:
+
+1. **statistical_databases**: Keywords für statistische Datenbanken (USDA, Eurostat, etc.) - nutze englische Begriffe, spezifisch für Lebensmittelstatistik
+2. **scientific_sources**: Keywords für wissenschaftliche Datenbanken (PubMed) - nutze wissenschaftliche/medizinische Begriffe
+3. **industry_websites**: Keywords für Branchen-Websites - nutze Trend-Begriffe, Marketing-Sprache
+4. **general_search**: Allgemeine Such-Keywords - Kombination aus allen
+
+Jede Kategorie soll 3-5 optimierte Keywords enthalten. Erweitere die ursprünglichen Keywords um Synonyme, verwandte Begriffe und spezifische Fachbegriffe.
+
+Antworte NUR mit einem gültigen JSON-Objekt in diesem Format:
+{{
+  "statistical_databases": ["keyword1", "keyword2", "keyword3"],
+  "scientific_sources": ["keyword1", "keyword2", "keyword3"],
+  "industry_websites": ["keyword1", "keyword2", "keyword3"],
+  "general_search": ["keyword1", "keyword2", "keyword3"]
+}}"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Du bist ein Experte für Food Trend Research und Keyword-Optimierung. Antworte immer mit gültigem JSON."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1000
+        )
+        
+        if response.choices and response.choices[0].message.content:
+            content = response.choices[0].message.content.strip()
+            # Remove markdown code blocks if present
+            if content.startswith('```'):
+                content = content.split('```')[1]
+                if content.startswith('json'):
+                    content = content[4:]
+                content = content.strip()
+            
+            strategy = json.loads(content)
+            return strategy
+        else:
+            # Fallback to original keywords
+            return {
+                "statistical_databases": keywords,
+                "scientific_sources": keywords,
+                "industry_websites": keywords,
+                "general_search": keywords
+            }
+    except Exception as e:
+        print(f"Error creating keyword strategy: {str(e)}")
+        # Fallback to original keywords
+        return {
+            "statistical_databases": keywords,
+            "scientific_sources": keywords,
+            "industry_websites": keywords,
+            "general_search": keywords
+        }
+
+
+@timeout_handler(10)
 def fetch_open_food_facts(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch product data from Open Food Facts database.
@@ -36,6 +148,7 @@ def fetch_open_food_facts(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_pubmed_articles(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch scientific articles from PubMed database.
@@ -60,6 +173,7 @@ def fetch_pubmed_articles(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_google_trends(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch trend data from Google Trends.
@@ -132,6 +246,7 @@ def fetch_gemini_ai(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_eurostat_data(keywords: List[str], country: str = "") -> Dict[str, Any]:
     """
     Fetch statistical data from Eurostat (EU Statistical Office).
@@ -157,6 +272,7 @@ def fetch_eurostat_data(keywords: List[str], country: str = "") -> Dict[str, Any
     }
 
 
+@timeout_handler(10)
 def fetch_usda_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch agricultural data from USDA (United States Department of Agriculture).
@@ -181,6 +297,7 @@ def fetch_usda_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_genesis_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch German statistical data from GENESIS (Statistisches Bundesamt).
@@ -205,6 +322,7 @@ def fetch_genesis_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_ons_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch UK statistical data from ONS (Office for National Statistics).
@@ -229,6 +347,7 @@ def fetch_ons_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_statcan_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Canadian statistical data from Statistics Canada.
@@ -253,6 +372,7 @@ def fetch_statcan_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_insee_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch French statistical data from INSEE.
@@ -277,6 +397,7 @@ def fetch_insee_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_bfs_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Swiss statistical data from BFS (Bundesamt für Statistik).
@@ -301,6 +422,7 @@ def fetch_bfs_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_abs_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Australian statistical data from ABS (Australian Bureau of Statistics).
@@ -325,6 +447,7 @@ def fetch_abs_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_estat_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Japanese statistical data from e-Stat.
@@ -349,6 +472,7 @@ def fetch_estat_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_statsnz_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch New Zealand statistical data from Stats NZ.
@@ -373,6 +497,7 @@ def fetch_statsnz_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_cbs_nl_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Dutch statistical data from CBS Netherlands.
@@ -397,6 +522,7 @@ def fetch_cbs_nl_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_statistik_at_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Austrian statistical data from Statistik Austria.
@@ -421,6 +547,7 @@ def fetch_statistik_at_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_ine_es_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Spanish statistical data from INE Spain.
@@ -445,6 +572,7 @@ def fetch_ine_es_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_istat_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Italian statistical data from ISTAT.
@@ -469,6 +597,7 @@ def fetch_istat_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_dst_dk_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Danish statistical data from Statistics Denmark.
@@ -493,6 +622,7 @@ def fetch_dst_dk_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_stat_fi_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Finnish statistical data from Statistics Finland.
@@ -517,6 +647,7 @@ def fetch_stat_fi_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_ssb_no_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Norwegian statistical data from Statistics Norway.
@@ -541,6 +672,7 @@ def fetch_ssb_no_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_scb_se_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Swedish statistical data from Statistics Sweden.
@@ -565,6 +697,7 @@ def fetch_scb_se_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_gus_pl_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Polish statistical data from GUS (Central Statistical Office).
@@ -589,6 +722,7 @@ def fetch_gus_pl_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_czso_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Czech statistical data from CZSO (Czech Statistical Office).
@@ -613,6 +747,7 @@ def fetch_czso_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_ksh_hu_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Hungarian statistical data from KSH.
@@ -637,6 +772,7 @@ def fetch_ksh_hu_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_stat_ee_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Estonian statistical data from Statistics Estonia.
@@ -661,6 +797,7 @@ def fetch_stat_ee_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_kosis_kr_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch South Korean statistical data from KOSIS.
@@ -685,6 +822,7 @@ def fetch_kosis_kr_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_singstat_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Singapore statistical data from SingStat.
@@ -709,6 +847,7 @@ def fetch_singstat_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_mospi_in_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Indian statistical data from MOSPI.
@@ -733,6 +872,7 @@ def fetch_mospi_in_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_bps_id_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Indonesian statistical data from BPS.
@@ -757,6 +897,7 @@ def fetch_bps_id_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_ibge_br_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Brazilian statistical data from IBGE.
@@ -781,6 +922,7 @@ def fetch_ibge_br_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_inegi_mx_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Mexican statistical data from INEGI.
@@ -805,6 +947,7 @@ def fetch_inegi_mx_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_ine_cl_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Chilean statistical data from INE Chile.
@@ -829,6 +972,7 @@ def fetch_ine_cl_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_dane_co_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Colombian statistical data from DANE.
@@ -853,6 +997,7 @@ def fetch_dane_co_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_stats_sa_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch South African statistical data from Stats SA.
@@ -877,6 +1022,7 @@ def fetch_stats_sa_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_knbs_ke_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Kenyan statistical data from KNBS.
@@ -901,6 +1047,7 @@ def fetch_knbs_ke_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_cbs_il_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Israeli statistical data from CBS Israel.
@@ -925,6 +1072,7 @@ def fetch_cbs_il_data(keywords: List[str]) -> Dict[str, Any]:
     }
 
 
+@timeout_handler(10)
 def fetch_tuik_tr_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Turkish statistical data from TUIK.
@@ -1289,8 +1437,58 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         JSON strings with progress updates and final report data
     """
     try:
-        keywords_str = ", ".join(keywords)
-        progress = 5
+        progress = 2
+        
+        # Step 1: Create intelligent keyword strategy
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'creating_keyword_strategy',
+            'message': f'Analysiere Nutzereingabe und erstelle optimierte Keyword-Strategie mit GPT-4o...',
+            'progress': progress
+        }) + '\n'
+        
+        keyword_strategy = create_keyword_strategy({
+            'keywords': keywords,
+            'countries': countries,
+            'products': products,
+            'topic': topic
+        })
+        
+        progress = 8
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'keyword_strategy_created',
+            'message': f'✓ Keyword-Strategie erstellt:',
+            'progress': progress,
+            'strategy': keyword_strategy
+        }) + '\n'
+        
+        time.sleep(0.5)
+        
+        # Display keyword strategy transparently
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'displaying_strategy',
+            'message': f'📊 Statistische Datenbanken: {", ".join(keyword_strategy.get("statistical_databases", keywords)[:3])}',
+            'progress': progress + 1
+        }) + '\n'
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'displaying_strategy',
+            'message': f'🔬 Wissenschaftliche Quellen: {", ".join(keyword_strategy.get("scientific_sources", keywords)[:3])}',
+            'progress': progress + 2
+        }) + '\n'
+        
+        yield json.dumps({
+            'type': 'progress',
+            'step': 'displaying_strategy',
+            'message': f'🏭 Branchen-Websites: {", ".join(keyword_strategy.get("industry_websites", keywords)[:3])}',
+            'progress': progress + 3
+        }) + '\n'
+        
+        time.sleep(0.5)
+        progress = 15
         
         # Collect all data sources with detailed progress
         all_data = {
@@ -1299,36 +1497,70 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             "country_specific": []
         }
         
-        # General sources
+        # General sources with optimized keywords
+        stat_keywords = keyword_strategy.get("statistical_databases", keywords)
+        sci_keywords = keyword_strategy.get("scientific_sources", keywords)
+        web_keywords = keyword_strategy.get("industry_websites", keywords)
+        
+        # Open Food Facts
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_open_food_facts',
-            'message': f'Durchsuche Open Food Facts mit Keywords: {keywords_str}',
+            'message': f'Durchsuche Open Food Facts mit Keywords: {", ".join(stat_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        time.sleep(0.3)
-        all_data["general_sources"].append(fetch_open_food_facts(keywords))
-        progress += 3
         
+        try:
+            all_data["general_sources"].append(fetch_open_food_facts(stat_keywords))
+            progress += 2
+        except TimeoutError:
+            yield json.dumps({
+                'type': 'progress',
+                'step': 'timeout_warning',
+                'message': '⚠️ Open Food Facts Timeout - übersprungen',
+                'progress': progress
+            }) + '\n'
+            progress += 2
+        
+        # PubMed
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_pubmed',
-            'message': f'Durchsuche PubMed wissenschaftliche Datenbank mit Keywords: {keywords_str}',
+            'message': f'Durchsuche PubMed wissenschaftliche Datenbank mit Keywords: {", ".join(sci_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        time.sleep(0.3)
-        all_data["general_sources"].append(fetch_pubmed_articles(keywords))
-        progress += 3
         
+        try:
+            all_data["general_sources"].append(fetch_pubmed_articles(sci_keywords))
+            progress += 2
+        except TimeoutError:
+            yield json.dumps({
+                'type': 'progress',
+                'step': 'timeout_warning',
+                'message': '⚠️ PubMed Timeout - übersprungen',
+                'progress': progress
+            }) + '\n'
+            progress += 2
+        
+        # Google Trends
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_google_trends',
-            'message': f'Analysiere Google Trends für: {keywords_str}',
+            'message': f'Analysiere Google Trends für: {", ".join(stat_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        time.sleep(0.3)
-        all_data["general_sources"].append(fetch_google_trends(keywords))
-        progress += 3
+        
+        try:
+            all_data["general_sources"].append(fetch_google_trends(stat_keywords))
+            progress += 2
+        except TimeoutError:
+            yield json.dumps({
+                'type': 'progress',
+                'step': 'timeout_warning',
+                'message': '⚠️ Google Trends Timeout - übersprungen',
+                'progress': progress
+            }) + '\n'
+            progress += 2
         
         # Industry Web Sources (5 spezifische Branchen-Websites)
         all_data["web_sources"] = [
@@ -1342,47 +1574,47 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_web_sources',
-            'message': f'Durchsuche Supermarket News für aktuelle Food & Retail Insights: {keywords_str}',
+            'message': f'Durchsuche Supermarket News für aktuelle Food & Retail Insights: {", ".join(web_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        time.sleep(0.3)
-        progress += 2
+        time.sleep(0.2)
+        progress += 1
         
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_mindbodygreen',
-            'message': f'Durchsuche mindbodygreen für Health & Wellness Trends: {keywords_str}',
+            'message': f'Durchsuche mindbodygreen für Health & Wellness Trends: {", ".join(web_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        time.sleep(0.3)
-        progress += 2
+        time.sleep(0.2)
+        progress += 1
         
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_biocatalysts',
-            'message': f'Durchsuche Biocatalysts für Food Innovation 2025: {keywords_str}',
+            'message': f'Durchsuche Biocatalysts für Food Innovation 2025: {", ".join(web_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        time.sleep(0.3)
-        progress += 2
+        time.sleep(0.2)
+        progress += 1
         
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_nutraingredients',
-            'message': f'Durchsuche NutraIngredients für Supplements & Functional Foods: {keywords_str}',
+            'message': f'Durchsuche NutraIngredients für Supplements & Functional Foods: {", ".join(web_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        time.sleep(0.3)
-        progress += 2
+        time.sleep(0.2)
+        progress += 1
         
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_food_ingredients',
-            'message': f'Durchsuche Food Ingredients First für Additives & Flavours: {keywords_str}',
+            'message': f'Durchsuche Food Ingredients First für Additives & Flavours: {", ".join(web_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        time.sleep(0.3)
-        progress += 2
+        time.sleep(0.2)
+        progress += 1
         
         # Country-specific sources
         country_connector_map = {
@@ -1433,12 +1665,21 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                 yield json.dumps({
                     'type': 'progress',
                     'step': f'searching_eurostat_{country_upper}',
-                    'message': f'Durchsuche Eurostat für {country_upper} mit Keywords: {keywords_str}',
+                    'message': f'Durchsuche Eurostat für {country_upper} mit Keywords: {", ".join(stat_keywords[:3])}',
                     'progress': progress
                 }) + '\n'
-                time.sleep(0.3)
-                all_data["country_specific"].append(fetch_eurostat_data(keywords, country_upper))
-                progress += 2
+                
+                try:
+                    all_data["country_specific"].append(fetch_eurostat_data(stat_keywords, country_upper))
+                    progress += 1
+                except TimeoutError:
+                    yield json.dumps({
+                        'type': 'progress',
+                        'step': 'timeout_warning',
+                        'message': f'⚠️ Eurostat {country_upper} Timeout - übersprungen',
+                        'progress': progress
+                    }) + '\n'
+                    progress += 1
             
             # Check country-specific databases
             if country_upper in country_connector_map:
@@ -1446,12 +1687,21 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                 yield json.dumps({
                     'type': 'progress',
                     'step': f'searching_{country_upper.lower()}',
-                    'message': f'Durchsuche {db_name} mit Keywords: {keywords_str}',
+                    'message': f'Durchsuche {db_name} mit Keywords: {", ".join(stat_keywords[:3])}',
                     'progress': progress
                 }) + '\n'
-                time.sleep(0.3)
-                all_data["country_specific"].append(connector_func(keywords))
-                progress += 2
+                
+                try:
+                    all_data["country_specific"].append(connector_func(stat_keywords))
+                    progress += 1
+                except TimeoutError:
+                    yield json.dumps({
+                        'type': 'progress',
+                        'step': 'timeout_warning',
+                        'message': f'⚠️ {db_name} Timeout - übersprungen',
+                        'progress': progress
+                    }) + '\n'
+                    progress += 1
         
         total_sources = len(all_data["general_sources"]) + len(all_data["web_sources"]) + len(all_data["country_specific"])
         
