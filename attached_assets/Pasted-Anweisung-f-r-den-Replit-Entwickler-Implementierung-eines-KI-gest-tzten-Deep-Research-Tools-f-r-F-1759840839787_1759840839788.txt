@@ -1,0 +1,269 @@
+Anweisung für den Replit-Entwickler: Implementierung eines KI-gestützten "Deep Research"-Tools für Food Trends
+1. Übergeordnetes Ziel & Leitprinzipien (Das "Warum")
+Du bist ein erfahrener Full-Stack-Entwickler mit Expertise in KI-Integration. Deine Aufgabe ist es, ein neues, fortschrittliches "Deep Research"-Feature in meine bestehende Web-App für Food-Trend-Analysen zu implementieren. Dieses Tool soll es Nutzern ermöglichen, auf Knopfdruck tiefgehende, KI-generierte Trend-Reports zu erstellen, die auf einer umfassenden Analyse spezifischer Datenbanken und Websites basieren. Das Endergebnis muss ein professioneller, zitierfähiger PDF-Report sein, der sich nahtlos in die bestehende App-Struktur einfügt.
+
+Leitprinzipien, die jede Entscheidung leiten müssen:
+
+Verlässlichkeit: Jeder Fakt im Report muss auf eine Quelle zurückführbar sein. Das System muss robust gegenüber Fehlern (z.B. nicht erreichbare Quellen) sein.
+
+Transparenz: Der Nutzer muss jederzeit den vollen Einblick in den Rechercheprozess haben. Keine "Black Box".
+
+Professionalität: Das Endprodukt (PDF) und die User Experience müssen höchsten professionellen Standards genügen.
+
+Effizienz: Die Architektur muss auf eine performante und kosteneffiziente Verarbeitung der Anfragen ausgelegt sein.
+
+2. Frontend-Implementierung: Benutzeroberfläche und Interaktion (Das "Was" aus Nutzersicht)
+2.1. UI-Komponenten & Design
+DeepResearchButton: Platziert rechts neben der Suchleiste. On-hover-Effekt und klares disabled-Styling, wenn ein Nutzer bereits die maximale Anzahl an Jobs laufen hat.
+
+ResearchModal: Ein Container für den gesamten Prozess. Übergänge zwischen den Ansichten (Formular -> Fortschritt) müssen flüssig animiert sein (z.B. Fade/Slide).
+
+InputForm: Das initiale Formular im Modal.
+
+Validierung: Die Beschreibung ist ein Pflichtfeld. Der "Report generieren"-Button ist disabled, bis das Feld ausgefüllt ist.
+
+State Handling: Der Button zeigt nach dem Klick einen Spinner und wird disabled, um doppelte Submissions zu verhindern.
+
+ProgressView: Die Ansicht nach dem Absenden.
+
+Layout: Zweispaltig. Links eine Liste der zu prüfenden Quellen mit Status-Icon (⏳, ✅, ❌). Rechts das detaillierte Live-Log.
+
+Interaktivität: Das Log soll automatisch nach unten scrollen, wenn neue Einträge hinzukommen.
+
+2.2. State Management (Frontend)
+Verwende einen State-Management-Ansatz (z.B. React Context, Zustand), um den globalen Zustand der laufenden Jobs zu verwalten. Dies stellt sicher, dass die Toast-Benachrichtigung und die Job-Historie konsistent sind, auch wenn das Modal geschlossen wird.
+
+3. Technische Architektur & Backend-Kommunikation (Das "Wie")
+3.1. Backend-Struktur (Monorepo)
+package.json im Root: Definiert Workspaces für backend und worker.
+
+/backend: Die Express.js-Anwendung, die die API und WebSocket-Verbindung bereitstellt.
+
+/routes: API-Endpunkt-Definitionen.
+
+/controllers: Logik für die Behandlung von Anfragen.
+
+/services: Geschäftslogik (z.B. Kommunikation mit der DB).
+
+/sockets: Konfiguration und Handler für Socket.IO.
+
+/worker: Die separate Node.js-Anwendung für die Job-Verarbeitung.
+
+/jobs: Definition der Job-Prozessoren (z.B. researchJob.ts).
+
+/lib: Hilfsfunktionen für Scraping, API-Clients, PDF-Generierung.
+
+3.2. API-Endpunkte (REST)
+POST /api/research-jobs
+
+Zweck: Einen neuen Recherche-Job starten.
+
+Body: { "description": "...", "keywords": ["..."], "categories": ["..."] }
+
+Antwort: 202 Accepted mit { "jobId": "..." }. Die Antwort muss sofort erfolgen, der Job wird in die Queue gestellt.
+
+GET /api/research-jobs
+
+Zweck: Eine Liste aller Jobs für den aktuellen Nutzer abrufen (für die Job-Historie).
+
+GET /api/research-jobs/:id
+
+Zweck: Den detaillierten Status und die Logs eines spezifischen Jobs abrufen (wird beim Wiederöffnen des Modals genutzt).
+
+3.3. Echtzeit-Kommunikation (WebSockets)
+Nach dem Start eines Jobs verbindet sich das Frontend via Socket.IO und tritt einem "Raum" bei, der nach der jobId benannt ist (socket.join(jobId)). Dies stellt sicher, dass Updates nur an den richtigen Client gesendet werden.
+
+Vom Worker gesendete Events:
+
+'status_update': payload: { status: '...', message: '...' } (z.B. status: 'scraping_data', message: 'Starte Suche in PubMed...')
+
+'progress_update': payload: { progress: 25 }
+
+'source_processed': payload: { sourceName: 'PubMed', status: 'success', foundItems: 42 }
+
+'job_completed': payload: { reportId: '...' }
+
+'job_failed': payload: { error: '...' }
+
+3.4. Definierte Datenquellen (Verbindlich)
+Die Recherche muss ausschließlich auf den folgenden Quellen basieren:
+
+Allgemeine Datenbanken:
+Open Food Facts
+
+PubMed
+
+Google Trends
+
+Länderspezifische statistische Datenbanken:
+EU: Eurostat (EU Kommission)
+
+USA: USDA FoodData Central
+
+DE: Genesis Datenbank
+
+UK: Office for National Statistics
+
+CA: Statistics Canada
+
+FR: INSEE API
+
+CH: Bundesamt für Statistik
+
+AU: Australian Bureau of Statistics
+
+JP: e-Stat
+
+NZ: Stats NZ
+
+NL: Centraal Bureau voor de Statistiek
+
+AT: Statistik Austria
+
+SP: Instituto Nacional de Estadística
+
+IT: Istituto Nazionale di Statistica
+
+DK: Statistics Denmark (Danmarks Statistik)
+
+FI: Statistics Finland (Tilastokeskus)
+
+NO: Statistics Norway (Statistisk sentralbyrå - SSB)
+
+SE: Statistics Sweden (Statistiska centralbyrån - SCB)
+
+PL: Statistics Poland (Główny Urząd Statystyczny - GUS)
+
+CZ: Czech Statistical Office (Český statistický úřad - ČSÚ)
+
+HU: Hungarian Central Statistical Office (Központi Statisztikai Hivatal - KSH)
+
+EE: Statistics Estonia (Statistikaamet)
+
+KR: Korean Statistical Information Service (KOSIS)
+
+SG: Singapore Department of Statistics (SingStat)
+
+IN: Ministry of Statistics and Programme Implementation (MOSPI)
+
+ID: BPS-Statistics Indonesia (Badan Pusat Statistik)
+
+BR: Brazilian Institute of Geography and Statistics (IBGE)
+
+MX: National Institute of Statistics and Geography (INEGI)
+
+CL: National Statistics Institute of Chile (INE)
+
+CO: National Administrative Department of Statistics (DANE)
+
+ZA: Statistics South Africa (Stats SA)
+
+KE: Kenya National Bureau of Statistics (KNBS)
+
+IL: Israel Central Bureau of Statistics (CBS)
+
+TR: Turkish Statistical Institute (TÜİK)
+
+Websites & Fachportale:
+Supermarket News (https://www.supermarketnews.com)
+
+mindbodygreen (https://www.mindbodygreen.com)
+
+Biocatalysts (https://www.biocatalysts.com)
+
+NutraIngredients (https://www.nutraingredients.com)
+
+Food Ingredients First (https://www.foodingredientsfirst.com)
+
+4. Worker-Prozess: Detaillierte Orchestrierung
+Job-Aufnahme: Der Worker nimmt einen Job aus der BullMQ-Queue. Der jobId ist bekannt.
+
+Status-Update: Setzt den DB-Status auf processing_strategy. Sendet ein 'status_update'-Event.
+
+Prompt 1 (Strategie): Ruft die Gemini API mit dem System-Prompt 1 auf.
+
+Fehlerbehandlung: Wenn die Antwort kein valides JSON ist oder der API-Call fehlschlägt, wird der Job als failed markiert und ein 'job_failed'-Event gesendet.
+
+Daten-Scraping: Setzt den DB-Status auf scraping_data.
+
+Startet parallel Scraping-Tasks für alle in der Strategie definierten Quellen (siehe Sektion 3.4) (Promise.allSettled).
+
+Für jede beendete Quelle wird ein 'source_processed'-Event gesendet und das Ergebnis in der sources-Collection gespeichert.
+
+Synthese: Nach Abschluss aller Scraping-Tasks werden die bereinigten Inhalte aggregiert. Status wird auf synthesizing_report gesetzt.
+
+Prompt 2 (Synthese): Ruft die Gemini API mit allen Inhalten und System-Prompt 2 auf.
+
+Finalisierung: Status wird auf finalizing_report gesetzt.
+
+Prompt 3 (Finalisierung): Ruft die Gemini API mit dem synthetisierten Inhalt und System-Prompt 3 auf.
+
+PDF-Generierung: Status wird auf generating_pdf gesetzt.
+
+Die KI-generierten Inhalte werden in das HTML-Template (EJS/Handlebars) eingefügt.
+
+Eventuelle Diagramme werden mit Chart.js serverseitig als Bilder gerendert.
+
+Puppeteer konvertiert das HTML zu einem PDF und speichert es (z.B. in einem S3-Bucket oder lokal).
+
+Abschluss: Status wird auf completed gesetzt. Ein Eintrag in der reports-Collection wird erstellt. Der finale 'job_completed'-Event wird gesendet.
+
+5. Detaillierte Datenmodelle (MongoDB mit Mongoose)
+JobSchema:
+
+userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true }
+
+userInput: { description: String, keywords: [String], categories: [String] }
+
+status: { type: String, enum: ['queued', ..., 'cancelled'], required: true }
+
+progress: { type: Number, min: 0, max: 100, default: 0 }
+
+statusLog: [{ timestamp: Date, message: String }]
+
+result: { reportId: { type: Schema.Types.ObjectId, ref: 'Report' }, error: String }
+
+SourceSchema:
+
+jobId: { type: Schema.Types.ObjectId, ref: 'Job', required: true, index: true }
+
+url: { type: String, required: true }
+
+cleanedContent: String
+
+status: { type: String, enum: ['pending', 'success', 'failed'], required: true }
+
+ReportSchema:
+
+jobId: { type: Schema.Types.ObjectId, ref: 'Job', required: true }
+
+title: { type: String, required: true }
+
+executiveSummary: String
+
+mainContent: Schema.Types.Mixed // Speichert die JSON-Struktur aus Prompt 2
+
+pdfUrl: { type: String, required: true }
+
+6. User Experience Flow & Edge Cases
+(Bleibt wie in der Vorversion)
+
+7. Testing, Deployment & Go-Live-Checkliste
+7.1. Testing
+(Bleibt wie in der Vorversion: Unit, Integration, E2E-Tests)
+
+7.2. Deployment
+(Bleibt wie in der Vorversion: Docker-Containerisierung)
+
+7.3. Go-Live-Checkliste
+[ ] Konfiguration: Alle Umgebungsvariablen (GEMINI_API_KEY, DATABASE_URL, REDIS_URL, etc.) sind im Replit Secrets Manager hinterlegt.
+
+[ ] Datenbank: Indizes für die Datenbank sind gesetzt (userId, jobId).
+
+[ ] Worker: Mindestens ein Worker-Prozess ist gestartet und lauscht auf die Queue.
+
+[ ] Rate Limiting: API-Endpunkte sind gegen Missbrauch geschützt (z.B. mit express-rate-limit).
+
+[ ] Logging: Ein Logging-Dienst ist konfiguriert, um Produktions-Logs zu sammeln und zu analysieren.
+
+[ ] Backup: Eine Backup-Strategie für die Datenbank ist vorhanden.
