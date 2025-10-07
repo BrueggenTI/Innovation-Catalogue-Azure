@@ -1821,19 +1821,22 @@ function initializeCustomReportGeneration() {
                     if (line.startsWith('data: ')) {
                         try {
                             const data = JSON.parse(line.substring(6));
+                            console.log('Received SSE data:', data);
 
                             if (data.type === 'progress') {
                                 updateProgressStep(data);
                                 addLogMessage(data.message);
                             } else if (data.type === 'complete') {
+                                console.log('Report generation complete! Data:', data);
                                 generatedReportData = data;
                                 showReportPreview(data);
                                 return;
                             } else if (data.type === 'error') {
+                                console.error('Server error:', data.message);
                                 throw new Error(data.message);
                             }
                         } catch (e) {
-                            console.error('Error parsing SSE data:', e);
+                            console.error('Error parsing SSE data:', e, 'Line:', line);
                             addLogMessage(`Error parsing log data: ${line}`);
                         }
                     } else if (line.trim() !== '') {
