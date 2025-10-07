@@ -1039,6 +1039,16 @@ def get_sources_list(raw_data: Dict[str, Any]) -> List[Dict[str, str]]:
     """
     sources = []
     
+    # Add industry-specific web sources used for deep research
+    web_sources = [
+        {'name': 'Supermarket News', 'url': 'https://www.supermarketnews.com'},
+        {'name': 'mindbodygreen', 'url': 'https://www.mindbodygreen.com'},
+        {'name': 'Biocatalysts - Ingredient Innovation', 'url': 'https://www.biocatalysts.com'},
+        {'name': 'NutraIngredients', 'url': 'https://www.nutraingredients.com'},
+        {'name': 'Food Ingredients First', 'url': 'https://www.foodingredientsfirst.com'}
+    ]
+    sources.extend(web_sources)
+    
     for source in raw_data.get('general_sources', []):
         if 'source' in source and 'url' in source:
             sources.append({
@@ -1125,6 +1135,16 @@ Verwende professionelle Sprache, konkrete Daten (auch geschätzte, realistische 
 - Wissenschaftliche Erkenntnisse und Studien
 - Wettbewerbsanalyse und Best Practices
 
+**Deep Research Web-Quellen (nutze diese für tiefgehende Recherche):**
+Durchsuche folgende branchenspezifische Websites und all ihre Unterseiten für aktuelle Insights:
+- Supermarket News (https://www.supermarketnews.com) - Food and drink news, FMCG retail news
+- mindbodygreen (https://www.mindbodygreen.com) - Well-rounded well-being, health trends
+- Biocatalysts (https://www.biocatalysts.com) - Ingredient innovation leading the food industry in 2025
+- NutraIngredients (https://www.nutraingredients.com) - Dietary supplements, nutraceuticals, functional foods, health ingredients, herbals
+- Food Ingredients First (https://www.foodingredientsfirst.com) - Food ingredients & food science, additives, flavours, starch
+
+Nutze diese Quellen aktiv für deine Analyse und integriere die neuesten Erkenntnisse, Trends und Innovationen aus diesen Branchen-Websites in deinen Report.
+
 Erstelle einen detaillierten, datengestützten Report, der für strategische Entscheidungen in Produktentwicklung und Marketing verwendet werden kann. Verwende realistische Marktdaten, Statistiken und Insights basierend auf aktuellen Branchentrends 2024/2025."""
     
     try:
@@ -1138,7 +1158,11 @@ Erstelle einen detaillierten, datengestützten Report, der für strategische Ent
             max_tokens=3500
         )
         
-        response_text = response.choices[0].message.content.strip()
+        response_text = response.choices[0].message.content
+        if not response_text:
+            raise ValueError("Empty response from OpenAI")
+        
+        response_text = response_text.strip()
         
         if response_text.startswith("```json"):
             response_text = response_text[7:]
@@ -1220,7 +1244,11 @@ def extract_key_facts(report_data: Dict[str, Any]) -> List[str]:
             max_tokens=200
         )
         
-        response_text = response.choices[0].message.content.strip()
+        response_text = response.choices[0].message.content
+        if not response_text:
+            raise ValueError("Empty response from OpenAI")
+        
+        response_text = response_text.strip()
         
         if response_text.startswith("```json"):
             response_text = response_text[7:]
