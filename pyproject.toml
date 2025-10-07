@@ -31,4 +31,5 @@ dependencies = [
     "docx>=0.2.4",
     "pymupdf>=1.26.4",
     "fitz>=0.0.1.dev2",
+    "google-genai>=1.41.0",
 ]
