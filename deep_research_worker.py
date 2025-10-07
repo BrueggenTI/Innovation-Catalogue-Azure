@@ -22,12 +22,16 @@ from google.genai import types
 # Initialize Gemini client (using blueprint:python_gemini)
 gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Definierte Datenquellen (aus dem Prompt)
+# Definierte Datenquellen (erweiterte Liste)
 DATA_SOURCES = {
     "general": [
         {"name": "Open Food Facts", "url": "https://world.openfoodfacts.org"},
         {"name": "PubMed", "url": "https://pubmed.ncbi.nlm.nih.gov"},
         {"name": "Google Trends", "url": "https://trends.google.com"}
+    ],
+    "ai_deep_research": [
+        {"name": "Perplexity API", "url": "https://www.perplexity.ai"},
+        {"name": "Gemini API", "url": "https://ai.google.dev"}
     ],
     "statistical_dbs": {
         "EU": {"name": "Eurostat", "url": "https://ec.europa.eu/eurostat"},
@@ -35,26 +39,35 @@ DATA_SOURCES = {
         "DE": {"name": "GENESIS Datenbank", "url": "https://www-genesis.destatis.de"},
         "UK": {"name": "Office for National Statistics", "url": "https://www.ons.gov.uk"},
         "CA": {"name": "Statistics Canada", "url": "https://www.statcan.gc.ca"},
-        "FR": {"name": "INSEE", "url": "https://www.insee.fr"},
+        "FR": {"name": "INSEE API", "url": "https://www.insee.fr"},
         "CH": {"name": "Bundesamt für Statistik", "url": "https://www.bfs.admin.ch"},
         "AU": {"name": "Australian Bureau of Statistics", "url": "https://www.abs.gov.au"},
-        "JP": {"name": "e-Stat Japan", "url": "https://www.e-stat.go.jp"},
+        "JP": {"name": "e-Stat", "url": "https://www.e-stat.go.jp"},
         "NZ": {"name": "Stats NZ", "url": "https://www.stats.govt.nz"},
-        "NL": {"name": "CBS Netherlands", "url": "https://www.cbs.nl"},
+        "NL": {"name": "Centraal Bureau voor de Statistiek", "url": "https://www.cbs.nl"},
         "AT": {"name": "Statistik Austria", "url": "https://www.statistik.at"},
-        "ES": {"name": "INE Spain", "url": "https://www.ine.es"},
-        "IT": {"name": "ISTAT Italy", "url": "https://www.istat.it"},
+        "ES": {"name": "Instituto Nacional de Estadística", "url": "https://www.ine.es"},
+        "IT": {"name": "Istituto Nazionale di Statistica", "url": "https://www.istat.it"},
         "DK": {"name": "Statistics Denmark", "url": "https://www.dst.dk"},
         "FI": {"name": "Statistics Finland", "url": "https://www.stat.fi"},
         "NO": {"name": "Statistics Norway", "url": "https://www.ssb.no"},
         "SE": {"name": "Statistics Sweden", "url": "https://www.scb.se"},
-        "PL": {"name": "GUS Poland", "url": "https://stat.gov.pl"},
-        "CZ": {"name": "CZSO Czech", "url": "https://www.czso.cz"},
-        "HU": {"name": "KSH Hungary", "url": "https://www.ksh.hu"},
+        "PL": {"name": "Statistics Poland (GUS)", "url": "https://stat.gov.pl"},
+        "CZ": {"name": "Czech Statistical Office", "url": "https://www.czso.cz"},
+        "HU": {"name": "Hungarian Central Statistical Office", "url": "https://www.ksh.hu"},
         "EE": {"name": "Statistics Estonia", "url": "https://www.stat.ee"},
-        "KR": {"name": "KOSIS South Korea", "url": "https://kosis.kr"},
-        "SG": {"name": "SingStat Singapore", "url": "https://www.singstat.gov.sg"},
-        "IN": {"name": "MOSPI India", "url": "https://mospi.gov.in"}
+        "KR": {"name": "Korean Statistical Information Service", "url": "https://kosis.kr"},
+        "SG": {"name": "Singapore Department of Statistics", "url": "https://www.singstat.gov.sg"},
+        "IN": {"name": "Ministry of Statistics India (MOSPI)", "url": "https://mospi.gov.in"},
+        "ID": {"name": "BPS-Statistics Indonesia", "url": "https://www.bps.go.id"},
+        "BR": {"name": "IBGE Brazil", "url": "https://www.ibge.gov.br"},
+        "MX": {"name": "INEGI Mexico", "url": "https://www.inegi.org.mx"},
+        "CL": {"name": "INE Chile", "url": "https://www.ine.gob.cl"},
+        "CO": {"name": "DANE Colombia", "url": "https://www.dane.gov.co"},
+        "ZA": {"name": "Statistics South Africa", "url": "https://www.statssa.gov.za"},
+        "KE": {"name": "Kenya National Bureau of Statistics", "url": "https://www.knbs.or.ke"},
+        "IL": {"name": "Israel Central Bureau of Statistics", "url": "https://www.cbs.gov.il"},
+        "TR": {"name": "Turkish Statistical Institute", "url": "https://www.tuik.gov.tr"}
     },
     "industry_websites": [
         {"name": "Supermarket News", "url": "https://www.supermarketnews.com"},
