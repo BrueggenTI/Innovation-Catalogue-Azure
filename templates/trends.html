@@ -845,6 +845,9 @@ function initializeDeepResearch() {
                 return;
             }
             
+            // Get edited plan
+            const editedPlan = getEditedPlan();
+            
             approvePlanBtn.disabled = true;
             approvePlanBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Bestätige Plan...';
             
@@ -852,7 +855,7 @@ function initializeDeepResearch() {
                 const response = await fetch(`/api/deep-research/plan/${currentJobId}/approve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
+                    body: JSON.stringify({ plan: editedPlan })
                 });
                 
                 const result = await response.json();
@@ -1006,7 +1009,12 @@ function handleResearchUpdate(data) {
     }
 }
 
+let currentPlan = null;
+
 function showResearchPlan(plan) {
+    // Store plan for later editing
+    currentPlan = plan;
+    
     // Hide form, show plan view
     document.getElementById('researchFormView').style.display = 'none';
     document.getElementById('researchProgressView').style.display = 'none';
@@ -1016,67 +1024,154 @@ function showResearchPlan(plan) {
     document.getElementById('startResearchBtn').style.display = 'none';
     document.getElementById('approvePlanBtn').style.display = 'inline-block';
     
-    // Render plan content
+    // Render EDITABLE plan content
     const planContent = document.getElementById('researchPlanContent');
     let html = '';
     
-    // Research Objectives
+    // Research Objectives (Editable)
+    html += '<div class="mb-4">';
+    html += '<label class="form-label fw-semibold text-primary"><i class="fas fa-bullseye me-2"></i>Forschungsziele</label>';
+    html += '<div id="objectivesList">';
     if (plan.research_objectives && plan.research_objectives.length > 0) {
-        html += '<div class="mb-4">';
-        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-bullseye me-2"></i>Forschungsziele</h6>';
-        html += '<ul class="list-unstyled ms-3">';
-        plan.research_objectives.forEach(obj => {
-            html += `<li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>${escapeHtml(obj)}</li>`;
+        plan.research_objectives.forEach((obj, idx) => {
+            html += `<div class="input-group mb-2">
+                <input type="text" class="form-control objective-input" data-index="${idx}" value="${escapeHtml(obj)}" />
+                <button class="btn btn-outline-danger btn-sm" type="button" onclick="removeObjective(${idx})"><i class="fas fa-trash"></i></button>
+            </div>`;
         });
-        html += '</ul></div>';
     }
+    html += '</div>';
+    html += '<button class="btn btn-sm btn-outline-primary mt-2" type="button" onclick="addObjective()"><i class="fas fa-plus me-1"></i>Ziel hinzufügen</button>';
+    html += '</div>';
     
-    // Data Sources Plan
-    if (plan.data_sources_plan) {
-        html += '<div class="mb-4">';
-        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-database me-2"></i>Geplante Datenquellen</h6>';
-        for (const [category, sources] of Object.entries(plan.data_sources_plan)) {
-            html += `<div class="ms-3 mb-2"><strong>${escapeHtml(category)}:</strong> ${Array.isArray(sources) ? sources.map(s => escapeHtml(s)).join(', ') : escapeHtml(sources)}</div>`;
-        }
-        html += '</div>';
-    }
+    // Data Sources Plan (Editable - as JSON for simplicity)
+    html += '<div class="mb-4">';
+    html += '<label class="form-label fw-semibold text-primary"><i class="fas fa-database me-2"></i>Geplante Datenquellen</label>';
+    html += '<small class="d-block text-muted mb-2">Bearbeiten Sie die Quellen im JSON-Format</small>';
+    html += `<textarea class="form-control font-monospace" id="dataSourcesInput" rows="4">${JSON.stringify(plan.data_sources_plan || {}, null, 2)}</textarea>`;
+    html += '</div>';
     
-    // Expected Data Points
-    if (plan.expected_data_points) {
-        html += '<div class="mb-4">';
-        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-chart-bar me-2"></i>Erwartete Datenpunkte</h6>';
-        html += `<div class="ms-3"><strong class="text-success">${plan.expected_data_points}+</strong> Datenpunkte aus verschiedenen Quellen</div>`;
-        html += '</div>';
-    }
+    // Expected Data Points (Editable)
+    html += '<div class="mb-4">';
+    html += '<label class="form-label fw-semibold text-primary"><i class="fas fa-chart-bar me-2"></i>Erwartete Datenpunkte</label>';
+    html += `<input type="number" class="form-control" id="dataPointsInput" value="${plan.expected_data_points || 250}" min="50" max="1000" />`;
+    html += '<small class="form-text text-muted">Anzahl der zu sammelnden Datenpunkte (50-1000)</small>';
+    html += '</div>';
     
-    // Analysis Approach
-    if (plan.analysis_approach) {
-        html += '<div class="mb-4">';
-        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-cogs me-2"></i>Analyse-Ansatz</h6>';
-        html += `<div class="ms-3">${escapeHtml(plan.analysis_approach)}</div>`;
-        html += '</div>';
-    }
+    // Analysis Approach (Editable)
+    html += '<div class="mb-4">';
+    html += '<label class="form-label fw-semibold text-primary"><i class="fas fa-cogs me-2"></i>Analyse-Ansatz</label>';
+    html += `<textarea class="form-control" id="analysisApproachInput" rows="3">${escapeHtml(plan.analysis_approach || '')}</textarea>`;
+    html += '</div>';
     
-    // Report Structure
+    // Report Structure (Editable)
+    html += '<div class="mb-4">';
+    html += '<label class="form-label fw-semibold text-primary"><i class="fas fa-file-alt me-2"></i>Report-Struktur</label>';
+    html += '<div id="reportStructureList">';
     if (plan.report_structure && plan.report_structure.length > 0) {
-        html += '<div class="mb-4">';
-        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-file-alt me-2"></i>Report-Struktur</h6>';
-        html += '<ol class="ms-3">';
-        plan.report_structure.forEach(section => {
-            html += `<li class="mb-1">${escapeHtml(section)}</li>`;
+        plan.report_structure.forEach((section, idx) => {
+            html += `<div class="input-group mb-2">
+                <span class="input-group-text">${idx + 1}.</span>
+                <input type="text" class="form-control structure-input" data-index="${idx}" value="${escapeHtml(section)}" />
+                <button class="btn btn-outline-danger btn-sm" type="button" onclick="removeStructureItem(${idx})"><i class="fas fa-trash"></i></button>
+            </div>`;
         });
-        html += '</ol></div>';
     }
+    html += '</div>';
+    html += '<button class="btn btn-sm btn-outline-primary mt-2" type="button" onclick="addStructureItem()"><i class="fas fa-plus me-1"></i>Abschnitt hinzufügen</button>';
+    html += '</div>';
     
-    // Estimated Duration
-    if (plan.estimated_duration) {
-        html += '<div class="mb-4">';
-        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-clock me-2"></i>Geschätzte Dauer</h6>';
-        html += `<div class="ms-3"><strong>${plan.estimated_duration}</strong> Minuten</div>`;
-        html += '</div>';
-    }
+    // Estimated Duration (Read-only, calculated)
+    html += '<div class="mb-3">';
+    html += '<label class="form-label fw-semibold text-muted"><i class="fas fa-clock me-2"></i>Geschätzte Dauer</label>';
+    html += `<div class="ms-3"><strong>${plan.estimated_duration || 5}</strong> Minuten</div>`;
+    html += '</div>';
     
     planContent.innerHTML = html;
+}
+
+function addObjective() {
+    const list = document.getElementById('objectivesList');
+    const index = document.querySelectorAll('.objective-input').length;
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `
+        <input type="text" class="form-control objective-input" data-index="${index}" value="" placeholder="Neues Forschungsziel" />
+        <button class="btn btn-outline-danger btn-sm" type="button" onclick="removeObjective(${index})"><i class="fas fa-trash"></i></button>
+    `;
+    list.appendChild(div);
+}
+
+function removeObjective(index) {
+    const inputs = document.querySelectorAll('.objective-input');
+    if (inputs[index]) {
+        inputs[index].parentElement.remove();
+    }
+}
+
+function addStructureItem() {
+    const list = document.getElementById('reportStructureList');
+    const index = document.querySelectorAll('.structure-input').length;
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `
+        <span class="input-group-text">${index + 1}.</span>
+        <input type="text" class="form-control structure-input" data-index="${index}" value="" placeholder="Neuer Report-Abschnitt" />
+        <button class="btn btn-outline-danger btn-sm" type="button" onclick="removeStructureItem(${index})"><i class="fas fa-trash"></i></button>
+    `;
+    list.appendChild(div);
+}
+
+function removeStructureItem(index) {
+    const inputs = document.querySelectorAll('.structure-input');
+    if (inputs[index]) {
+        inputs[index].parentElement.remove();
+        // Update numbering
+        document.querySelectorAll('.structure-input').forEach((input, idx) => {
+            const span = input.parentElement.querySelector('.input-group-text');
+            if (span) span.textContent = `${idx + 1}.`;
+        });
+    }
+}
+
+function getEditedPlan() {
+    // Collect edited objectives
+    const objectives = [];
+    document.querySelectorAll('.objective-input').forEach(input => {
+        const value = input.value.trim();
+        if (value) objectives.push(value);
+    });
+    
+    // Parse data sources
+    let dataSources = {};
+    try {
+        dataSources = JSON.parse(document.getElementById('dataSourcesInput').value);
+    } catch (e) {
+        console.error('Invalid JSON in data sources:', e);
+        dataSources = currentPlan.data_sources_plan || {};
+    }
+    
+    // Get data points
+    const dataPoints = parseInt(document.getElementById('dataPointsInput').value) || 250;
+    
+    // Get analysis approach
+    const analysisApproach = document.getElementById('analysisApproachInput').value.trim();
+    
+    // Collect report structure
+    const reportStructure = [];
+    document.querySelectorAll('.structure-input').forEach(input => {
+        const value = input.value.trim();
+        if (value) reportStructure.push(value);
+    });
+    
+    return {
+        research_objectives: objectives,
+        data_sources_plan: dataSources,
+        expected_data_points: dataPoints,
+        analysis_approach: analysisApproach,
+        report_structure: reportStructure,
+        estimated_duration: currentPlan.estimated_duration || 5
+    };
 }
 
 function addResearchLog(message, type = 'info') {
