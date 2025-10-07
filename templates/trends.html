@@ -489,6 +489,25 @@
                     </form>
                 </div>
 
+                <!-- Plan Approval View (Hidden initially) -->
+                <div id="researchPlanView" style="display: none;">
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Research-Plan generiert!</strong> Bitte überprüfen Sie den Plan und bestätigen Sie ihn, oder nehmen Sie Anpassungen vor.
+                    </div>
+                    
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-0">
+                            <h6 class="mb-0 fw-semibold" style="color: #661c31;">
+                                <i class="fas fa-clipboard-list me-2"></i>Detaillierter Research-Plan
+                            </h6>
+                        </div>
+                        <div class="card-body" id="researchPlanContent">
+                            <!-- Plan content will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Progress View (Hidden initially) -->
                 <div id="researchProgressView" style="display: none;">
                     <div class="row">
@@ -546,6 +565,9 @@
                 </button>
                 <button type="button" class="btn btn-success" id="startResearchBtn">
                     <i class="fas fa-play me-2"></i>Research Starten
+                </button>
+                <button type="button" class="btn btn-primary" id="approvePlanBtn" style="display: none;">
+                    <i class="fas fa-check me-2"></i>Plan Bestätigen & Fortfahren
                 </button>
             </div>
         </div>
@@ -809,10 +831,51 @@ let eventSource = null;
 
 function initializeDeepResearch() {
     const startBtn = document.getElementById('startResearchBtn');
+    const approvePlanBtn = document.getElementById('approvePlanBtn');
     const cancelBtn = document.getElementById('cancelResearchBtn');
     const toggleLogsBtn = document.getElementById('toggleResearchLogs');
     
     if (!startBtn) return;
+    
+    // Approve Plan Button
+    if (approvePlanBtn) {
+        approvePlanBtn.addEventListener('click', async function() {
+            if (!currentJobId) {
+                showResearchError('Keine Job-ID gefunden.');
+                return;
+            }
+            
+            approvePlanBtn.disabled = true;
+            approvePlanBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Bestätige Plan...';
+            
+            try {
+                const response = await fetch(`/api/deep-research/plan/${currentJobId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'Failed to approve plan');
+                }
+                
+                // Hide plan view, show progress view
+                document.getElementById('researchPlanView').style.display = 'none';
+                document.getElementById('researchProgressView').style.display = 'block';
+                approvePlanBtn.style.display = 'none';
+                
+                // Research will continue automatically via SSE
+                
+            } catch (error) {
+                console.error('Error approving plan:', error);
+                showResearchError(error.message);
+                approvePlanBtn.disabled = false;
+                approvePlanBtn.innerHTML = '<i class="fas fa-check me-2"></i>Plan Bestätigen & Fortfahren';
+            }
+        });
+    }
     
     // Start Research Button
     startBtn.addEventListener('click', async function() {
@@ -908,7 +971,13 @@ function connectToResearchStream(jobId) {
 }
 
 function handleResearchUpdate(data) {
-    const { type, message, progress, source, status } = data;
+    const { type, message, progress, source, status, plan } = data;
+    
+    // Handle plan ready
+    if (type === 'plan_ready' && plan) {
+        showResearchPlan(plan);
+        return;
+    }
     
     // Update progress bar
     if (progress !== undefined) {
@@ -935,6 +1004,79 @@ function handleResearchUpdate(data) {
     } else if (type === 'error') {
         handleResearchError(data);
     }
+}
+
+function showResearchPlan(plan) {
+    // Hide form, show plan view
+    document.getElementById('researchFormView').style.display = 'none';
+    document.getElementById('researchProgressView').style.display = 'none';
+    document.getElementById('researchPlanView').style.display = 'block';
+    
+    // Hide start button, show approve button
+    document.getElementById('startResearchBtn').style.display = 'none';
+    document.getElementById('approvePlanBtn').style.display = 'inline-block';
+    
+    // Render plan content
+    const planContent = document.getElementById('researchPlanContent');
+    let html = '';
+    
+    // Research Objectives
+    if (plan.research_objectives && plan.research_objectives.length > 0) {
+        html += '<div class="mb-4">';
+        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-bullseye me-2"></i>Forschungsziele</h6>';
+        html += '<ul class="list-unstyled ms-3">';
+        plan.research_objectives.forEach(obj => {
+            html += `<li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>${escapeHtml(obj)}</li>`;
+        });
+        html += '</ul></div>';
+    }
+    
+    // Data Sources Plan
+    if (plan.data_sources_plan) {
+        html += '<div class="mb-4">';
+        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-database me-2"></i>Geplante Datenquellen</h6>';
+        for (const [category, sources] of Object.entries(plan.data_sources_plan)) {
+            html += `<div class="ms-3 mb-2"><strong>${escapeHtml(category)}:</strong> ${Array.isArray(sources) ? sources.map(s => escapeHtml(s)).join(', ') : escapeHtml(sources)}</div>`;
+        }
+        html += '</div>';
+    }
+    
+    // Expected Data Points
+    if (plan.expected_data_points) {
+        html += '<div class="mb-4">';
+        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-chart-bar me-2"></i>Erwartete Datenpunkte</h6>';
+        html += `<div class="ms-3"><strong class="text-success">${plan.expected_data_points}+</strong> Datenpunkte aus verschiedenen Quellen</div>`;
+        html += '</div>';
+    }
+    
+    // Analysis Approach
+    if (plan.analysis_approach) {
+        html += '<div class="mb-4">';
+        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-cogs me-2"></i>Analyse-Ansatz</h6>';
+        html += `<div class="ms-3">${escapeHtml(plan.analysis_approach)}</div>`;
+        html += '</div>';
+    }
+    
+    // Report Structure
+    if (plan.report_structure && plan.report_structure.length > 0) {
+        html += '<div class="mb-4">';
+        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-file-alt me-2"></i>Report-Struktur</h6>';
+        html += '<ol class="ms-3">';
+        plan.report_structure.forEach(section => {
+            html += `<li class="mb-1">${escapeHtml(section)}</li>`;
+        });
+        html += '</ol></div>';
+    }
+    
+    // Estimated Duration
+    if (plan.estimated_duration) {
+        html += '<div class="mb-4">';
+        html += '<h6 class="fw-semibold text-primary"><i class="fas fa-clock me-2"></i>Geschätzte Dauer</h6>';
+        html += `<div class="ms-3"><strong>${plan.estimated_duration}</strong> Minuten</div>`;
+        html += '</div>';
+    }
+    
+    planContent.innerHTML = html;
 }
 
 function addResearchLog(message, type = 'info') {
@@ -1040,18 +1182,28 @@ function hideResearchError() {
 
 function resetResearchModal() {
     document.getElementById('researchFormView').style.display = 'block';
+    document.getElementById('researchPlanView').style.display = 'none';
     document.getElementById('researchProgressView').style.display = 'none';
     document.getElementById('researchDescription').value = '';
     document.getElementById('researchKeywords').value = '';
     document.getElementById('researchCategories').value = '';
     document.getElementById('sourcesStatusList').innerHTML = '';
     document.getElementById('researchLiveLog').innerHTML = '';
+    document.getElementById('researchPlanContent').innerHTML = '';
     document.getElementById('overallProgressBar').style.width = '0%';
     document.getElementById('overallProgressText').textContent = '0%';
     
     const startBtn = document.getElementById('startResearchBtn');
     startBtn.disabled = false;
+    startBtn.style.display = 'inline-block';
     startBtn.innerHTML = '<i class="fas fa-play me-2"></i>Research Starten';
+    
+    const approvePlanBtn = document.getElementById('approvePlanBtn');
+    if (approvePlanBtn) {
+        approvePlanBtn.disabled = false;
+        approvePlanBtn.style.display = 'none';
+        approvePlanBtn.innerHTML = '<i class="fas fa-check me-2"></i>Plan Bestätigen & Fortfahren';
+    }
     
     hideResearchError();
 }
