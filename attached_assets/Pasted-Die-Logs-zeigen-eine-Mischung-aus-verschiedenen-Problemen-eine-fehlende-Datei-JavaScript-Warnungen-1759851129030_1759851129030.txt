@@ -1,0 +1,38 @@
+Die Logs zeigen eine Mischung aus verschiedenen Problemen: eine fehlende Datei, JavaScript-Warnungen, einen Verbindungsfehler zu einem Streaming-Dienst und vor allem ein Sicherheitsproblem, das externe Verbindungen blockiert.
+
+Fehler 1: Ressource nicht gefunden (404)
+None:1 Failed to load resource: the server responded with a status of 404 (Not Found)
+Was es bedeutet: Ein 404-Fehler ist ein Klassiker. Der Browser hat versucht, eine Datei (z.B. ein Bild, ein Stylesheet oder ein Skript) zu laden, aber unter der angegebenen Adresse wurde nichts gefunden. Der Log-Eintrag verrät leider nicht, welche Datei fehlt, aber es ist ein klares Zeichen dafür, dass irgendwo ein Pfad falsch ist oder eine Datei auf dem Server fehlt.
+
+Fehler 2: JavaScript-Warnungen & Hinweise
+main.js:103 Navbar element not found
+main.js:441 Page load time: -1576.1000001430511 ms
+main.js:448 Long task detected: 245 ms
+Navbar element not found: Dein JavaScript-Code in main.js sucht nach einem HTML-Element für die Navigationsleiste (z.B. mit document.getElementById('navbar')), kann es aber nicht finden. Das passiert oft, wenn das Skript ausgeführt wird, bevor das HTML-Element geladen wurde, oder wenn es einen Tippfehler in der ID oder Klasse im HTML gibt.
+
+Page load time: -1576.1... ms: Eine negative Ladezeit ist unmöglich. Das ist ein Fehler in deiner eigenen Zeitmessung in der Datei main.js. Die Berechnung ist fehlerhaft, hat aber wahrscheinlich keine Auswirkung auf die Funktion der Seite selbst.
+
+Long task detected: 245 ms: Dein Browser meldet, dass ein Teil deines JavaScript-Codes den Haupt-Thread für 245 Millisekunden blockiert hat. Alles über 50 ms kann dazu führen, dass die Seite kurz einfriert oder auf Nutzereingaben nicht reagiert. Das deutet auf ein Performance-Problem in deinem Code hin.
+
+Fehler 3: Server-Sent Events (SSE)
+trends:1586 SSE Error: Event...
+Was es bedeutet: Deine Anwendung versucht, eine dauerhafte Verbindung zu einem Server aufzubauen, um Live-Daten zu empfangen (sogenannte Server-Sent Events). Diese Verbindung ist fehlgeschlagen oder wurde unterbrochen. Die readyState: 2 bedeutet, dass die Verbindung geschlossen (CLOSED) ist. Der Fehler tritt in der Kommunikation mit der URL https://61b49d5b-8da4-4f2f-a736-16e2f41c9c18-00-2s… auf, was auf ein Problem mit dem Backend oder der Netzwerkverbindung hindeutet.
+
+Fehler 4: Content Security Policy (CSP)
+Refused to connect to 'https://cdn.jsdelivr.net/...' because it violates the following Content Security Policy directive: "connect-src 'self'".
+Was es bedeutet: Das ist der wichtigste und eindeutigste Fehler. Deine Webseite hat eine Content Security Policy (CSP). Das ist eine Sicherheitsregel, die dem Browser vorschreibt, von welchen Quellen er Inhalte laden darf.
+
+Die Regel connect-src 'self' bedeutet: JavaScript darf Verbindungen (z.B. via fetch oder XMLHttpRequest) nur zum eigenen Server ('self') aufbauen.
+
+Das Problem: Dein Code versucht, sogenannte "Source Map"-Dateien (.map) vom externen Server cdn.jsdelivr.net zu laden. Diese Dateien helfen beim Debuggen von komprimiertem Code. Da cdn.jsdelivr.net nicht die eigene Domain ist, blockiert der Browser diese Anfragen korrekterweise.
+
+Zusammenfassung & Nächste Schritte
+CSP anpassen (wichtigster Punkt): Um den Refused to connect-Fehler zu beheben, musst du deine Content Security Policy auf dem Server anpassen. Du müsstest cdn.jsdelivr.net zur connect-src-Direktive hinzufügen.
+
+Beispiel (je nach Server-Konfiguration): Content-Security-Policy: connect-src 'self' https://cdn.jsdelivr.net;
+
+JavaScript-Fehler beheben: Überprüfe dein main.js und das dazugehörige HTML, um sicherzustellen, dass das Navbar Element existiert, wenn das Skript darauf zugreift.
+
+404-Fehler finden: Schau im "Netzwerk"-Tab deiner Browser-Entwicklertools nach, welche Anfrage genau den 404-Fehler verursacht, und korrigiere den Pfad.
+
+SSE-Problem untersuchen: Prüfe, warum die Verbindung zum Streaming-Server fehlschlägt. Das ist wahrscheinlich ein Backend-Thema.

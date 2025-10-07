@@ -23,6 +23,9 @@ from api_clients import fetch_data_from_source
 # Initialize Gemini client (using blueprint:python_gemini)
 gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
+# Verwende Gemini 1.5 Flash für höheres Rate Limit (15 req/min statt 2 req/min bei 2.5 Pro)
+GEMINI_MODEL = "gemini-1.5-flash"  # 15 requests/min im Free Tier
+
 # Definierte Datenquellen (erweiterte Liste)
 DATA_SOURCES = {
     "general": [
@@ -487,9 +490,9 @@ Kategorien: {', '.join(categories) if categories else 'keine'}
 Wähle die relevantesten Datenquellen aus den 43 verfügbaren und füge eigene Empfehlungen hinzu."""
     
     try:
-        logging.info("📋 Generiere intelligenten Research-Plan mit Gemini 2.5 Pro...")
+        logging.info(f"📋 Generiere intelligenten Research-Plan mit {GEMINI_MODEL}...")
         response = gemini_client.models.generate_content(
-            model="gemini-2.5-pro",
+            model=GEMINI_MODEL,
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -565,7 +568,7 @@ Erstelle eine optimale Recherche-Strategie."""
     
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.5-pro",
+            model=GEMINI_MODEL,
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -659,7 +662,7 @@ Die Fußnoten sollen auf die oben genannten Quellen verweisen."""
     
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.5-pro",
+            model=GEMINI_MODEL,
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -727,7 +730,7 @@ Erstelle die finale, professionelle Version. Behalte ALLE Abschnitte und die Fu�
     
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.5-pro",
+            model=GEMINI_MODEL,
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
