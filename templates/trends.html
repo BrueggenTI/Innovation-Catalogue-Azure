@@ -2002,13 +2002,19 @@ function updateProgressStep(data) {
 }
 
 function showReportPreview(data) {
+    console.log('showReportPreview called with data:', data);
     const modal = document.getElementById('customReportModal');
     const modalBody = modal.querySelector('.modal-body');
     const loadingIndicator = document.getElementById('reportLoadingIndicator');
     const liveLogsContainer = document.getElementById('liveLogsContainer');
 
-    loadingIndicator.style.display = 'none';
-    liveLogsContainer.style.display = 'none';
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
+    if (liveLogsContainer) {
+        liveLogsContainer.style.display = 'none';
+    }
+    
     modalBody.innerHTML = `
         <div class="report-preview-container">
             <div class="alert alert-success mb-4">
@@ -2022,7 +2028,9 @@ function showReportPreview(data) {
                 <div class="key-facts-preview mb-4 p-3" style="background: #f8f9fa; border-left: 4px solid #661c31; border-radius: 8px;">
                     <strong style="color: #661c31;">Key Facts für Trend-Karte:</strong>
                     <ul class="mt-2 mb-0">
-                        ${data.key_facts.map(fact => `<li>${escapeHtml(fact)}</li>`).join('')}
+                        ${data.key_facts && Array.isArray(data.key_facts) && data.key_facts.length > 0
+                            ? data.key_facts.map(fact => `<li>${escapeHtml(fact)}</li>`).join('')
+                            : '<li>Keine Key Facts verfügbar</li>'}
                     </ul>
                 </div>
 
@@ -2034,7 +2042,9 @@ function showReportPreview(data) {
                 <div class="mb-4">
                     <h5 style="color: #661c31;"><i class="fas fa-database me-2"></i>Datenquellen</h5>
                     <ul class="sources-list">
-                        ${data.report.sources.map(s => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></li>`).join('') || '<li>Keine Quellen verfügbar</li>'}
+                        ${data.report.sources && Array.isArray(data.report.sources) && data.report.sources.length > 0 
+                            ? data.report.sources.map(s => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></li>`).join('') 
+                            : '<li>Keine Quellen verfügbar</li>'}
                     </ul>
                 </div>
 

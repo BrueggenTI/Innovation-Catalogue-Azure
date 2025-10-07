@@ -1,0 +1,42 @@
+Failed to load resource: the server responded with a status of 404 (Not Found)
+main.js:81 Found 0 floating cards to animate
+main.js:21 Found 0 floating cards to animate
+main.js:103  Navbar element not found
+initializeScrollEffects @ main.js:103
+main.js:539 Brüggen Innovation Catalogue initialized successfully
+main.js:441 Page load time: -2347.5999999046326 ms
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2284 Received SSE data: Object
+trends:2290 Report generation complete! Data: Object
+trends:2299  Error parsing SSE data: TypeError: Cannot read properties of null (reading 'style')
+    at showReportPreview (trends:2471:23)
+    at HTMLButtonElement.<anonymous> (trends:2292:33) Line: data: {"type": "complete", "report": {"title": "Markttrends und Konsumentenverhalten im Bereich Fitness-Ern\u00e4hrung in Deutschland 2024/2025", "description": "Dieser Report untersucht die aktuellen Entwicklungen im Fitness- und Gesundheitsmarkt in Deutschland, mit einem speziellen Fokus auf die Produktkategorien M\u00fcsliriegel und M\u00fcsli. In den letzten Jahren hat sich das Konsumentenverhalten merklich in Richtung einer bewussteren und fitnessorientierten Ern\u00e4hrung verschoben, was sich in einem signifikanten Wachstum der Nachfrage nach proteinreichen und gesunden Fr\u00fchst\u00fccksoptionen widerspiegelt. Der Report beleuchtet die Marktgr\u00f6\u00dfe, Wachstumsraten und regionalen Unterschiede sowie die wichtigsten Verbrauchertrends und Innovationen. Durch die Analyse von Daten und Insights aus f\u00fchrenden Branchenquellen bietet dieser Report wertvolle Informationen f\u00fcr strategische Entscheidungen in der Produktentwicklung und im Marketing.", "market_data": "Der Markt f\u00fcr Fr\u00fchst\u00fccksprodukte in Deutschland wird bis 2025 auf \u00fcber 4 Milliarden Euro gesch\u00e4tzt, mit einer j\u00e4hrlichen Wachstumsrate von 4,5%. Besonders proteinreiche M\u00fcsliriegel und M\u00fcslis verzeichnen einen Anstieg der Nachfrage, wobei der Anteil dieser Produktkategorie am Fr\u00fchst\u00fccksmarkt in den letzten f\u00fcnf Jahren um 15% gestiegen ist. Regionale Unterschiede zeigen, dass insbesondere in st\u00e4dtischen Gebieten wie Berlin und M\u00fcnchen ein starkes Interesse an fitnessorientierten Produkten besteht, was auf eine j\u00fcngere, gesundheitsbewusste Demografie zur\u00fcckzuf\u00fchren ist. Der deutsche Markt f\u00fcr proteinreiche Ern\u00e4hrung profitiert zudem von einer steigenden Zahl an Fitness- und Gesundheitsstudios, die die Nachfrage nach solchen Produkten antreiben.", "consumer_insights": "Deutsche Verbraucher legen zunehmend Wert auf eine gesunde Ern\u00e4hrung, die mit einem aktiven Lebensstil vereinbar ist. 60% der Konsumenten achten beim Kauf von Fr\u00fchst\u00fccksprodukten auf den Proteingehalt, w\u00e4hrend 45% auf nat\u00fcrliche Inhaltsstoffe und Zuckerfreiheit Wert legen. Die Zielgruppe ist vor allem zwischen 25 und 45 Jahre alt, gut gebildet und lebt in urbanen Regionen. Nachhaltigkeit spielt ebenfalls eine Rolle, wobei 30% der Konsumenten bereit sind, h\u00f6here Preise f\u00fcr umweltfreundliche Verpackungen zu zahlen. Die Motivation hinter diesen Entscheidungen ist h\u00e4ufig die Pr\u00e4vention von Gesundheitsproblemen, die Erhaltung der Fitness und das Streben nach einem \u00e4sthetischen K\u00f6rperbild.", "verbrauchertrends": ["Steigender Fokus auf proteinreiche Fr\u00fchst\u00fccksoptionen.", "Wachsende Nachfrage nach zuckerfreien und nat\u00fcrlichen Zutaten.", "Zunehmende Bedeutung von Nachhaltigkeit bei Kaufentscheidungen.", "Erh\u00f6hte Bereitschaft, f\u00fcr Premium-Qualit\u00e4t und funktionale Vorteile mehr zu zahlen.", "Verst\u00e4rkter Einfluss von Social Media auf Ern\u00e4hrungsentscheidungen."], "konsumtrends": ["Zunahme des Online-Einkaufs von Fr\u00fchst\u00fccksprodukten.", "Beliebtheit von Meal-Prep und Ready-to-eat-Produkten f\u00fcr den schnellen Konsum.", "Anstieg von personalisierten Ern\u00e4hrungspl\u00e4nen, die auf Fitnessziele abgestimmt sind.", "Wachstum in der Nachfrage nach pflanzlichen Proteinquellen.", "Vermehrte Kooperationen zwischen Fitnessstudios und Lebensmittelmarken."], "innovationstrends": ["Entwicklung von proteinangereicherten M\u00fcsliriegeln mit Superfoods.", "Integration von smarten Verpackungen mit digitalen Mehrwertdiensten.", "Forschung und Entwicklung neuer pflanzlicher Proteine.", "Verst\u00e4rkte Investitionen in umweltfreundliche Verpackungsl\u00f6sungen.", "Einf\u00fchrung von Produkten, die individuelle Ern\u00e4hrungsbed\u00fcrfnisse adressieren."], "sources": [{"name": "Open Food Facts", "url": "https://world.openfoodfacts.org"}, {"name": "PubMed", "url": "https://pubmed.ncbi.nlm.nih.gov"}, {"name": "Google Trends", "url": "https://trends.google.com"}, {"name": "Supermarket News", "url": "https://www.supermarketnews.com"}, {"name": "mindbodygreen", "url": "https://www.mindbodygreen.com"}, {"name": "Biocatalysts", "url": "https://www.biocatalysts.com"}, {"name": "NutraIngredients", "url": "https://www.nutraingredients.com"}, {"name": "Food Ingredients First", "url": "https://www.foodingredientsfirst.com"}, {"name": "Eurostat - DE", "url": "https://ec.europa.eu/eurostat"}, {"name": "GENESIS (Destatis)", "url": "https://www-genesis.destatis.de"}]}, "key_facts": ["Proteinreiche Fr\u00fchst\u00fccksprodukte wachsen j\u00e4hrlich um 4,5% und dominieren st\u00e4dtische M\u00e4rkte.", "60% der Verbraucher priorisieren Proteingehalt beim Fr\u00fchst\u00fcckskauf, 45% bevorzugen nat\u00fcrliche Zutaten."], "pdf_path": "/static/pdfs/custom_trend_Markttrends_und_Konsumentenverhalten_im_Bereich_Fi_20251007_105514.pdf", "keywords": ["nutrition", "protein", "lifestyle", "gym", "fitness", "health"], "countries": ["DE"], "products": ["bars", "muesli"], "topic": "Ich will einen Report haben, der aufzeigt, inwiefern sich das Konsumentenverhalten in den letzten jahren hin zu fitness ern\u00e4hrung und bewusster ern\u00e4hrung gewandelt hat und welche potenziale in diesem markt in zukunft liegen"}
+(anonymous) @ trends:2299
+Refused to connect to 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js.map' because it violates the following Content Security Policy directive: "connect-src 'self'".
+
+Refused to connect to 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css.map' because it violates the following Content Security Policy directive: "connect-src 'self'".
