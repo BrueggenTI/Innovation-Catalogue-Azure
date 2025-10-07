@@ -23,8 +23,8 @@ from api_clients import fetch_data_from_source
 # Initialize Gemini client (using blueprint:python_gemini)
 gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Verwende Gemini 1.5 Flash für höheres Rate Limit (15 req/min statt 2 req/min bei 2.5 Pro)
-GEMINI_MODEL = "gemini-1.5-flash"  # 15 requests/min im Free Tier
+# Verwende Gemini 2.5 Flash - Bestes Preis-Leistungs-Verhältnis mit gutem Rate Limit
+GEMINI_MODEL = "gemini-2.5-flash"
 
 # Definierte Datenquellen (erweiterte Liste)
 DATA_SOURCES = {
