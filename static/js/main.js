@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         forms.forEach(form => {
             if (!form || !form.addEventListener) return;
-            
+
             form.addEventListener('submit', function(event) {
                 if (!form.checkValidity()) {
                     event.preventDefault();
@@ -613,4 +613,233 @@ if (typeof Jinja2 !== 'undefined') {
             return [];
         }
     });
+}
+
+let progressSteps = {};
+let progressPhases = [
+    { id: 'keyword_strategy', title: 'Keyword-Strategie erstellen', icon: '⏳', status: 'pending' },
+    { id: 'data_collection', title: 'Datenquellen durchsuchen', icon: '⏳', status: 'pending' },
+    { id: 'ai_analysis', title: 'KI-Analyse durchführen', icon: '⏳', status: 'pending' },
+    { id: 'extract_facts', title: 'Key Facts extrahieren', icon: '⏳', status: 'pending' },
+    { id: 'generate_pdf', title: 'PDF-Report erstellen', icon: '⏳', status: 'pending' }
+];
+
+// Live Logs Management
+function initializeLiveLogs() {
+    const liveLogsContainer = document.getElementById('liveLogsContainer');
+    const liveLogsContent = document.getElementById('liveLogsContent');
+    const toggleButton = document.getElementById('toggleLogs');
+
+    if (liveLogsContainer) {
+        liveLogsContainer.style.display = 'block';
+    }
+
+    if (toggleButton) {
+        toggleButton.addEventListener('click', function() {
+            const content = document.getElementById('liveLogsContent');
+            const icon = this.querySelector('i');
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        });
+    }
+
+    // Clear previous logs
+    if (liveLogsContent) {
+        liveLogsContent.innerHTML = '';
+    }
+}
+
+function addLiveLog(message, type = 'info') {
+    const liveLogsContent = document.getElementById('liveLogsContent');
+    if (!liveLogsContent) return;
+
+    const timestamp = new Date().toLocaleTimeString('de-DE');
+    const logEntry = document.createElement('div');
+    logEntry.className = 'log-entry mb-1';
+
+    // Color coding based on type
+    let color = '#d4d4d4'; // default
+    let icon = '•';
+
+    switch(type) {
+        case 'success':
+            color = '#4ec9b0';
+            icon = '✓';
+            break;
+        case 'warning':
+            color = '#dcdcaa';
+            icon = '⚠';
+            break;
+        case 'error':
+            color = '#f48771';
+            icon = '✗';
+            break;
+        case 'progress':
+            color = '#569cd6';
+            icon = '►';
+            break;
+        case 'data':
+            color = '#ce9178';
+            icon = '▸';
+            break;
+    }
+
+    logEntry.innerHTML = `
+        <span style="color: #858585;">[${timestamp}]</span>
+        <span style="color: ${color}; font-weight: bold;">${icon}</span>
+        <span style="color: ${color};">${escapeHtml(message)}</span>
+    `;
+
+    liveLogsContent.appendChild(logEntry);
+
+    // Auto-scroll to bottom
+    liveLogsContent.scrollTop = liveLogsContent.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Placeholder for submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, generatedReportData, showReportPreview, addProgressStep, initializeProgress
+// These are assumed to be defined in the scope where this script is used, likely within a function like 'generateReport' or similar.
+let submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, generatedReportData, showReportPreview, addProgressStep, initializeProgress;
+
+// Example of how the report generation might be initiated, including the new live log integration.
+async function generateReport(event) {
+    event.preventDefault();
+
+    submitButton = document.getElementById('submitReportBtn');
+    cancelButton = document.getElementById('cancelReportBtn');
+    loadingIndicator = document.getElementById('reportLoadingIndicator');
+    const keywordsInputEl = document.getElementById('keywords');
+    const countriesSelect = document.getElementById('countries');
+
+    // Dummy assignments for demonstration. In a real scenario, these would be actual DOM elements or values.
+    keywordsInput = keywordsInputEl ? keywordsInputEl.value : 'default keywords';
+    selectedCountries = countriesSelect ? Array.from(countriesSelect.selectedOptions).map(option => option.value) : ['DE'];
+    generatedReportData = null; // Reset report data
+    
+    // Assume showReportPreview and addProgressStep are defined elsewhere
+    showReportPreview = (data) => console.log("Showing report preview:", data);
+    addProgressStep = (container, data) => console.log("Adding progress step:", data);
+
+    if (submitButton) submitButton.disabled = true;
+    if (cancelButton) cancelButton.disabled = true;
+    if (loadingIndicator) {
+        loadingIndicator.innerHTML = '<div class="analysis-progress-container"></div>';
+        loadingIndicator.style.display = 'block';
+    }
+
+    // Initialize live logs
+    initializeLiveLogs();
+    addLiveLog('Deep Research gestartet...', 'progress');
+    addLiveLog(`Keywords: ${keywordsInput}`, 'data');
+    addLiveLog(`Zielmärkte: ${selectedCountries.join(', ')}`, 'data');
+
+    const progressContainer = document.querySelector('.analysis-progress-container');
+
+    try {
+        addLiveLog('Verbinde mit OpenAI GPT-4o...', 'progress');
+        const response = await fetch('/api/generate-trend-report-stream', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                keywords: keywordsInput,
+                countries: selectedCountries,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            let lines = buffer.split('\n');
+            buffer = lines.pop(); // Keep the last partial line
+
+            for (const line of lines) {
+                if (line.trim() === '') continue;
+
+                try {
+                    const data = JSON.parse(line);
+                    if (data.type === 'progress') {
+                        addProgressStep(progressContainer, data);
+
+                        // Add to live logs
+                        const logType = data.step.includes('error') || data.step.includes('timeout') ? 'warning' : 
+                                       data.step.includes('complete') || data.step.includes('success') ? 'success' : 'progress';
+                        addLiveLog(data.message, logType);
+
+                    } else if (data.type === 'complete') {
+                        addLiveLog('✓ Report erfolgreich generiert!', 'success');
+                        addLiveLog(`Titel: ${data.report.title}`, 'data');
+                        addLiveLog(`Quellen analysiert: ${data.report.sources ? data.report.sources.length : 'N/A'}`, 'data');
+
+                        generatedReportData = data;
+                        showReportPreview(data);
+                        return; // Exit loop and function after completion
+                    } else if (data.type === 'error') {
+                        addLiveLog(`✗ Fehler: ${data.message}`, 'error');
+                        throw new Error(data.message);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse JSON line:", line, e);
+                    addLiveLog(`Fehler beim Verarbeiten der Log-Daten: ${escapeHtml(line)}`, 'error');
+                }
+            }
+        }
+         // Handle any remaining data in the buffer
+        if (buffer.trim()) {
+            try {
+                const data = JSON.parse(buffer);
+                 if (data.type === 'progress') {
+                    addProgressStep(progressContainer, data);
+                    const logType = data.step.includes('error') || data.step.includes('timeout') ? 'warning' : 
+                                   data.step.includes('complete') || data.step.includes('success') ? 'success' : 'progress';
+                    addLiveLog(data.message, logType);
+                } else if (data.type === 'complete') {
+                    addLiveLog('✓ Report erfolgreich generiert!', 'success');
+                    generatedReportData = data;
+                    showReportPreview(data);
+                } else if (data.type === 'error') {
+                    addLiveLog(`✗ Fehler: ${data.message}`, 'error');
+                    throw new Error(data.message);
+                }
+            } catch (e) {
+                console.error("Failed to parse final JSON buffer:", buffer, e);
+                addLiveLog(`Fehler beim Verarbeiten der finalen Log-Daten: ${escapeHtml(buffer)}`, 'error');
+            }
+        }
+
+
+    } catch (error) {
+        console.error('Error generating report:', error);
+        addLiveLog(`Berichtgenerierung fehlgeschlagen: ${error.message}`, 'error');
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+    } finally {
+        if (submitButton) submitButton.disabled = false;
+        if (cancelButton) cancelButton.disabled = true; // Keep cancel disabled until next attempt
+    }
 }

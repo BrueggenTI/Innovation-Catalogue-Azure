@@ -31,8 +31,8 @@
                         <span class="input-group-text bg-white border-end-0">
                             <i class="fas fa-search text-muted"></i>
                         </span>
-                        <input type="text" class="form-control border-start-0 ps-0" id="trendsSearch" 
-                               placeholder="Search trends by title, description, or category..." 
+                        <input type="text" class="form-control border-start-0 ps-0" id="trendsSearch"
+                               placeholder="Search trends by title, description, or category..."
                                autocomplete="off">
                         <button class="btn btn-outline-secondary" type="button" id="clearTrendsSearch" style="display: none;">
                             <i class="fas fa-times"></i>
@@ -68,7 +68,7 @@
             </div>
             <div class="modal-body">
                 <p class="text-muted mb-4">Upload documents and let AI analyze them to create professional trend reports</p>
-                
+
                 <!-- Upload Area -->
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-content">
@@ -129,7 +129,7 @@
                     <p class="text-muted">AI is analyzing your documents...</p>
                     <small class="text-muted">This may take a few moments</small>
                 </div>
-                
+
                 <div class="analysis-results" id="analysisResults" style="display: none;">
                     <!-- AI suggestions form will be populated here -->
                 </div>
@@ -158,7 +158,7 @@
             <input type="hidden" name="category" value="{{ category }}">
             {% endfor %}
         </form>
-        
+
         <!-- Filter Headers -->
         <div class="row g-3">
             <div class="col-md-6">
@@ -263,11 +263,11 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            
+
                             <div class="card-body p-4">
                                 <h4 class="card-title fw-semibold mb-3" style="color: #1f2937; line-height: 1.4;">{{ trend.title }}</h4>
                                 <p class="card-text mb-4" style="color: #6b7280; font-size: 15px; line-height: 1.6;">{{ trend.description }}</p>
-                                
+
                                 <div class="trend-insights mb-4">
                                     <div class="insight-item mb-3 p-3">
                                         <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
@@ -277,7 +277,7 @@
                                         </div>
                                         <div class="insight-content" style="font-size: 14px; color: #4b5563;">{{ trend.market_data }}</div>
                                     </div>
-                                    
+
                                     <div class="insight-item p-3">
                                         <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
                                             <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
@@ -287,7 +287,7 @@
                                         <div class="insight-content" style="font-size: 14px; color: #4b5563;">{{ trend.consumer_insights }}</div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="trend-actions d-flex gap-2">
                                     <button class="btn btn-outline-secondary flex-fill rounded-pill expand-trend-btn" data-trend-id="{{ trend.id }}" style="border-color: #661c31; color: #661c31; font-weight: 500; padding: 8px 16px; font-size: 14px;">
                                         <i class="fas fa-expand me-2"></i>Details
@@ -351,63 +351,63 @@
                 <!-- PDF Controls -->
                 <div class="pdf-modal-controls py-3 px-3 bg-light border-bottom">
                     <div class="text-center">
-                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
-                           download="Global Fusion Flavors Report.pdf" 
+                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}"
+                           download="Global Fusion Flavors Report.pdf"
                            class="btn btn-success btn-sm rounded-pill me-2">
                             <i class="fas fa-download me-1"></i>Download PDF
                         </a>
-                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
-                           target="_blank" 
+                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}"
+                           target="_blank"
                            class="btn btn-outline-secondary btn-sm rounded-pill">
                             <i class="fas fa-external-link-alt me-1"></i>Open in New Tab
                         </a>
                     </div>
                 </div>
-                
+
                 <!-- PDF Display Area -->
                 <div class="pdf-modal-display" id="pdfModalContainer" style="height: 70vh; background: #f8f9fa;">
                     <!-- Multi-layered PDF display with fallbacks -->
-                    <object 
-                        data="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
-                        type="application/pdf" 
-                        width="100%" 
-                        height="100%" 
+                    <object
+                        data="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}"
+                        type="application/pdf"
+                        width="100%"
+                        height="100%"
                         style="border-radius: 4px;">
-                        
+
                         <!-- Fallback 1: embed -->
-                        <embed 
-                            src="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
-                            type="application/pdf" 
-                            width="100%" 
-                            height="100%" 
+                        <embed
+                            src="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}"
+                            type="application/pdf"
+                            width="100%"
+                            height="100%"
                             style="border-radius: 4px;">
-                            
+
                             <!-- Fallback 2: iframe with sandboxing -->
-                            <iframe 
+                            <iframe
                                 src="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}"
-                                width="100%" 
-                                height="100%" 
+                                width="100%"
+                                height="100%"
                                 style="border: none; border-radius: 4px;"
                                 sandbox="allow-scripts allow-same-origin allow-popups"
                                 title="Global Fusion Flavors PDF Report">
-                                
+
                                 <!-- Final fallback: Error message with download link -->
                                 <div class="d-flex justify-content-center align-items-center h-100">
                                     <div class="text-center p-4">
                                         <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
                                         <h6 class="text-muted mb-3">PDF-Vorschau nicht verfügbar</h6>
                                         <p class="text-muted small mb-3">Ihr Browser unterstützt keine PDF-Einbettung oder blockiert sie aus Sicherheitsgründen.</p>
-                                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
+                                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}"
                                            class="btn btn-primary btn-sm me-2" target="_blank">
                                             <i class="fas fa-external-link-alt me-1"></i>PDF öffnen
                                         </a>
-                                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}" 
+                                        <a href="{{ url_for('static', filename='pdfs/global_fusion_flavors_report.pdf') }}"
                                            class="btn btn-outline-success btn-sm" download="Global_Fusion_Flavors_Report.pdf">
                                             <i class="fas fa-download me-1"></i>Herunterladen
                                         </a>
                                     </div>
                                 </div>
-                                
+
                             </iframe>
                         </embed>
                     </object>
@@ -437,10 +437,10 @@
             </div>
             <div class="modal-body">
                 <p class="text-muted mb-4">
-                    Generate a comprehensive trend report by specifying your research parameters. 
+                    Generate a comprehensive trend report by specifying your research parameters.
                     Our AI will analyze data from multiple sources including scientific databases, market statistics, and consumer insights.
                 </p>
-                
+
                 <form id="customReportForm">
                     <!-- Keywords Input -->
                     <div class="mb-4">
@@ -448,32 +448,32 @@
                             <i class="fas fa-key me-2 text-primary"></i>Keywords
                             <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" id="keywords-input" 
-                               placeholder="e.g., organic oats, plant-based protein, gluten-free" 
+                        <input type="text" class="form-control" id="keywords-input"
+                               placeholder="e.g., organic oats, plant-based protein, gluten-free"
                                required>
                         <small class="form-text text-muted">Enter comma-separated keywords for your trend analysis</small>
                     </div>
-                    
+
                     <!-- Topic/Description -->
                     <div class="mb-4">
                         <label for="topic-input" class="form-label fw-semibold">
                             <i class="fas fa-align-left me-2 text-primary"></i>Topic / Description
                         </label>
-                        <textarea class="form-control" id="topic-input" rows="3" 
+                        <textarea class="form-control" id="topic-input" rows="3"
                                   placeholder="Describe the focus of your trend analysis..."></textarea>
                         <small class="form-text text-muted">Optional: Provide additional context for more targeted insights</small>
                     </div>
-                    
+
                     <!-- Products Input -->
                     <div class="mb-4">
                         <label for="products-input" class="form-label fw-semibold">
                             <i class="fas fa-box me-2 text-primary"></i>Product Categories
                         </label>
-                        <input type="text" class="form-control" id="products-input" 
+                        <input type="text" class="form-control" id="products-input"
                                placeholder="e.g., breakfast cereals, granola bars, muesli">
                         <small class="form-text text-muted">Specify product categories to focus the analysis</small>
                     </div>
-                    
+
                     <!-- Countries Selection -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold">
@@ -502,14 +502,31 @@
                         </div>
                         <small class="form-text text-muted">Select one or more countries for market-specific data</small>
                     </div>
-                    
+
                     <!-- Loading Indicator -->
                     <div class="text-center py-3" id="reportLoadingIndicator" style="display: none;">
                         <div class="spinner-border text-success mb-2" role="status"></div>
                         <p class="text-muted mb-0">Analyzing data from multiple sources...</p>
                         <small class="text-muted">This may take a few moments</small>
+
+                        <!-- Live Log Display -->
+                        <div class="live-logs-container mt-4" id="liveLogsContainer" style="display: none;">
+                            <div class="card border-0 shadow-sm" style="background: #f8f9fa;">
+                                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+                                    <h6 class="mb-0 fw-semibold" style="color: #661c31;">
+                                        <i class="fas fa-terminal me-2"></i>Live Research Logs
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-secondary" id="toggleLogs" title="Collapse/Expand">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                </div>
+                                <div class="card-body p-3" id="liveLogsContent" style="max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; background: #1e1e1e; color: #d4d4d4; border-radius: 0 0 8px 8px;">
+                                    <!-- Logs will be appended here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
+
                     <!-- Error Message -->
                     <div class="alert alert-danger" id="reportErrorMessage" style="display: none;" role="alert">
                         <i class="fas fa-exclamation-circle me-2"></i>
@@ -589,14 +606,14 @@ document.addEventListener('DOMContentLoaded', function() {
             showTrendDetail(trendId);
         });
     });
-    
+
     // Helper function to escape HTML content
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
-    
+
     // Helper function to validate PDF path
     function isValidPdfPath(path) {
         return path && typeof path === 'string' && path.startsWith('/static/pdfs/');
@@ -613,65 +630,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
             new bootstrap.Modal(document.getElementById('trendDetailModal')).show();
-            
+
             // Fetch trend details
             const response = await fetch(`/api/trends/${trendId}`);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (!data.success) {
                 throw new Error(data.error || 'Failed to load trend details');
             }
-            
+
             const trend = data.trend;
-            
+
             // If trend has a PDF, show PDF viewer in modal
             if (trend.pdf_path && isValidPdfPath(trend.pdf_path)) {
                 // Safely set title with PDF icon
                 const titleElement = document.getElementById('trendModalTitle');
                 titleElement.innerHTML = '<i class="fas fa-file-pdf me-2 text-danger"></i>';
                 titleElement.appendChild(document.createTextNode(trend.title));
-                
+
                 // Create PDF viewer container safely
                 const modalBody = document.getElementById('trendModalBody');
                 modalBody.innerHTML = `
                     <div class="pdf-viewer-container">
                         <div class="pdf-controls mb-3 text-center">
-                            <a href="${escapeHtml(trend.pdf_path)}" 
-                               download="${escapeHtml(trend.title)}.pdf" 
+                            <a href="${escapeHtml(trend.pdf_path)}"
+                               download="${escapeHtml(trend.title)}.pdf"
                                class="btn btn-success btn-sm me-2">
                                 <i class="fas fa-download me-1"></i>Download PDF
                             </a>
-                            <a href="${escapeHtml(trend.pdf_path)}" 
-                               target="_blank" 
+                            <a href="${escapeHtml(trend.pdf_path)}"
+                               target="_blank"
                                class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-external-link-alt me-1"></i>Open in New Tab
                             </a>
                         </div>
                         <div class="pdf-embed-container">
-                            <iframe width="100%" 
-                                    height="500px" 
+                            <iframe width="100%"
+                                    height="500px"
                                     style="border: 1px solid #ddd; border-radius: 4px;"
                                     title="PDF Viewer">
-                                <p>Your browser doesn't support PDF viewing. 
+                                <p>Your browser doesn't support PDF viewing.
                                    <a href="${escapeHtml(trend.pdf_path)}">Click here to download the PDF</a>.
                                 </p>
                             </iframe>
                         </div>
                     </div>
                 `;
-                
+
                 // Set iframe src safely after creation
                 const iframe = modalBody.querySelector('iframe');
                 iframe.src = trend.pdf_path;  // Already validated above
             } else {
                 // Show trend details when no PDF is available
                 document.getElementById('trendModalTitle').textContent = trend.title;
-                
+
                 // Create trend details content safely
                 const modalBody = document.getElementById('trendModalBody');
                 modalBody.innerHTML = `
@@ -695,16 +712,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 `;
-                
+
                 // Safely set text content
                 modalBody.querySelector('p').textContent = trend.description;
                 modalBody.querySelector('.badge.bg-secondary').textContent = trend.category;
-                modalBody.querySelector('.badge.bg-primary').textContent = 
+                modalBody.querySelector('.badge.bg-primary').textContent =
                     trend.report_type === 'produktentwicklung' ? 'Product Development' : 'Market Data';
-                
+
                 // Add insights safely
                 const insightsContainer = modalBody.querySelector('.insights-container');
-                
+
                 if (trend.market_data) {
                     const marketDataDiv = document.createElement('div');
                     marketDataDiv.className = 'insight-item mb-3 p-3';
@@ -719,7 +736,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     marketDataDiv.querySelector('.insight-content').textContent = trend.market_data;
                     insightsContainer.appendChild(marketDataDiv);
                 }
-                
+
                 if (trend.consumer_insights) {
                     const consumerInsightsDiv = document.createElement('div');
                     consumerInsightsDiv.className = 'insight-item p-3';
@@ -735,10 +752,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     insightsContainer.appendChild(consumerInsightsDiv);
                 }
             }
-            
+
             // Update Apply Trend button
             document.getElementById('applyTrendBtn').href = `/cocreation?trend=${trendId}`;
-            
+
         } catch (error) {
             console.error('Error loading trend details:', error);
             document.getElementById('trendModalTitle').textContent = 'Error Loading Trend';
@@ -750,29 +767,29 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
     }
-    
+
     // PDF Modal functionality - simplified for iframe display
     function showPdfModal() {
         const pdfModal = new bootstrap.Modal(document.getElementById('pdfModal'));
         pdfModal.show();
     }
-    
+
     // Removed entrance animations for better performance and no layout shift
-    
+
     // Initialize trends search functionality
     initializeTrendsSearch();
-    
+
     // Initialize trends filters functionality
     initializeTrendsFilters();
-    
+
     // Initialize multi-select selection states
     initializeSelectedCategories();
     initializeSelectedReportTypes();
-    
+
     // No need for legacy single-select button updates anymore
-    
+
     // No need for toggle switch initialization anymore
-    
+
     // Initialize upload system
     initializeUploadSystem();
 });
@@ -919,7 +936,7 @@ function initializeUploadSystem() {
     function updateUI() {
         const uploadedFilesDiv = document.getElementById('uploadedFiles');
         const uploadActions = document.getElementById('uploadActions');
-        
+
         if (uploadedFiles.length > 0) {
             uploadedFilesDiv.style.display = 'block';
             uploadActions.style.display = 'block';
@@ -985,10 +1002,10 @@ function initializeUploadSystem() {
 
         } catch (error) {
             console.error('Analysis error:', error);
-            
+
             let errorTitle = 'Analysis Failed';
             let errorMessage = 'Please try again.';
-            
+
             // Handle specific error types
             if (error.name === 'AbortError') {
                 errorTitle = 'Analysis Timeout';
@@ -997,7 +1014,7 @@ function initializeUploadSystem() {
                 errorTitle = 'Server Error';
                 errorMessage = 'Server encountered an error. Please try again in a moment.';
             }
-            
+
             document.getElementById('analysisLoading').innerHTML = `
                 <div class="text-center py-5">
                     <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
@@ -1012,7 +1029,7 @@ function initializeUploadSystem() {
     function displayAnalysisResults(result) {
         // Store analysis results globally for trend creation
         window.currentAnalysisResults = result;
-        
+
         document.getElementById('analysisLoading').style.display = 'none';
         document.getElementById('analysisResults').style.display = 'block';
         document.getElementById('createTrendBtn').style.display = 'block';
@@ -1021,7 +1038,7 @@ function initializeUploadSystem() {
         resultsContainer.innerHTML = `
             <div class="analysis-form">
                 <h6 class="mb-4"><i class="fas fa-sparkles me-2"></i>AI Analysis Results</h6>
-                
+
                 <div class="ai-suggestion">
                     <div class="suggestion-label">AI Suggested Title:</div>
                     <p class="suggestion-text">${result.title}</p>
@@ -1056,7 +1073,7 @@ function initializeUploadSystem() {
                             </button>
                         </div>
                         <input type="file" id="imageInput" accept="image/*" style="display: none;">
-                        
+
                         <!-- Image Preview -->
                         <div class="image-preview" id="imagePreview" style="display: none;">
                             <div class="preview-container text-center">
@@ -1067,7 +1084,7 @@ function initializeUploadSystem() {
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- Generation Progress -->
                         <div class="generation-progress" id="generationProgress" style="display: none;">
                             <div class="text-center py-3">
@@ -1131,7 +1148,7 @@ function initializeUploadSystem() {
 
         // Add event listener for create trend button
         document.getElementById('createTrendBtn').onclick = createCustomTrend;
-        
+
         // Add image upload functionality
         setupImageUpload();
     }
@@ -1141,7 +1158,7 @@ function initializeUploadSystem() {
         const description = document.getElementById('trendDescription').value.trim();
         const category = document.getElementById('trendCategory').value;
         const reportType = document.getElementById('trendReportType').value;
-        
+
         // Get uploaded image if any
         const imageFile = window.getSelectedImageFile ? window.getSelectedImageFile() : null;
 
@@ -1157,14 +1174,14 @@ function initializeUploadSystem() {
             formData.append('category', category);
             formData.append('report_type', reportType);
             formData.append('is_custom', 'true');
-            
+
             // Add AI-generated key facts if available
             if (window.currentAnalysisResults) {
                 formData.append('market_data', window.currentAnalysisResults.market_data || '');
                 formData.append('consumer_insights', window.currentAnalysisResults.consumer_insights || '');
                 formData.append('pdf_path', window.currentAnalysisResults.pdf_path || '');
             }
-            
+
             // Add image if available
             if (imageFile) {
                 formData.append('image', imageFile);
@@ -1180,14 +1197,14 @@ function initializeUploadSystem() {
             }
 
             const result = await response.json();
-            
+
             // Close modal and refresh page to show new trend
             aiAnalysisModal.hide();
             clearAllFiles();
-            
+
             // Show success message
             alert('Your custom trend has been created successfully!');
-            
+
             // Refresh the page to show the new trend
             window.location.reload();
 
@@ -1199,12 +1216,12 @@ function initializeUploadSystem() {
 
     function setupImageUpload() {
         let selectedImageFile = null;
-        
+
         // Upload Image Button
         document.getElementById('uploadImageBtn').addEventListener('click', function() {
             document.getElementById('imageInput').click();
         });
-        
+
         // File Input Change
         document.getElementById('imageInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -1213,46 +1230,46 @@ function initializeUploadSystem() {
                 displayImagePreview(file);
             }
         });
-        
+
         // Generate AI Image Button
         document.getElementById('generateImageBtn').addEventListener('click', function() {
             generateAIImage();
         });
-        
+
         // Remove Image Button
         document.getElementById('removeImageBtn').addEventListener('click', function() {
             removeImage();
         });
-        
+
         function displayImagePreview(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const previewImage = document.getElementById('previewImage');
                 previewImage.src = e.target.result;
                 previewImage.dataset.imageFile = file;
-                
+
                 document.getElementById('imagePreview').style.display = 'block';
                 selectedImageFile = file;
             };
             reader.readAsDataURL(file);
         }
-        
+
         async function generateAIImage() {
             const title = document.getElementById('trendTitle').value.trim();
             const description = document.getElementById('trendDescription').value.trim();
-            
+
             if (!title && !description) {
                 alert('Please enter a title or description first to generate an AI image.');
                 return;
             }
-            
+
             // Show generation progress
             document.getElementById('generationProgress').style.display = 'block';
             document.getElementById('imagePreview').style.display = 'none';
-            
+
             try {
                 const prompt = `Professional business trend visualization for: ${title}. ${description}. Modern, clean, corporate style.`;
-                
+
                 const response = await fetch('/api/generate-image', {
                     method: 'POST',
                     headers: {
@@ -1264,30 +1281,30 @@ function initializeUploadSystem() {
                         aspect_ratio: '16:9'
                     })
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`Generation failed: ${response.statusText}`);
                 }
-                
+
                 const result = await response.json();
-                
+
                 // Create blob from generated image and display
                 const imageResponse = await fetch(result.image_url);
                 const imageBlob = await imageResponse.blob();
                 const imageFile = new File([imageBlob], 'generated-image.png', { type: 'image/png' });
-                
+
                 selectedImageFile = imageFile;
                 displayImagePreview(imageFile);
-                
+
             } catch (error) {
                 console.error('Image generation error:', error);
                 alert('Failed to generate image. Please try again or upload your own image.');
             }
-            
+
             // Hide generation progress
             document.getElementById('generationProgress').style.display = 'none';
         }
-        
+
         function removeImage() {
             selectedImageFile = null;
             document.getElementById('imagePreview').style.display = 'none';
@@ -1295,7 +1312,7 @@ function initializeUploadSystem() {
             document.getElementById('previewImage').dataset.imageFile = '';
             document.getElementById('imageInput').value = '';
         }
-        
+
         // Make selectedImageFile available to createCustomTrend function
         window.getSelectedImageFile = function() {
             return selectedImageFile;
@@ -1314,9 +1331,9 @@ function initializeTrendsSearch() {
     const searchInput = document.getElementById('trendsSearch');
     const clearButton = document.getElementById('clearTrendsSearch');
     const searchResults = document.getElementById('trendsSearchResults');
-    
+
     if (!searchInput) return;
-    
+
     // Override hideSearchResults to work with trends search as well
     if (typeof hideSearchResults !== 'undefined') {
         const originalHideSearchResults = hideSearchResults;
@@ -1334,32 +1351,32 @@ function initializeTrendsSearch() {
             }
         };
     }
-    
+
     let searchTimeout;
-    
+
     searchInput.addEventListener('input', function(e) {
         clearTimeout(searchTimeout);
         const query = e.target.value.trim();
-        
+
         if (query.length === 0) {
             clearButton.style.display = 'none';
             searchResults.style.display = 'none';
             return;
         }
-        
+
         clearButton.style.display = 'block';
-        
+
         if (query.length < 2) {
             searchResults.style.display = 'none';
             return;
         }
-        
+
         // Debounce search
         searchTimeout = setTimeout(() => {
             performTrendsSearch(query);
         }, 300);
     });
-    
+
     // Clear search
     clearButton.addEventListener('click', function() {
         searchInput.value = '';
@@ -1367,7 +1384,7 @@ function initializeTrendsSearch() {
         searchResults.style.display = 'none';
         searchInput.focus();
     });
-    
+
     // Handle Enter key
     searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
@@ -1377,25 +1394,25 @@ function initializeTrendsSearch() {
                 // Navigate to search results with current filters
                 const selectedReportTypes = getSelectedReportTypes();
                 const selectedCategories = getSelectedCategories();
-                
+
                 const params = new URLSearchParams();
                 params.append('search', query);
-                
+
                 // Add selected report types (or default)
                 if (selectedReportTypes.length > 0) {
                     selectedReportTypes.forEach(type => params.append('report_type', type));
                 } else {
                     params.append('report_type', 'produktentwicklung');
                 }
-                
+
                 // Add selected categories
                 selectedCategories.forEach(cat => params.append('category', cat));
-                
+
                 window.location.href = `{{ url_for('trends') }}?${params.toString()}`;
             }
         }
     });
-    
+
     // Close search results when clicking outside
     document.addEventListener('click', function(e) {
         if (!searchInput.closest('.search-container').contains(e.target)) {
@@ -1406,11 +1423,11 @@ function initializeTrendsSearch() {
 
 async function performTrendsSearch(query) {
     const searchResults = document.getElementById('trendsSearchResults');
-    
+
     // Get currently selected report types
     const selectedReportTypes = getSelectedReportTypes();
     const reportTypesToUse = selectedReportTypes.length > 0 ? selectedReportTypes : ['produktentwicklung'];
-    
+
     // Show loading state
     searchResults.innerHTML = `
         <div class="search-loading">
@@ -1419,16 +1436,16 @@ async function performTrendsSearch(query) {
         </div>
     `;
     searchResults.style.display = 'block';
-    
+
     try {
         // Build URL with multiple report types
         const params = new URLSearchParams();
         params.append('q', query);
         reportTypesToUse.forEach(type => params.append('report_type', type));
-        
+
         const response = await fetch(`/api/trends/search?${params.toString()}`);
         const trends = await response.json();
-        
+
         if (trends.length === 0) {
             searchResults.innerHTML = '<div class="search-empty"><i class="fas fa-search me-2"></i>No trends found for "' + query + '"</div>';
         } else {
@@ -1445,19 +1462,19 @@ async function performTrendsSearch(query) {
                         return 'bg-secondary';
                 }
             }
-            
+
             // Function to get report type badge class
             function getReportTypeBadge(reportType) {
                 return reportType === 'produktentwicklung' ? 'bg-primary' : 'bg-warning';
             }
-            
+
             // Use innovation catalogue style layout (exactly same structure)
             let html = '<div class="search-results-list">';
             html += `<div class="search-section">
                 <h6 class="search-section-title">
                     <i class="fas fa-chart-line me-2"></i>Trends & Insights
                 </h6>`;
-            
+
             trends.forEach(trend => {
                 html += `
                     <div class="recipe-number-result-item" onclick="navigateToResult('${trend.url}')">
@@ -1475,7 +1492,7 @@ async function performTrendsSearch(query) {
                     </div>
                 `;
             });
-            
+
             html += '</div></div>';
             searchResults.innerHTML = html;
         }
@@ -1500,7 +1517,7 @@ function initializeTrendsFilters() {
         btn.addEventListener('click', function() {
             const filterType = this.getAttribute('data-filter');
             const value = this.getAttribute('data-value');
-            
+
             if (filterType === 'trendCategory') {
                 if (this.classList.contains('category-clear-btn')) {
                     // Clear all categories
@@ -1525,12 +1542,12 @@ function initializeTrendsFilters() {
 function toggleTrendsFilterOptions(filterType) {
     const filterOptionsSection = document.getElementById('trendsFilterOptionsSection');
     const currentOptions = document.getElementById(filterType + 'Options');
-    
+
     // Hide all other filter options
     document.querySelectorAll('.filter-options').forEach(option => {
         option.style.display = 'none';
     });
-    
+
     // Toggle current filter options
     if (currentOptions.style.display === 'block') {
         filterOptionsSection.style.display = 'none';
@@ -1547,7 +1564,7 @@ function updateTrendsChevrons(activeFilter) {
     document.querySelectorAll('.filter-chevron').forEach(chevron => {
         const header = chevron.closest('.filter-header');
         const filterType = header.getAttribute('data-filter');
-        
+
         if (filterType === activeFilter) {
             chevron.classList.remove('fa-chevron-down');
             chevron.classList.add('fa-chevron-up');
@@ -1582,7 +1599,7 @@ let categoryFilterTimeout;
 function toggleCategorySelection(button, value) {
     // Toggle the selected state
     button.classList.toggle('selected');
-    
+
     // Clear existing timeout and set new one for auto-apply
     clearTimeout(categoryFilterTimeout);
     categoryFilterTimeout = setTimeout(() => {
@@ -1595,7 +1612,7 @@ function clearAllCategories() {
     document.querySelectorAll('.category-toggle-btn').forEach(btn => {
         btn.classList.remove('selected');
     });
-    
+
     // Apply filter immediately
     applyMultiFilters();
 }
@@ -1609,7 +1626,7 @@ function initializeSelectedCategories() {
     // Initialize selected state based on current URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const categories = urlParams.getAll('category');
-    
+
     categories.forEach(category => {
         const button = document.querySelector(`[data-filter="trendCategory"][data-value="${category}"]`);
         if (button && button.classList.contains('category-toggle-btn')) {
@@ -1624,7 +1641,7 @@ let reportTypeFilterTimeout;
 function toggleReportTypeSelection(button, value) {
     // Toggle the selected state
     button.classList.toggle('selected');
-    
+
     // Clear existing timeout and set new one for auto-apply
     clearTimeout(reportTypeFilterTimeout);
     reportTypeFilterTimeout = setTimeout(() => {
@@ -1637,7 +1654,7 @@ function clearAllReportTypes() {
     document.querySelectorAll('.report-type-toggle-btn').forEach(btn => {
         btn.classList.remove('selected');
     });
-    
+
     // Apply filter immediately
     applyMultiFilters();
 }
@@ -1651,10 +1668,10 @@ function applyMultiFilters() {
     // Combine both category and report type selections
     const selectedCategories = getSelectedCategories();
     const selectedReportTypes = getSelectedReportTypes();
-    
+
     let url = `{{ url_for('trends') }}`;
     const params = new URLSearchParams();
-    
+
     // Add report types (use default if none selected)
     if (selectedReportTypes.length > 0) {
         selectedReportTypes.forEach(type => {
@@ -1664,12 +1681,12 @@ function applyMultiFilters() {
         // Default to produktentwicklung if no report types selected
         params.append('report_type', 'produktentwicklung');
     }
-    
+
     // Add categories
     selectedCategories.forEach(category => {
         params.append('category', category);
     });
-    
+
     url += '?' + params.toString();
     window.location.href = url;
 }
@@ -1678,7 +1695,7 @@ function initializeSelectedReportTypes() {
     // Initialize selected state based on current URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const reportTypes = urlParams.getAll('report_type');
-    
+
     reportTypes.forEach(reportType => {
         const button = document.querySelector(`[data-filter="trendType"][data-value="${reportType}"]`);
         if (button && button.classList.contains('report-type-toggle-btn')) {
@@ -1707,35 +1724,103 @@ document.getElementById('submit-report-btn').addEventListener('click', async fun
     const keywordsInput = document.getElementById('keywords-input').value.trim();
     const topicInput = document.getElementById('topic-input').value.trim();
     const productsInput = document.getElementById('products-input').value.trim();
-    
+
     const selectedCountries = [];
     document.querySelectorAll('.countries-grid input[type="checkbox"]:checked').forEach(checkbox => {
         selectedCountries.push(checkbox.value);
     });
-    
+
     if (!keywordsInput) {
         showReportError('Please enter at least one keyword');
         return;
     }
-    
+
     if (selectedCountries.length === 0) {
         showReportError('Please select at least one country');
         return;
     }
-    
+
     hideReportError();
-    
+
     const submitButton = document.getElementById('submit-report-btn');
     const cancelButton = document.getElementById('cancelReportBtn');
     const loadingIndicator = document.getElementById('reportLoadingIndicator');
-    
+    const liveLogsContainer = document.getElementById('liveLogsContainer'); // Get the logs container
+
     submitButton.disabled = true;
     cancelButton.disabled = true;
-    loadingIndicator.innerHTML = '<div class="analysis-progress-container"></div>';
     loadingIndicator.style.display = 'block';
-    
+    liveLogsContainer.style.display = 'none'; // Hide logs initially
+    loadingIndicator.innerHTML = `
+        <div class="analysis-progress-container">
+            <div class="research-progress-header mb-3">
+                <h6 class="mb-0 fw-semibold" style="color: #661c31;">
+                    <i class="fas fa-tasks me-2" style="color: #661c31;"></i>Rechercheprozess
+                </h6>
+            </div>
+            <div class="research-progress-list">
+                <div class="progress-phase" id="phase-keyword_strategy" data-status="pending">
+                    <div class="phase-icon">⏳</div>
+                    <div class="phase-content">
+                        <div class="phase-title">Keyword-Strategie erstellen</div>
+                        <div class="phase-details" id="details-keyword_strategy" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="progress-phase" id="phase-data_collection" data-status="pending">
+                    <div class="phase-icon">⏳</div>
+                    <div class="phase-content">
+                        <div class="phase-title">Datenquellen durchsuchen</div>
+                        <div class="phase-details" id="details-data_collection" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="progress-phase" id="phase-ai_analysis" data-status="pending">
+                    <div class="phase-icon">⏳</div>
+                    <div class="phase-content">
+                        <div class="phase-title">KI-Analyse durchführen</div>
+                        <div class="phase-details" id="details-ai_analysis" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="progress-phase" id="phase-extract_facts" data-status="pending">
+                    <div class="phase-icon">⏳</div>
+                    <div class="phase-content">
+                        <div class="phase-title">Key Facts extrahieren</div>
+                        <div class="phase-details" id="details-extract_facts" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="progress-phase" id="phase-generate_pdf" data-status="pending">
+                    <div class="phase-icon">⏳</div>
+                    <div class="phase-content">
+                        <div class="phase-title">PDF-Report erstellen</div>
+                        <div class="phase-details" id="details-generate_pdf" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-bar-container mt-3">
+                <div class="progress" style="height: 8px; border-radius: 4px;">
+                    <div class="progress-bar bg-success" id="overall-progress-bar" role="progressbar" style="width: 0%; transition: width 0.3s ease; background: #661c31 !important;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <small class="text-muted mt-1 d-block text-end" id="progress-percentage">0%</small>
+            </div>
+        </div>
+    `;
     const progressContainer = document.querySelector('.analysis-progress-container');
-    
+
+    // Add toggle functionality for logs
+    document.getElementById('toggleLogs').addEventListener('click', function() {
+        const logsContent = document.getElementById('liveLogsContent');
+        const icon = this.querySelector('i');
+        if (logsContent.style.display === 'none' || logsContent.style.display === '') {
+            logsContent.style.display = 'block';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            logsContent.style.display = 'none';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    });
+
+
     try {
         const response = await fetch('/api/generate-trend-report-stream', {
             method: 'POST',
@@ -1749,31 +1834,32 @@ document.getElementById('submit-report-btn').addEventListener('click', async fun
                 countries: selectedCountries
             })
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to start report generation');
         }
-        
+
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
-        
+
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
-            
+
             buffer += decoder.decode(value, { stream: true });
-            
-            const lines = buffer.split('\n\n');
+
+            const lines = buffer.split('\n'); // Split by single newline for logs
             buffer = lines.pop();
-            
+
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
                     try {
                         const data = JSON.parse(line.substring(6));
-                        
+
                         if (data.type === 'progress') {
-                            addProgressStep(progressContainer, data);
+                            updateProgressStep(data); // Use the new updateProgressStep function
+                            addLogMessage(data.message); // Add log message
                         } else if (data.type === 'complete') {
                             generatedReportData = data;
                             showReportPreview(data);
@@ -1783,50 +1869,86 @@ document.getElementById('submit-report-btn').addEventListener('click', async fun
                         }
                     } catch (e) {
                         console.error('Error parsing SSE data:', e);
+                        addLogMessage(`Error parsing log data: ${line}`);
                     }
+                } else if (line.trim() !== '') { // Handle non-data lines as logs
+                    addLogMessage(line);
                 }
             }
         }
-        
+
     } catch (error) {
         console.error('Error generating trend report:', error);
         showReportError(error.message || 'Failed to generate trend report. Please try again.');
         submitButton.disabled = false;
         cancelButton.disabled = false;
         loadingIndicator.style.display = 'none';
+        liveLogsContainer.style.display = 'block'; // Show logs container on error
     }
 });
 
-let progressSteps = {};
-let progressPhases = [
-    { id: 'keyword_strategy', title: 'Keyword-Strategie erstellen', icon: '⏳', status: 'pending' },
-    { id: 'data_collection', title: 'Datenquellen durchsuchen', icon: '⏳', status: 'pending' },
-    { id: 'ai_analysis', title: 'KI-Analyse durchführen', icon: '⏳', status: 'pending' },
-    { id: 'extract_facts', title: 'Key Facts extrahieren', icon: '⏳', status: 'pending' },
-    { id: 'generate_pdf', title: 'PDF-Report erstellen', icon: '⏳', status: 'pending' }
-];
+// Function to add log messages to the live log display
+function addLogMessage(message) {
+    const liveLogsContent = document.getElementById('liveLogsContent');
+    if (!liveLogsContent) return;
 
+    const logElement = document.createElement('div');
+    logElement.textContent = message;
+    liveLogsContent.appendChild(logElement);
+
+    // Auto-scroll to the bottom
+    liveLogsContent.scrollTop = liveLogsContent.scrollHeight;
+}
+
+
+// Initialize progress steps and update progress
 function initializeProgressSteps(container) {
     container.innerHTML = `
         <div class="research-progress-header mb-3">
-            <h6 class="mb-0"><i class="fas fa-tasks me-2" style="color: #661c31;"></i>Rechercheprozess</h6>
+            <h6 class="mb-0 fw-semibold" style="color: #661c31;">
+                <i class="fas fa-tasks me-2" style="color: #661c31;"></i>Rechercheprozess
+            </h6>
         </div>
         <div class="research-progress-list">
-            ${progressPhases.map(phase => `
-                <div class="progress-phase" id="phase-${phase.id}" data-status="${phase.status}">
-                    <div class="phase-icon">${phase.icon}</div>
-                    <div class="phase-content">
-                        <div class="phase-title">${phase.title}</div>
-                        <div class="phase-details" id="details-${phase.id}" style="display: none;"></div>
-                    </div>
+            <div class="progress-phase" id="phase-keyword_strategy" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">Keyword-Strategie erstellen</div>
+                    <div class="phase-details" id="details-keyword_strategy" style="display: none;"></div>
                 </div>
-            `).join('')}
+            </div>
+            <div class="progress-phase" id="phase-data_collection" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">Datenquellen durchsuchen</div>
+                    <div class="phase-details" id="details-data_collection" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="progress-phase" id="phase-ai_analysis" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">KI-Analyse durchführen</div>
+                    <div class="phase-details" id="details-ai_analysis" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="progress-phase" id="phase-extract_facts" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">Key Facts extrahieren</div>
+                    <div class="phase-details" id="details-extract_facts" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="progress-phase" id="phase-generate_pdf" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">PDF-Report erstellen</div>
+                    <div class="phase-details" id="details-generate_pdf" style="display: none;"></div>
+                </div>
+            </div>
         </div>
         <div class="progress-bar-container mt-3">
             <div class="progress" style="height: 8px; border-radius: 4px;">
-                <div class="progress-bar bg-success" id="overall-progress-bar" role="progressbar" 
-                     style="width: 0%; transition: width 0.3s ease; background: #661c31 !important;" 
-                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                <div class="progress-bar bg-success" id="overall-progress-bar" role="progressbar" style="width: 0%; transition: width 0.3s ease; background: #661c31 !important;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
             <small class="text-muted mt-1 d-block text-end" id="progress-percentage">0%</small>
         </div>
@@ -1837,8 +1959,7 @@ function updateProgressStep(data) {
     const step = data.step;
     const message = data.message;
     const progress = data.progress || 0;
-    
-    // Update overall progress bar
+
     const progressBar = document.getElementById('overall-progress-bar');
     const progressPercentage = document.getElementById('progress-percentage');
     if (progressBar) {
@@ -1848,18 +1969,15 @@ function updateProgressStep(data) {
     if (progressPercentage) {
         progressPercentage.textContent = progress + '%';
     }
-    
-    // Determine which phase this step belongs to (more precise matching)
+
     let phaseId = null;
     let isComplete = false;
-    
-    // Check if step is marked as complete
-    if (step.includes('_created') || step.includes('_complete') || step.includes('_extracted') || 
+
+    if (step.includes('_created') || step.includes('_complete') || step.includes('_extracted') ||
         step === 'complete' || message.startsWith('✓')) {
         isComplete = true;
     }
-    
-    // Map step to phase
+
     if (step.includes('creating_keyword') || step.includes('keyword_strategy') || step.includes('displaying_strategy')) {
         phaseId = 'keyword_strategy';
     } else if (step.includes('searching') || step.includes('data_collection') || step.includes('durchsuche')) {
@@ -1871,19 +1989,17 @@ function updateProgressStep(data) {
     } else if (step.includes('generating_pdf') || step.includes('pdf') || step === 'complete') {
         phaseId = 'generate_pdf';
     }
-    
+
     if (!phaseId) return;
-    
+
     const phaseElement = document.getElementById(`phase-${phaseId}`);
     const detailsElement = document.getElementById(`details-${phaseId}`);
-    
+
     if (!phaseElement) return;
-    
-    // Update phase status
+
     const iconElement = phaseElement.querySelector('.phase-icon');
     const currentStatus = phaseElement.getAttribute('data-status');
-    
-    // If this specific step is complete
+
     if (isComplete) {
         phaseElement.setAttribute('data-status', 'completed');
         if (iconElement) iconElement.textContent = '✅';
@@ -1893,16 +2009,13 @@ function updateProgressStep(data) {
             detailsElement.style.display = 'block';
             detailsElement.innerHTML = `<small class="text-success">${escapeHtml(message)}</small>`;
         }
-    } 
-    // If step is in progress (not complete and phase not already completed)
-    else if (currentStatus !== 'completed') {
+    } else if (currentStatus !== 'completed') {
         phaseElement.setAttribute('data-status', 'in-progress');
         if (iconElement) iconElement.textContent = '⏳';
         phaseElement.classList.remove('completed');
         phaseElement.classList.add('in-progress');
         if (detailsElement) {
             detailsElement.style.display = 'block';
-            // Append multiple messages for data collection phase
             if (phaseId === 'data_collection' && currentStatus === 'in-progress') {
                 const existingText = detailsElement.innerHTML;
                 if (existingText && !existingText.includes(message)) {
@@ -1915,68 +2028,56 @@ function updateProgressStep(data) {
             }
         }
     }
-    
-    // Scroll to current step
+
     setTimeout(() => {
         phaseElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);
 }
 
-function addProgressStep(container, data) {
-    // Initialize progress display if not done yet
-    if (!container.querySelector('.research-progress-list')) {
-        initializeProgressSteps(container);
-    }
-    
-    // Update the specific step
-    updateProgressStep(data);
-}
-
 function showReportPreview(data) {
     const modal = document.getElementById('customReportModal');
-    const modalContent = modal.querySelector('.modal-body');
-    
-    const sources = data.report.sources || [];
-    const sourcesHTML = sources.map(s => 
-        `<li><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></li>`
-    ).join('');
-    
-    modalContent.innerHTML = `
+    const modalBody = modal.querySelector('.modal-body');
+    const loadingIndicator = document.getElementById('reportLoadingIndicator');
+    const liveLogsContainer = document.getElementById('liveLogsContainer');
+
+    loadingIndicator.style.display = 'none'; // Hide loading indicator
+    liveLogsContainer.style.display = 'none'; // Hide logs container
+    modalBody.innerHTML = `
         <div class="report-preview-container">
             <div class="alert alert-success mb-4">
                 <i class="fas fa-check-circle me-2"></i>
                 <strong>Report erfolgreich erstellt!</strong> Überprüfen Sie die Vorschau und veröffentlichen Sie den Report.
             </div>
-            
+
             <div class="report-preview-content">
                 <h3 class="mb-3">${escapeHtml(data.report.title)}</h3>
-                
+
                 <div class="key-facts-preview mb-4 p-3" style="background: #f8f9fa; border-left: 4px solid #661c31; border-radius: 8px;">
                     <strong style="color: #661c31;">Key Facts für Trend-Karte:</strong>
                     <ul class="mt-2 mb-0">
                         ${data.key_facts.map(fact => `<li>${escapeHtml(fact)}</li>`).join('')}
                     </ul>
                 </div>
-                
+
                 <div class="mb-4">
                     <h5 style="color: #661c31;"><i class="fas fa-info-circle me-2"></i>Executive Summary</h5>
                     <p>${escapeHtml(data.report.description).substring(0, 300)}...</p>
                 </div>
-                
+
                 <div class="mb-4">
                     <h5 style="color: #661c31;"><i class="fas fa-database me-2"></i>Datenquellen</h5>
                     <ul class="sources-list">
-                        ${sourcesHTML || '<li>Keine Quellen verfügbar</li>'}
+                        ${data.report.sources.map(s => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></li>`).join('') || '<li>Keine Quellen verfügbar</li>'}
                     </ul>
                 </div>
-                
+
                 <div class="mb-4">
                     <a href="${data.pdf_path}" target="_blank" class="btn btn-outline-secondary">
                         <i class="fas fa-file-pdf me-2"></i>PDF Preview
                     </a>
                 </div>
             </div>
-            
+
             <div class="d-flex gap-2 mt-4">
                 <button type="button" class="btn btn-secondary flex-fill" id="cancelPreviewBtn">
                     <i class="fas fa-times me-2"></i>Abbrechen
@@ -1987,13 +2088,13 @@ function showReportPreview(data) {
             </div>
         </div>
     `;
-    
+
     document.getElementById('cancelPreviewBtn').addEventListener('click', function() {
         const modalInstance = bootstrap.Modal.getInstance(modal);
         modalInstance.hide();
         resetReportModal();
     });
-    
+
     document.getElementById('publishReportBtn').addEventListener('click', async function() {
         await publishReport(data);
     });
@@ -2003,7 +2104,7 @@ async function publishReport(data) {
     const publishBtn = document.getElementById('publishReportBtn');
     publishBtn.disabled = true;
     publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Veröffentliche...';
-    
+
     try {
         const response = await fetch('/api/publish-trend-report', {
             method: 'POST',
@@ -2016,20 +2117,20 @@ async function publishReport(data) {
                 pdf_path: data.pdf_path
             })
         });
-        
+
         const result = await response.json();
-        
+
         if (!response.ok || !result.success) {
             throw new Error(result.error || 'Failed to publish report');
         }
-        
+
         const modal = bootstrap.Modal.getInstance(document.getElementById('customReportModal'));
         modal.hide();
-        
+
         setTimeout(() => {
             window.location.reload();
         }, 500);
-        
+
     } catch (error) {
         console.error('Error publishing report:', error);
         alert('Fehler beim Veröffentlichen des Reports: ' + error.message);
@@ -2041,7 +2142,7 @@ async function publishReport(data) {
 function resetReportModal() {
     const modal = document.getElementById('customReportModal');
     const modalBody = modal.querySelector('.modal-body');
-    
+
     modalBody.innerHTML = `
         <form id="customReportForm">
             <div class="mb-4">
@@ -2049,18 +2150,18 @@ function resetReportModal() {
                 <input type="text" class="form-control" id="keywords-input" placeholder="z.B. Protein, Bio, Vegan" required>
                 <div class="form-text">Mehrere Keywords mit Komma trennen</div>
             </div>
-            
+
             <div class="mb-4">
                 <label for="topic-input" class="form-label fw-semibold">Thema / Beschreibung (optional)</label>
                 <textarea class="form-control" id="topic-input" rows="3" placeholder="Optionale Beschreibung des gewünschten Trend-Reports"></textarea>
             </div>
-            
+
             <div class="mb-4">
                 <label for="products-input" class="form-label fw-semibold">Produktkategorien (optional)</label>
                 <input type="text" class="form-control" id="products-input" placeholder="z.B. Müsli, Haferflocken, Frühstückscerealien">
                 <div class="form-text">Mehrere Kategorien mit Komma trennen</div>
             </div>
-            
+
             <div class="mb-4">
                 <label class="form-label fw-semibold">Zielmärkte / Länder <span class="text-danger">*</span></label>
                 <div class="countries-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
@@ -2082,12 +2183,12 @@ function resetReportModal() {
                     </div>
                 </div>
             </div>
-            
+
             <div id="reportErrorMessage" class="alert alert-danger" style="display: none;">
                 <i class="fas fa-exclamation-circle me-2"></i>
                 <span id="reportErrorText"></span>
             </div>
-            
+
             <div id="reportLoadingIndicator" style="display: none;">
                 <div class="text-center py-3">
                     <div class="spinner-border text-primary" role="status">
@@ -2098,7 +2199,7 @@ function resetReportModal() {
             </div>
         </form>
     `;
-    
+
     generatedReportData = null;
     document.getElementById('submit-report-btn').disabled = false;
     document.getElementById('cancelReportBtn').disabled = false;
@@ -2115,12 +2216,466 @@ function hideReportError() {
     document.getElementById('reportErrorMessage').style.display = 'none';
 }
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+// Trends Text Highlighting Function
+function highlightTrendsText(text, query) {
+    try {
+        // Escape special regex characters to prevent injection
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+    } catch (e) {
+        // Fallback if regex fails
+        return text;
+    }
 }
+
+// Custom Trend Report Generation Logic with Streaming
+let generatedReportData = null;
+
+document.getElementById('submit-report-btn').addEventListener('click', async function() {
+    const keywordsInput = document.getElementById('keywords-input').value.trim();
+    const topicInput = document.getElementById('topic-input').value.trim();
+    const productsInput = document.getElementById('products-input').value.trim();
+
+    const selectedCountries = [];
+    document.querySelectorAll('.countries-grid input[type="checkbox"]:checked').forEach(checkbox => {
+        selectedCountries.push(checkbox.value);
+    });
+
+    if (!keywordsInput) {
+        showReportError('Please enter at least one keyword');
+        return;
+    }
+
+    if (selectedCountries.length === 0) {
+        showReportError('Please select at least one country');
+        return;
+    }
+
+    hideReportError();
+
+    const submitButton = document.getElementById('submit-report-btn');
+    const cancelButton = document.getElementById('cancelReportBtn');
+    const loadingIndicator = document.getElementById('reportLoadingIndicator');
+    const liveLogsContainer = document.getElementById('liveLogsContainer');
+
+    submitButton.disabled = true;
+    cancelButton.disabled = true;
+    loadingIndicator.style.display = 'block';
+    liveLogsContainer.style.display = 'block'; // Ensure logs container is visible
+    document.getElementById('liveLogsContent').innerHTML = ''; // Clear previous logs
+
+    // Initialize progress steps
+    initializeProgressSteps(loadingIndicator);
+
+    // Add toggle functionality for logs
+    document.getElementById('toggleLogs').addEventListener('click', function() {
+        const logsContent = document.getElementById('liveLogsContent');
+        const icon = this.querySelector('i');
+        if (logsContent.style.display === 'none' || logsContent.style.display === '') {
+            logsContent.style.display = 'block';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            logsContent.style.display = 'none';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    });
+
+    try {
+        const response = await fetch('/api/generate-trend-report-stream', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                keywords: keywordsInput,
+                topic: topicInput,
+                products: productsInput,
+                countries: selectedCountries
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to start report generation');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.substring(6));
+
+                        if (data.type === 'progress') {
+                            updateProgressStep(data);
+                            addLogMessage(data.message);
+                        } else if (data.type === 'complete') {
+                            generatedReportData = data;
+                            showReportPreview(data);
+                            return;
+                        } else if (data.type === 'error') {
+                            throw new Error(data.message);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing SSE data:', e);
+                        addLogMessage(`Error parsing log data: ${line}`);
+                    }
+                } else if (line.trim() !== '') {
+                    addLogMessage(line);
+                }
+            }
+        }
+
+    } catch (error) {
+        console.error('Error generating trend report:', error);
+        showReportError(error.message || 'Failed to generate trend report. Please try again.');
+        submitButton.disabled = false;
+        cancelButton.disabled = false;
+        loadingIndicator.style.display = 'none';
+        liveLogsContainer.style.display = 'block';
+    }
+});
+
+// Function to add log messages to the live log display
+function addLogMessage(message) {
+    const liveLogsContent = document.getElementById('liveLogsContent');
+    if (!liveLogsContent) return;
+
+    const logElement = document.createElement('div');
+    logElement.textContent = message;
+    liveLogsContent.appendChild(logElement);
+
+    liveLogsContent.scrollTop = liveLogsContent.scrollHeight;
+}
+
+// Initialize progress steps and update progress
+function initializeProgressSteps(container) {
+    container.innerHTML = `
+        <div class="research-progress-header mb-3">
+            <h6 class="mb-0 fw-semibold" style="color: #661c31;">
+                <i class="fas fa-tasks me-2" style="color: #661c31;"></i>Rechercheprozess
+            </h6>
+        </div>
+        <div class="research-progress-list">
+            <div class="progress-phase" id="phase-keyword_strategy" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">Keyword-Strategie erstellen</div>
+                    <div class="phase-details" id="details-keyword_strategy" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="progress-phase" id="phase-data_collection" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">Datenquellen durchsuchen</div>
+                    <div class="phase-details" id="details-data_collection" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="progress-phase" id="phase-ai_analysis" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">KI-Analyse durchführen</div>
+                    <div class="phase-details" id="details-ai_analysis" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="progress-phase" id="phase-extract_facts" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">Key Facts extrahieren</div>
+                    <div class="phase-details" id="details-extract_facts" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="progress-phase" id="phase-generate_pdf" data-status="pending">
+                <div class="phase-icon">⏳</div>
+                <div class="phase-content">
+                    <div class="phase-title">PDF-Report erstellen</div>
+                    <div class="phase-details" id="details-generate_pdf" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="progress-bar-container mt-3">
+            <div class="progress" style="height: 8px; border-radius: 4px;">
+                <div class="progress-bar bg-success" id="overall-progress-bar" role="progressbar" style="width: 0%; transition: width 0.3s ease; background: #661c31 !important;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small class="text-muted mt-1 d-block text-end" id="progress-percentage">0%</small>
+        </div>
+    `;
+}
+
+function updateProgressStep(data) {
+    const step = data.step;
+    const message = data.message;
+    const progress = data.progress || 0;
+
+    const progressBar = document.getElementById('overall-progress-bar');
+    const progressPercentage = document.getElementById('progress-percentage');
+    if (progressBar) {
+        progressBar.style.width = progress + '%';
+        progressBar.setAttribute('aria-valuenow', progress);
+    }
+    if (progressPercentage) {
+        progressPercentage.textContent = progress + '%';
+    }
+
+    let phaseId = null;
+    let isComplete = false;
+
+    if (step.includes('_created') || step.includes('_complete') || step.includes('_extracted') ||
+        step === 'complete' || message.startsWith('✓')) {
+        isComplete = true;
+    }
+
+    if (step.includes('creating_keyword') || step.includes('keyword_strategy') || step.includes('displaying_strategy')) {
+        phaseId = 'keyword_strategy';
+    } else if (step.includes('searching') || step.includes('data_collection') || step.includes('durchsuche')) {
+        phaseId = 'data_collection';
+    } else if (step.includes('ai_analysis') || step.includes('analysis')) {
+        phaseId = 'ai_analysis';
+    } else if (step.includes('extracting') || step.includes('facts')) {
+        phaseId = 'extract_facts';
+    } else if (step.includes('generating_pdf') || step.includes('pdf') || step === 'complete') {
+        phaseId = 'generate_pdf';
+    }
+
+    if (!phaseId) return;
+
+    const phaseElement = document.getElementById(`phase-${phaseId}`);
+    const detailsElement = document.getElementById(`details-${phaseId}`);
+
+    if (!phaseElement) return;
+
+    const iconElement = phaseElement.querySelector('.phase-icon');
+    const currentStatus = phaseElement.getAttribute('data-status');
+
+    if (isComplete) {
+        phaseElement.setAttribute('data-status', 'completed');
+        if (iconElement) iconElement.textContent = '✅';
+        phaseElement.classList.remove('in-progress');
+        phaseElement.classList.add('completed');
+        if (detailsElement) {
+            detailsElement.style.display = 'block';
+            detailsElement.innerHTML = `<small class="text-success">${escapeHtml(message)}</small>`;
+        }
+    } else if (currentStatus !== 'completed') {
+        phaseElement.setAttribute('data-status', 'in-progress');
+        if (iconElement) iconElement.textContent = '⏳';
+        phaseElement.classList.remove('completed');
+        phaseElement.classList.add('in-progress');
+        if (detailsElement) {
+            detailsElement.style.display = 'block';
+            if (phaseId === 'data_collection' && currentStatus === 'in-progress') {
+                const existingText = detailsElement.innerHTML;
+                if (existingText && !existingText.includes(message)) {
+                    detailsElement.innerHTML = existingText + `<br><small class="text-muted">${escapeHtml(message)}</small>`;
+                } else if (!existingText) {
+                    detailsElement.innerHTML = `<small class="text-muted">${escapeHtml(message)}</small>`;
+                }
+            } else {
+                detailsElement.innerHTML = `<small class="text-muted">${escapeHtml(message)}</small>`;
+            }
+        }
+    }
+
+    setTimeout(() => {
+        phaseElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+}
+
+function showReportPreview(data) {
+    const modal = document.getElementById('customReportModal');
+    const modalBody = modal.querySelector('.modal-body');
+    const loadingIndicator = document.getElementById('reportLoadingIndicator');
+    const liveLogsContainer = document.getElementById('liveLogsContainer');
+
+    loadingIndicator.style.display = 'none';
+    liveLogsContainer.style.display = 'none';
+    modalBody.innerHTML = `
+        <div class="report-preview-container">
+            <div class="alert alert-success mb-4">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Report erfolgreich erstellt!</strong> Überprüfen Sie die Vorschau und veröffentlichen Sie den Report.
+            </div>
+
+            <div class="report-preview-content">
+                <h3 class="mb-3">${escapeHtml(data.report.title)}</h3>
+
+                <div class="key-facts-preview mb-4 p-3" style="background: #f8f9fa; border-left: 4px solid #661c31; border-radius: 8px;">
+                    <strong style="color: #661c31;">Key Facts für Trend-Karte:</strong>
+                    <ul class="mt-2 mb-0">
+                        ${data.key_facts.map(fact => `<li>${escapeHtml(fact)}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <h5 style="color: #661c31;"><i class="fas fa-info-circle me-2"></i>Executive Summary</h5>
+                    <p>${escapeHtml(data.report.description).substring(0, 300)}...</p>
+                </div>
+
+                <div class="mb-4">
+                    <h5 style="color: #661c31;"><i class="fas fa-database me-2"></i>Datenquellen</h5>
+                    <ul class="sources-list">
+                        ${data.report.sources.map(s => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></li>`).join('') || '<li>Keine Quellen verfügbar</li>'}
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <a href="${data.pdf_path}" target="_blank" class="btn btn-outline-secondary">
+                        <i class="fas fa-file-pdf me-2"></i>PDF Preview
+                    </a>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="button" class="btn btn-secondary flex-fill" id="cancelPreviewBtn">
+                    <i class="fas fa-times me-2"></i>Abbrechen
+                </button>
+                <button type="button" class="btn btn-primary flex-fill" id="publishReportBtn" style="background: #661c31; border-color: #661c31;">
+                    <i class="fas fa-check me-2"></i>Report veröffentlichen
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('cancelPreviewBtn').addEventListener('click', function() {
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        modalInstance.hide();
+        resetReportModal();
+    });
+
+    document.getElementById('publishReportBtn').addEventListener('click', async function() {
+        await publishReport(data);
+    });
+}
+
+async function publishReport(data) {
+    const publishBtn = document.getElementById('publishReportBtn');
+    publishBtn.disabled = true;
+    publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Veröffentliche...';
+
+    try {
+        const response = await fetch('/api/publish-trend-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                report: data.report,
+                key_facts: data.key_facts,
+                pdf_path: data.pdf_path
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to publish report');
+        }
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('customReportModal'));
+        modal.hide();
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+
+    } catch (error) {
+        console.error('Error publishing report:', error);
+        alert('Fehler beim Veröffentlichen des Reports: ' + error.message);
+        publishBtn.disabled = false;
+        publishBtn.innerHTML = '<i class="fas fa-check me-2"></i>Report veröffentlichen';
+    }
+}
+
+function resetReportModal() {
+    const modal = document.getElementById('customReportModal');
+    const modalBody = modal.querySelector('.modal-body');
+
+    modalBody.innerHTML = `
+        <form id="customReportForm">
+            <div class="mb-4">
+                <label for="keywords-input" class="form-label fw-semibold">Keywords / Suchbegriffe <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="keywords-input" placeholder="z.B. Protein, Bio, Vegan" required>
+                <div class="form-text">Mehrere Keywords mit Komma trennen</div>
+            </div>
+
+            <div class="mb-4">
+                <label for="topic-input" class="form-label fw-semibold">Thema / Beschreibung (optional)</label>
+                <textarea class="form-control" id="topic-input" rows="3" placeholder="Optionale Beschreibung des gewünschten Trend-Reports"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label for="products-input" class="form-label fw-semibold">Produktkategorien (optional)</label>
+                <input type="text" class="form-control" id="products-input" placeholder="z.B. Müsli, Haferflocken, Frühstückscerealien">
+                <div class="form-text">Mehrere Kategorien mit Komma trennen</div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Zielmärkte / Länder <span class="text-danger">*</span></label>
+                <div class="countries-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="DE" id="country-de" checked>
+                        <label class="form-check-label" for="country-de">Deutschland</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="USA" id="country-usa">
+                        <label class="form-check-label" for="country-usa">USA</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="UK" id="country-uk">
+                        <label class="form-check-label" for="country-uk">UK</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="FR" id="country-fr">
+                        <label class="form-check-label" for="country-fr">France</label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reportErrorMessage" class="alert alert-danger" style="display: none;">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span id="reportErrorText"></span>
+            </div>
+
+            <div id="reportLoadingIndicator" style="display: none;">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Generating report...</span>
+                    </div>
+                    <p class="mt-2 mb-0 text-muted">Analysiere Daten und erstelle Report...</p>
+                </div>
+            </div>
+        </form>
+    `;
+
+    generatedReportData = null;
+    document.getElementById('submit-report-btn').disabled = false;
+    document.getElementById('cancelReportBtn').disabled = false;
+}
+
+function showReportError(message) {
+    const errorMessage = document.getElementById('reportErrorMessage');
+    const errorText = document.getElementById('reportErrorText');
+    errorText.textContent = message;
+    errorMessage.style.display = 'block';
+}
+
+function hideReportError() {
+    document.getElementById('reportErrorMessage').style.display = 'none';
+}
+
 </script>
 
 <style>
@@ -2328,7 +2883,7 @@ function escapeHtml(text) {
 }
 
 .analysis-form {
-    background: #f8fafc;
+    background: #f8f9fa;
     border-radius: 12px;
     padding: 24px;
     margin-top: 20px;
@@ -2392,6 +2947,10 @@ function escapeHtml(text) {
     background: #ffffff;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
+}
+
+.research-progress-header {
+    margin-bottom: 1.5rem;
 }
 
 .research-progress-header h6 {
@@ -2511,6 +3070,51 @@ function escapeHtml(text) {
 .key-facts-preview li {
     margin-bottom: 8px;
     color: #2d3748;
+}
+
+/* Live Logs Container Styling */
+.live-logs-container {
+    margin-top: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.live-logs-container .card {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.live-logs-container .card-header {
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #ffffff !important; /* Ensure header background */
+}
+
+.live-logs-container .card-header h6 {
+    font-size: 1rem;
+}
+
+.live-logs-container #toggleLogs {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+}
+
+.live-logs-container .card-body {
+    background: #1e1e1e; /* Dark background for logs */
+    color: #d4d4d4; /* Light text for logs */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    border-radius: 0 0 8px 8px;
+    overflow-y: auto; /* Enable scrolling */
+}
+
+.live-logs-container .card-body div {
+    padding: 4px 8px;
+    white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+    word-break: break-all; /* Break long words if necessary */
+}
+
+.live-logs-container .card-body div:last-child {
+    margin-bottom: 0;
 }
 
 </style>

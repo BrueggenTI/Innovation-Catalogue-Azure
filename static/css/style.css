@@ -317,16 +317,16 @@ body {
     .exclusive-card .btn-group {
         flex-direction: column;
     }
-    
+
     .exclusive-card .btn-group .btn {
         border-radius: var(--brg-border-radius) !important;
         margin-bottom: 1px;
     }
-    
+
     .exclusive-fields-content {
         padding: var(--brg-spacing-02) 0;
     }
-    
+
     .exclusive-display-content {
         padding: var(--brg-spacing-02);
     }
@@ -2218,35 +2218,6 @@ span.search-result-badge,
 }
 
 .claim-tags .badge {
-    font-size: 10px;
-    padding: 4px 8px;
-}
-
-.cert-tags .badge {
-    font-size: 10px;
-    padding: 4px 8px;
-}
-
-/* Summary styling improvements */
-.summary-item {
-    margin-bottom: 12px;
-    padding: 8px 0;
-}
-
-.summary-item strong {
-    font-size: 14px;
-    color: var(--primary-color);
-    display: block;
-    margin-bottom: 6px;
-}
-
-.summary-item .badge {
-    margin-right: 4px;
-    margin-bottom: 4px;
-}ding: 3px 8px;
-}
-
-.claim-tags .badge {
     background-color: var(--success-color) !important;
     color: white;
     font-size: 10px;
@@ -2846,11 +2817,11 @@ span.search-result-badge,
         text-align: center;
         margin-bottom: 1rem;
     }
-    
+
     .pdf-controls .btn-group {
         margin-bottom: 0.5rem;
     }
-    
+
     #pdfCanvas {
         width: 100% !important;
         height: auto !important;
@@ -2972,12 +2943,12 @@ body.modal-open {
         height: 95vh;
         margin: 2.5vh auto;
     }
-    
+
     .pdf-modal-controls .row > div {
         text-align: center;
         margin-bottom: 0.5rem;
     }
-    
+
     .pdf-modal-display {
         padding: 10px;
     }
@@ -3161,13 +3132,13 @@ body.modal-open {
         padding: 12px 16px;
         margin-bottom: 10px;
     }
-    
+
     .filter-option-btn, .active-filter-btn {
         padding: 10px 14px;
         font-size: 13px;
         margin-bottom: 8px;
     }
-    
+
     .filter-options-section .container-fluid {
         padding-left: 16px;
         padding-right: 16px;
@@ -3178,11 +3149,11 @@ body.modal-open {
     .filter-header h6 {
         font-size: 14px;
     }
-    
+
     .filter-count {
         font-size: 12px;
     }
-    
+
     .filter-option-btn, .active-filter-btn {
         width: 100%;
         text-align: center;
@@ -3288,7 +3259,7 @@ body.modal-open {
         font-size: 13px;
         padding: 8px 12px;
     }
-    
+
     .btn-group .btn i {
         display: none;
     }
