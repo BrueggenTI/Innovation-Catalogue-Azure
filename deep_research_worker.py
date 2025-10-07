@@ -453,17 +453,30 @@ def determine_sources(strategy: Dict, keywords: List[str]) -> List[Dict]:
     """Bestimmt die zu durchsuchenden Quellen basierend auf der Strategie"""
     sources = []
     
+    logging.info("🔍 Bestimme Quellen für Datensammlung...")
+    
     # Immer: Allgemeine Quellen
     sources.extend(DATA_SOURCES["general"])
+    logging.info(f"  ✓ Allgemeine Quellen: {len(DATA_SOURCES['general'])} hinzugefügt")
+    
+    # Immer: AI Deep Research APIs
+    sources.extend(DATA_SOURCES["ai_deep_research"])
+    logging.info(f"  ✓ AI Deep Research APIs: {len(DATA_SOURCES['ai_deep_research'])} hinzugefügt")
     
     # Basierend auf Strategie: Länder-spezifische DBs
-    priority_markets = strategy.get("priority_markets", ["DE", "USA", "UK"])
+    priority_markets = strategy.get("priority_markets", ["DE", "USA", "UK", "EU", "FR"])
+    statistical_sources = []
     for market in priority_markets:
         if market in DATA_SOURCES["statistical_dbs"]:
-            sources.append(DATA_SOURCES["statistical_dbs"][market])
+            statistical_sources.append(DATA_SOURCES["statistical_dbs"][market])
+    sources.extend(statistical_sources)
+    logging.info(f"  ✓ Statistische DBs: {len(statistical_sources)} hinzugefügt für Märkte {priority_markets}")
     
-    # Immer: Industry Websites
-    sources.extend(DATA_SOURCES["industry_websites"][:3])  # Top 3
+    # Immer: ALLE Industry Websites (nicht nur Top 3)
+    sources.extend(DATA_SOURCES["industry_websites"])
+    logging.info(f"  ✓ Industry Websites: {len(DATA_SOURCES['industry_websites'])} hinzugefügt")
+    
+    logging.info(f"📊 Gesamt: {len(sources)} Quellen werden durchsucht")
     
     return sources
 
