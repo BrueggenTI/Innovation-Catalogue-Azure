@@ -1,4 +1,3 @@
-
 from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, session
 from app import app, db, csrf
 from models import Product, ConceptSession, Trend, User

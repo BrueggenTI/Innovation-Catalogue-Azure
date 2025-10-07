@@ -23,18 +23,18 @@ def timeout_handler(seconds):
         def wrapper(*args, **kwargs):
             def timeout_error(signum, frame):
                 raise TimeoutError(f"Function {func.__name__} timed out after {seconds} seconds")
-            
+
             # Set the signal handler and alarm
             old_handler = signal.signal(signal.SIGALRM, timeout_error)
             signal.alarm(seconds)
-            
+
             try:
                 result = func(*args, **kwargs)
             finally:
                 # Restore the old handler and cancel the alarm
                 signal.alarm(0)
                 signal.signal(signal.SIGALRM, old_handler)
-            
+
             return result
         return wrapper
     return decorator
@@ -43,20 +43,20 @@ def timeout_handler(seconds):
 def create_keyword_strategy(user_input: Dict[str, Any]) -> Dict[str, Any]:
     """
     Analyze user input and create an intelligent keyword strategy for different data sources.
-    
+
     Args:
         user_input: Dictionary with 'keywords', 'countries', 'products', 'topic'
-    
+
     Returns:
         Dictionary with optimized keywords for each source type
     """
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-    
+
     keywords = user_input.get('keywords', [])
     countries = user_input.get('countries', [])
     products = user_input.get('products', [])
     topic = user_input.get('topic', '')
-    
+
     prompt = f"""Du bist ein Data Research Experte. Erstelle eine optimale Keyword-Strategie für eine Food Trend Recherche.
 
 **Nutzereingabe:**
@@ -75,12 +75,12 @@ Erstelle eine JSON-Struktur mit optimierten Keywords für verschiedene Datenquel
 Jede Kategorie soll 3-5 optimierte Keywords enthalten. Erweitere die ursprünglichen Keywords um Synonyme, verwandte Begriffe und spezifische Fachbegriffe.
 
 Antworte NUR mit einem gültigen JSON-Objekt in diesem Format:
-{{
+{
   "statistical_databases": ["keyword1", "keyword2", "keyword3"],
   "scientific_sources": ["keyword1", "keyword2", "keyword3"],
   "industry_websites": ["keyword1", "keyword2", "keyword3"],
   "general_search": ["keyword1", "keyword2", "keyword3"]
-}}"""
+}"""
 
     try:
         response = client.chat.completions.create(
@@ -90,9 +90,10 @@ Antworte NUR mit einem gültigen JSON-Objekt in diesem Format:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=1000
+            max_tokens=1000,
+            timeout=15  # Add 15 second timeout
         )
-        
+
         if response.choices and response.choices[0].message.content:
             content = response.choices[0].message.content.strip()
             # Remove markdown code blocks if present
@@ -101,7 +102,7 @@ Antworte NUR mit einem gültigen JSON-Objekt in diesem Format:
                 if content.startswith('json'):
                     content = content[4:]
                 content = content.strip()
-            
+
             strategy = json.loads(content)
             return strategy
         else:
@@ -114,6 +115,8 @@ Antworte NUR mit einem gültigen JSON-Objekt in diesem Format:
             }
     except Exception as e:
         print(f"Error creating keyword strategy: {str(e)}")
+        import traceback
+        traceback.print_exc()
         # Fallback to original keywords
         return {
             "statistical_databases": keywords,
@@ -127,13 +130,13 @@ Antworte NUR mit einem gültigen JSON-Objekt in diesem Format:
 def fetch_open_food_facts(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch product data from Open Food Facts database.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing product data
-    
+
     Implementation Notes:
         - Use Open Food Facts API: https://world.openfoodfacts.org/data
         - Search for products matching keywords
@@ -152,13 +155,13 @@ def fetch_open_food_facts(keywords: List[str]) -> Dict[str, Any]:
 def fetch_pubmed_articles(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch scientific articles from PubMed database.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing article abstracts and metadata
-    
+
     Implementation Notes:
         - Use NCBI E-utilities API: https://www.ncbi.nlm.nih.gov/books/NBK25501/
         - Search for articles related to keywords
@@ -177,13 +180,13 @@ def fetch_pubmed_articles(keywords: List[str]) -> Dict[str, Any]:
 def fetch_google_trends(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch trend data from Google Trends.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing search trend data
-    
+
     Implementation Notes:
         - Use pytrends library or Google Trends unofficial API
         - Get interest over time, related queries, regional interest
@@ -201,13 +204,13 @@ def fetch_google_trends(keywords: List[str]) -> Dict[str, Any]:
 def fetch_perplexity_ai(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch AI-powered research from Perplexity AI.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing AI research results
-    
+
     Implementation Notes:
         - Use Perplexity AI API: https://docs.perplexity.ai/
         - Requires API key (get from Replit Secrets: PERPLEXITY_API_KEY)
@@ -225,13 +228,13 @@ def fetch_perplexity_ai(keywords: List[str]) -> Dict[str, Any]:
 def fetch_gemini_ai(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch AI-powered research from Google Gemini.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing AI research results
-    
+
     Implementation Notes:
         - Use Google Gemini API: https://ai.google.dev/
         - Requires API key (get from Replit Secrets: GEMINI_API_KEY)
@@ -250,14 +253,14 @@ def fetch_gemini_ai(keywords: List[str]) -> Dict[str, Any]:
 def fetch_eurostat_data(keywords: List[str], country: str = "") -> Dict[str, Any]:
     """
     Fetch statistical data from Eurostat (EU Statistical Office).
-    
+
     Args:
         keywords: List of search keywords
         country: Specific EU country code (optional)
-    
+
     Returns:
         Dictionary containing EU statistical data
-    
+
     Implementation Notes:
         - Use Eurostat API: https://ec.europa.eu/eurostat/web/json-and-unicode-web-services
         - Search for relevant datasets related to keywords
@@ -276,13 +279,13 @@ def fetch_eurostat_data(keywords: List[str], country: str = "") -> Dict[str, Any
 def fetch_usda_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch agricultural data from USDA (United States Department of Agriculture).
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing USDA agricultural data
-    
+
     Implementation Notes:
         - Use USDA QuickStats API: https://quickstats.nass.usda.gov/api
         - Requires API key (get from Replit Secrets: USDA_API_KEY)
@@ -301,13 +304,13 @@ def fetch_usda_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_genesis_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch German statistical data from GENESIS (Statistisches Bundesamt).
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing German statistical data
-    
+
     Implementation Notes:
         - Use GENESIS-Online API: https://www-genesis.destatis.de
         - Search for relevant datasets related to food consumption, production
@@ -326,13 +329,13 @@ def fetch_genesis_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_ons_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch UK statistical data from ONS (Office for National Statistics).
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing UK statistical data
-    
+
     Implementation Notes:
         - Use ONS API: https://developer.ons.gov.uk
         - Search for datasets related to consumer spending, food industry
@@ -351,13 +354,13 @@ def fetch_ons_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_statcan_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Canadian statistical data from Statistics Canada.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Canadian statistical data
-    
+
     Implementation Notes:
         - Use Statistics Canada Web Data Service
         - Search for food consumption, agricultural production data
@@ -376,13 +379,13 @@ def fetch_statcan_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_insee_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch French statistical data from INSEE.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing French statistical data
-    
+
     Implementation Notes:
         - Use INSEE API: https://api.insee.fr
         - Requires API key (get from Replit Secrets: INSEE_API_KEY)
@@ -401,13 +404,13 @@ def fetch_insee_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_bfs_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Swiss statistical data from BFS (Bundesamt für Statistik).
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Swiss statistical data
-    
+
     Implementation Notes:
         - Use BFS Open Data Portal
         - Search for food industry, consumer spending data
@@ -426,13 +429,13 @@ def fetch_bfs_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_abs_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Australian statistical data from ABS (Australian Bureau of Statistics).
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Australian statistical data
-    
+
     Implementation Notes:
         - Use ABS API: https://www.abs.gov.au/about/data-services/application-programming-interfaces-apis
         - Search for food consumption, agricultural production
@@ -451,13 +454,13 @@ def fetch_abs_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_estat_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Japanese statistical data from e-Stat.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Japanese statistical data
-    
+
     Implementation Notes:
         - Use e-Stat API: https://www.e-stat.go.jp/api/
         - Requires application ID (get from Replit Secrets: ESTAT_APP_ID)
@@ -476,13 +479,13 @@ def fetch_estat_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_statsnz_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch New Zealand statistical data from Stats NZ.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing New Zealand statistical data
-    
+
     Implementation Notes:
         - Use Stats NZ API
         - Search for agricultural data, consumer spending
@@ -501,13 +504,13 @@ def fetch_statsnz_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_cbs_nl_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Dutch statistical data from CBS Netherlands.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Dutch statistical data
-    
+
     Implementation Notes:
         - Use CBS Open Data StatLine
         - Search for food consumption, agricultural production
@@ -526,13 +529,13 @@ def fetch_cbs_nl_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_statistik_at_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Austrian statistical data from Statistik Austria.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Austrian statistical data
-    
+
     Implementation Notes:
         - Use Statistik Austria Open Data
         - Search for food industry, consumption patterns
@@ -551,13 +554,13 @@ def fetch_statistik_at_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_ine_es_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Spanish statistical data from INE Spain.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Spanish statistical data
-    
+
     Implementation Notes:
         - Use INE API: https://www.ine.es/dyngs/DataLab/en/api.html
         - Search for food consumption, production data
@@ -576,13 +579,13 @@ def fetch_ine_es_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_istat_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Italian statistical data from ISTAT.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Italian statistical data
-    
+
     Implementation Notes:
         - Use ISTAT API
         - Search for food industry, consumer spending
@@ -601,13 +604,13 @@ def fetch_istat_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_dst_dk_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Danish statistical data from Statistics Denmark.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Danish statistical data
-    
+
     Implementation Notes:
         - Use Statistics Denmark API
         - Search for food consumption, agricultural data
@@ -626,13 +629,13 @@ def fetch_dst_dk_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_stat_fi_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Finnish statistical data from Statistics Finland.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Finnish statistical data
-    
+
     Implementation Notes:
         - Use Statistics Finland API
         - Search for food industry, consumer spending
@@ -651,13 +654,13 @@ def fetch_stat_fi_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_ssb_no_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Norwegian statistical data from Statistics Norway.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Norwegian statistical data
-    
+
     Implementation Notes:
         - Use Statistics Norway API
         - Search for food consumption, agricultural production
@@ -676,13 +679,13 @@ def fetch_ssb_no_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_scb_se_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Swedish statistical data from Statistics Sweden.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Swedish statistical data
-    
+
     Implementation Notes:
         - Use Statistics Sweden API
         - Search for food industry, consumption data
@@ -701,13 +704,13 @@ def fetch_scb_se_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_gus_pl_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Polish statistical data from GUS (Central Statistical Office).
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Polish statistical data
-    
+
     Implementation Notes:
         - Use GUS API
         - Search for food consumption, agricultural data
@@ -726,13 +729,13 @@ def fetch_gus_pl_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_czso_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Czech statistical data from CZSO (Czech Statistical Office).
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Czech statistical data
-    
+
     Implementation Notes:
         - Use CZSO API
         - Search for food industry, consumer spending
@@ -751,13 +754,13 @@ def fetch_czso_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_ksh_hu_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Hungarian statistical data from KSH.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Hungarian statistical data
-    
+
     Implementation Notes:
         - Use KSH API
         - Search for food consumption, agricultural production
@@ -776,13 +779,13 @@ def fetch_ksh_hu_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_stat_ee_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Estonian statistical data from Statistics Estonia.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Estonian statistical data
-    
+
     Implementation Notes:
         - Use Statistics Estonia API
         - Search for food industry, consumption data
@@ -801,13 +804,13 @@ def fetch_stat_ee_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_kosis_kr_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch South Korean statistical data from KOSIS.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing South Korean statistical data
-    
+
     Implementation Notes:
         - Use KOSIS API: https://kosis.kr/openapi/
         - Requires API key (get from Replit Secrets: KOSIS_API_KEY)
@@ -826,13 +829,13 @@ def fetch_kosis_kr_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_singstat_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Singapore statistical data from SingStat.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Singapore statistical data
-    
+
     Implementation Notes:
         - Use SingStat API
         - Search for food consumption, import/export data
@@ -851,13 +854,13 @@ def fetch_singstat_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_mospi_in_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Indian statistical data from MOSPI.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Indian statistical data
-    
+
     Implementation Notes:
         - Use MOSPI API
         - Search for food industry, consumption patterns
@@ -876,13 +879,13 @@ def fetch_mospi_in_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_bps_id_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Indonesian statistical data from BPS.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Indonesian statistical data
-    
+
     Implementation Notes:
         - Use BPS API
         - Search for food consumption, agricultural production
@@ -901,13 +904,13 @@ def fetch_bps_id_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_ibge_br_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Brazilian statistical data from IBGE.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Brazilian statistical data
-    
+
     Implementation Notes:
         - Use IBGE API: https://servicodados.ibge.gov.br/api/docs
         - Search for food industry, consumption data
@@ -926,13 +929,13 @@ def fetch_ibge_br_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_inegi_mx_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Mexican statistical data from INEGI.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Mexican statistical data
-    
+
     Implementation Notes:
         - Use INEGI API
         - Search for food consumption, agricultural production
@@ -951,13 +954,13 @@ def fetch_inegi_mx_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_ine_cl_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Chilean statistical data from INE Chile.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Chilean statistical data
-    
+
     Implementation Notes:
         - Use INE Chile API
         - Search for food industry, consumption data
@@ -976,13 +979,13 @@ def fetch_ine_cl_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_dane_co_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Colombian statistical data from DANE.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Colombian statistical data
-    
+
     Implementation Notes:
         - Use DANE API
         - Search for food consumption, agricultural data
@@ -1001,13 +1004,13 @@ def fetch_dane_co_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_stats_sa_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch South African statistical data from Stats SA.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing South African statistical data
-    
+
     Implementation Notes:
         - Use Stats SA API
         - Search for food industry, consumption patterns
@@ -1026,13 +1029,13 @@ def fetch_stats_sa_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_knbs_ke_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Kenyan statistical data from KNBS.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Kenyan statistical data
-    
+
     Implementation Notes:
         - Use KNBS API
         - Search for food consumption, agricultural production
@@ -1051,13 +1054,13 @@ def fetch_knbs_ke_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_cbs_il_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Israeli statistical data from CBS Israel.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Israeli statistical data
-    
+
     Implementation Notes:
         - Use CBS Israel API
         - Search for food industry, consumption data
@@ -1076,13 +1079,13 @@ def fetch_cbs_il_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_tuik_tr_data(keywords: List[str]) -> Dict[str, Any]:
     """
     Fetch Turkish statistical data from TUIK.
-    
+
     Args:
         keywords: List of search keywords
-    
+
     Returns:
         Dictionary containing Turkish statistical data
-    
+
     Implementation Notes:
         - Use TUIK API
         - Search for food consumption, agricultural production
@@ -1100,12 +1103,12 @@ def fetch_tuik_tr_data(keywords: List[str]) -> Dict[str, Any]:
 def fetch_all_data(keywords: List[str], countries: List[str], products: List[str] = []) -> Dict[str, Any]:
     """
     Orchestrate data collection from all available sources.
-    
+
     Args:
         keywords: List of search keywords
         countries: List of target countries (ISO 2-letter codes)
         products: List of product categories (optional)
-    
+
     Returns:
         Dictionary containing all collected data organized by source type
     """
@@ -1114,12 +1117,12 @@ def fetch_all_data(keywords: List[str], countries: List[str], products: List[str
         "web_sources": [],
         "country_specific": []
     }
-    
+
     # 3 General statistical sources
     all_data["general_sources"].append(fetch_open_food_facts(keywords))
     all_data["general_sources"].append(fetch_pubmed_articles(keywords))
     all_data["general_sources"].append(fetch_google_trends(keywords))
-    
+
     # 5 Industry-specific web sources (placeholder - actual scraping done by OpenAI)
     all_data["web_sources"] = [
         {'name': 'Supermarket News', 'url': 'https://www.supermarketnews.com', 'status': 'referenced'},
@@ -1128,7 +1131,7 @@ def fetch_all_data(keywords: List[str], countries: List[str], products: List[str
         {'name': 'NutraIngredients', 'url': 'https://www.nutraingredients.com', 'status': 'referenced'},
         {'name': 'Food Ingredients First', 'url': 'https://www.foodingredientsfirst.com', 'status': 'referenced'}
     ]
-    
+
     country_connector_map = {
         'USA': fetch_usda_data,
         'DE': fetch_genesis_data,
@@ -1164,36 +1167,36 @@ def fetch_all_data(keywords: List[str], countries: List[str], products: List[str
         'IL': fetch_cbs_il_data,
         'TR': fetch_tuik_tr_data
     }
-    
+
     eu_countries = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 
                     'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 
                     'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE']
-    
+
     for country in countries:
         country = country.upper()
-        
+
         if country in eu_countries:
             all_data["country_specific"].append(fetch_eurostat_data(keywords, country))
-        
+
         if country in country_connector_map:
             connector_func = country_connector_map[country]
             all_data["country_specific"].append(connector_func(keywords))
-    
+
     return all_data
 
 
 def get_sources_list(raw_data: Dict[str, Any]) -> List[Dict[str, str]]:
     """
     Extract list of all sources with URLs from raw data.
-    
+
     Args:
         raw_data: Dictionary containing all fetched data
-        
+
     Returns:
         List of dictionaries with source names and URLs
     """
     sources = []
-    
+
     # Add general statistical sources
     for source in raw_data.get('general_sources', []):
         if 'source' in source and 'url' in source:
@@ -1201,7 +1204,7 @@ def get_sources_list(raw_data: Dict[str, Any]) -> List[Dict[str, str]]:
                 'name': source['source'],
                 'url': source['url']
             })
-    
+
     # Add industry-specific web sources
     for source in raw_data.get('web_sources', []):
         if 'name' in source and 'url' in source:
@@ -1209,7 +1212,7 @@ def get_sources_list(raw_data: Dict[str, Any]) -> List[Dict[str, str]]:
                 'name': source['name'],
                 'url': source['url']
             })
-    
+
     # Add country-specific statistical sources
     for source in raw_data.get('country_specific', []):
         if 'source' in source and 'url' in source:
@@ -1217,21 +1220,21 @@ def get_sources_list(raw_data: Dict[str, Any]) -> List[Dict[str, str]]:
                 'name': source['source'],
                 'url': source['url']
             })
-    
+
     return sources
 
 
 def analyze_data_with_openai(raw_data: Dict[str, Any], topic: str = "", keywords: List[str] = [], products: List[str] = [], countries: List[str] = []) -> Dict[str, Any]:
     """
     Analyze collected data using OpenAI GPT-4o model to generate a comprehensive trend report.
-    
+
     Args:
         raw_data: Dictionary containing all fetched data from various sources
         topic: Optional topic/description provided by user
         keywords: List of keywords for the analysis
         products: List of product categories
         countries: List of target countries
-    
+
     Returns:
         Dictionary containing:
         - title: Report title
@@ -1244,9 +1247,9 @@ def analyze_data_with_openai(raw_data: Dict[str, Any], topic: str = "", keywords
         - sources: List of data sources with URLs
     """
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-    
+
     sources = get_sources_list(raw_data)
-    
+
     system_prompt = """Du bist ein Senior-Experte für Marktforschung und Trendanalyse in der Lebensmittelindustrie mit Spezialgebiet Cerealien, Müsli, Haferflocken und Frühstücksprodukte. 
 
 Deine Aufgabe ist es, einen vollständigen, professionellen Trend-Report zu erstellen, der auf den bereitgestellten Keywords und dem Kontext basiert. Da die Datenquellen aktuell noch in Entwicklung sind, sollst du basierend auf deinem Fachwissen realistische, datengestützte Marktanalysen erstellen.
@@ -1263,11 +1266,11 @@ Erstelle einen umfassenden Report als JSON-Objekt mit folgender Struktur:
 }
 
 Verwende professionelle Sprache, konkrete Daten (auch geschätzte, realistische Zahlen), und branchenspezifisches Vokabular. Der Report soll actionable sein für Produktentwicklung und Marketing."""
-    
+
     keywords_str = ", ".join(keywords) if keywords else "Allgemeine Marktanalyse"
     products_str = ", ".join(products) if products else "Frühstücksprodukte"
     countries_str = ", ".join(countries) if countries else "Global"
-    
+
     user_message = f"""Erstelle einen vollständigen professionellen Trend-Report basierend auf folgenden Parametern:
 
 **Keywords/Suchbegriffe:** {keywords_str}
@@ -1294,7 +1297,7 @@ Durchsuche folgende branchenspezifische Websites und all ihre Unterseiten für a
 Nutze diese Quellen aktiv für deine Analyse und integriere die neuesten Erkenntnisse, Trends und Innovationen aus diesen Branchen-Websites in deinen Report.
 
 Erstelle einen detaillierten, datengestützten Report, der für strategische Entscheidungen in Produktentwicklung und Marketing verwendet werden kann. Verwende realistische Marktdaten, Statistiken und Insights basierend auf aktuellen Branchentrends 2024/2025."""
-    
+
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -1305,13 +1308,13 @@ Erstelle einen detaillierten, datengestützten Report, der für strategische Ent
             temperature=0.7,
             max_tokens=3500
         )
-        
+
         response_text = response.choices[0].message.content
         if not response_text:
             raise ValueError("Empty response from OpenAI")
-        
+
         response_text = response_text.strip()
-        
+
         if response_text.startswith("```json"):
             response_text = response_text[7:]
         if response_text.startswith("```"):
@@ -1319,12 +1322,12 @@ Erstelle einen detaillierten, datengestützten Report, der für strategische Ent
         if response_text.endswith("```"):
             response_text = response_text[:-3]
         response_text = response_text.strip()
-        
+
         parsed_response = json.loads(response_text)
         parsed_response['sources'] = sources
-        
+
         return parsed_response
-        
+
     except json.JSONDecodeError as e:
         fallback_title = topic if topic else f"Trendanalyse: {keywords_str}"
         return {
@@ -1358,22 +1361,22 @@ Erstelle einen detaillierten, datengestützten Report, der für strategische Ent
 def extract_key_facts(report_data: Dict[str, Any]) -> List[str]:
     """
     Extract exactly 2 key facts from the full report for display card.
-    
+
     Args:
         report_data: Dictionary containing the full report data
-        
+
     Returns:
         List of exactly 2 key fact strings
     """
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-    
+
     try:
         # Combine all trend data for analysis
         all_trends = []
         all_trends.extend(report_data.get('verbrauchertrends', []))
         all_trends.extend(report_data.get('konsumtrends', []))
         all_trends.extend(report_data.get('innovationstrends', []))
-        
+
         context = f"""
         Report Title: {report_data.get('title', '')}
         Description: {report_data.get('description', '')}
@@ -1381,7 +1384,7 @@ def extract_key_facts(report_data: Dict[str, Any]) -> List[str]:
         Consumer Insights: {report_data.get('consumer_insights', '')}
         All Trends: {', '.join(all_trends[:10])}
         """
-        
+
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -1391,13 +1394,13 @@ def extract_key_facts(report_data: Dict[str, Any]) -> List[str]:
             temperature=0.5,
             max_tokens=200
         )
-        
+
         response_text = response.choices[0].message.content
         if not response_text:
             raise ValueError("Empty response from OpenAI")
-        
+
         response_text = response_text.strip()
-        
+
         if response_text.startswith("```json"):
             response_text = response_text[7:]
         if response_text.startswith("```"):
@@ -1405,15 +1408,15 @@ def extract_key_facts(report_data: Dict[str, Any]) -> List[str]:
         if response_text.endswith("```"):
             response_text = response_text[:-3]
         response_text = response_text.strip()
-        
+
         facts = json.loads(response_text)
-        
+
         if isinstance(facts, list) and len(facts) >= 2:
             return facts[:2]
         else:
             # Fallback to first 2 trends
             return all_trends[:2] if len(all_trends) >= 2 else ["Key insights available in full report", "Detailed analysis included"]
-            
+
     except Exception as e:
         # Fallback: Return first 2 trends from any category
         all_trends = []
@@ -1426,45 +1429,49 @@ def extract_key_facts(report_data: Dict[str, Any]) -> List[str]:
 def generate_report_with_streaming(keywords: List[str], countries: List[str], products: List[str] = [], topic: str = "") -> Generator[str, None, None]:
     """
     Generate trend report with real-time progress updates via Server-Sent Events.
-    
+
     Args:
         keywords: List of search keywords
         countries: List of target countries
         products: List of product categories
         topic: Optional topic/description
-        
+
     Yields:
         JSON strings with progress updates and final report data
     """
     try:
         progress = 2
-        
-        # Step 1: Create intelligent keyword strategy
+
+        # Step 1: Create keyword strategy
         yield json.dumps({
             'type': 'progress',
             'step': 'creating_keyword_strategy',
-            'message': f'Analysiere Nutzereingabe und erstelle optimierte Keyword-Strategie mit GPT-4o...',
-            'progress': progress
+            'message': 'Analysiere Nutzereingabe und erstelle optimierte Keyword-Strategie mit GPT-4o...',
+            'progress': 5
         }) + '\n'
-        
+
+        # Add flush to ensure message is sent immediately
+        time.sleep(0.1)
+
         keyword_strategy = create_keyword_strategy({
             'keywords': keywords,
             'countries': countries,
             'products': products,
             'topic': topic
         })
-        
-        progress = 8
+
+        # Confirm strategy was created
         yield json.dumps({
             'type': 'progress',
             'step': 'keyword_strategy_created',
-            'message': f'✓ Keyword-Strategie erstellt:',
-            'progress': progress,
-            'strategy': keyword_strategy
+            'message': '✓ Keyword-Strategie erfolgreich erstellt',
+            'progress': 10
         }) + '\n'
-        
+
+        progress = 10
+
         time.sleep(0.5)
-        
+
         # Display keyword strategy transparently
         yield json.dumps({
             'type': 'progress',
@@ -1472,36 +1479,36 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'message': f'📊 Statistische Datenbanken: {", ".join(keyword_strategy.get("statistical_databases", keywords)[:3])}',
             'progress': progress + 1
         }) + '\n'
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'displaying_strategy',
             'message': f'🔬 Wissenschaftliche Quellen: {", ".join(keyword_strategy.get("scientific_sources", keywords)[:3])}',
             'progress': progress + 2
         }) + '\n'
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'displaying_strategy',
             'message': f'🏭 Branchen-Websites: {", ".join(keyword_strategy.get("industry_websites", keywords)[:3])}',
             'progress': progress + 3
         }) + '\n'
-        
+
         time.sleep(0.5)
         progress = 15
-        
+
         # Collect all data sources with detailed progress
         all_data = {
             "general_sources": [],
             "web_sources": [],
             "country_specific": []
         }
-        
+
         # General sources with optimized keywords
         stat_keywords = keyword_strategy.get("statistical_databases", keywords)
         sci_keywords = keyword_strategy.get("scientific_sources", keywords)
         web_keywords = keyword_strategy.get("industry_websites", keywords)
-        
+
         # Open Food Facts
         yield json.dumps({
             'type': 'progress',
@@ -1509,7 +1516,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'message': f'Durchsuche Open Food Facts mit Keywords: {", ".join(stat_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        
+
         try:
             all_data["general_sources"].append(fetch_open_food_facts(stat_keywords))
             progress += 2
@@ -1521,7 +1528,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                 'progress': progress
             }) + '\n'
             progress += 2
-        
+
         # PubMed
         yield json.dumps({
             'type': 'progress',
@@ -1529,7 +1536,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'message': f'Durchsuche PubMed wissenschaftliche Datenbank mit Keywords: {", ".join(sci_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        
+
         try:
             all_data["general_sources"].append(fetch_pubmed_articles(sci_keywords))
             progress += 2
@@ -1541,7 +1548,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                 'progress': progress
             }) + '\n'
             progress += 2
-        
+
         # Google Trends
         yield json.dumps({
             'type': 'progress',
@@ -1549,7 +1556,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'message': f'Analysiere Google Trends für: {", ".join(stat_keywords[:3])}',
             'progress': progress
         }) + '\n'
-        
+
         try:
             all_data["general_sources"].append(fetch_google_trends(stat_keywords))
             progress += 2
@@ -1561,7 +1568,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                 'progress': progress
             }) + '\n'
             progress += 2
-        
+
         # Industry Web Sources (5 spezifische Branchen-Websites)
         all_data["web_sources"] = [
             {'name': 'Supermarket News', 'url': 'https://www.supermarketnews.com'},
@@ -1570,7 +1577,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             {'name': 'NutraIngredients', 'url': 'https://www.nutraingredients.com'},
             {'name': 'Food Ingredients First', 'url': 'https://www.foodingredientsfirst.com'}
         ]
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_web_sources',
@@ -1579,7 +1586,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         }) + '\n'
         time.sleep(0.2)
         progress += 1
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_mindbodygreen',
@@ -1588,7 +1595,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         }) + '\n'
         time.sleep(0.2)
         progress += 1
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_biocatalysts',
@@ -1597,7 +1604,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         }) + '\n'
         time.sleep(0.2)
         progress += 1
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_nutraingredients',
@@ -1606,7 +1613,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         }) + '\n'
         time.sleep(0.2)
         progress += 1
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'searching_food_ingredients',
@@ -1615,7 +1622,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
         }) + '\n'
         time.sleep(0.2)
         progress += 1
-        
+
         # Country-specific sources
         country_connector_map = {
             'USA': ('USDA', fetch_usda_data),
@@ -1652,14 +1659,14 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'IL': ('CBS Israel', fetch_cbs_il_data),
             'TR': ('TUIK Turkey', fetch_tuik_tr_data)
         }
-        
+
         eu_countries = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 
                         'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 
                         'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE']
-        
+
         for country in countries:
             country_upper = country.upper()
-            
+
             # Check Eurostat for EU countries
             if country_upper in eu_countries:
                 yield json.dumps({
@@ -1668,7 +1675,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                     'message': f'Durchsuche Eurostat für {country_upper} mit Keywords: {", ".join(stat_keywords[:3])}',
                     'progress': progress
                 }) + '\n'
-                
+
                 try:
                     all_data["country_specific"].append(fetch_eurostat_data(stat_keywords, country_upper))
                     progress += 1
@@ -1680,7 +1687,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                         'progress': progress
                     }) + '\n'
                     progress += 1
-            
+
             # Check country-specific databases
             if country_upper in country_connector_map:
                 db_name, connector_func = country_connector_map[country_upper]
@@ -1690,7 +1697,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                     'message': f'Durchsuche {db_name} mit Keywords: {", ".join(stat_keywords[:3])}',
                     'progress': progress
                 }) + '\n'
-                
+
                 try:
                     all_data["country_specific"].append(connector_func(stat_keywords))
                     progress += 1
@@ -1702,16 +1709,16 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
                         'progress': progress
                     }) + '\n'
                     progress += 1
-        
+
         total_sources = len(all_data["general_sources"]) + len(all_data["web_sources"]) + len(all_data["country_specific"])
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'data_collection_complete',
             'message': f'✓ Datensammlung abgeschlossen: {total_sources} Quellen durchsucht',
             'progress': 50
         }) + '\n'
-        
+
         # Step 2: AI Analysis
         time.sleep(0.5)
         yield json.dumps({
@@ -1720,16 +1727,16 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'message': f'Analysiere gesammelte Daten mit OpenAI GPT-4o für Keywords: {", ".join(keywords)}',
             'progress': 55
         }) + '\n'
-        
+
         report = analyze_data_with_openai(all_data, topic, keywords, products, countries)
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'analysis_complete',
             'message': '✓ KI-Analyse abgeschlossen - Report generiert',
             'progress': 75
         }) + '\n'
-        
+
         # Step 3: Extract Key Facts
         time.sleep(0.3)
         yield json.dumps({
@@ -1738,16 +1745,16 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'message': 'Extrahiere 2 Key Facts für Trend-Karte mit GPT-4o',
             'progress': 82
         }) + '\n'
-        
+
         key_facts = extract_key_facts(report)
-        
+
         yield json.dumps({
             'type': 'progress',
             'step': 'facts_extracted',
             'message': f'✓ Key Facts extrahiert: "{key_facts[0][:50]}..."',
             'progress': 88
         }) + '\n'
-        
+
         # Step 4: Generate PDF
         time.sleep(0.3)
         yield json.dumps({
@@ -1756,9 +1763,9 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'message': f'Erstelle professionellen PDF-Report mit {total_sources} Quellenangaben',
             'progress': 93
         }) + '\n'
-        
+
         pdf_path = generate_trend_report_pdf(report, keywords, countries)
-        
+
         # Step 5: Complete
         yield json.dumps({
             'type': 'progress',
@@ -1766,7 +1773,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'message': '✓ Report erfolgreich erstellt!',
             'progress': 100
         }) + '\n'
-        
+
         # Final result
         yield json.dumps({
             'type': 'complete',
@@ -1778,7 +1785,7 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
             'products': products,
             'topic': topic
         }) + '\n'
-        
+
     except Exception as e:
         yield json.dumps({
             'type': 'error',
@@ -1789,30 +1796,30 @@ def generate_report_with_streaming(keywords: List[str], countries: List[str], pr
 def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], countries: List[str]) -> str:
     """
     Generate a professional PDF report for the trend analysis with source citations.
-    
+
     Args:
         report_data: Dictionary containing the full report data
         keywords: List of keywords used for the analysis
         countries: List of countries analyzed
-    
+
     Returns:
         str: Path to the generated PDF file
     """
     pdf_dir = 'static/pdfs'
     os.makedirs(pdf_dir, exist_ok=True)
-    
+
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     safe_title = "".join(c for c in report_data.get('title', 'trend_report')[:50] if c.isalnum() or c in (' ', '-', '_')).strip()
     safe_title = safe_title.replace(' ', '_')
     filename = f'custom_trend_{safe_title}_{timestamp}.pdf'
     filepath = os.path.join(pdf_dir, filename)
-    
+
     doc = SimpleDocTemplate(filepath, pagesize=A4,
                            leftMargin=0.75*inch, rightMargin=0.75*inch,
                            topMargin=0.75*inch, bottomMargin=0.75*inch)
     styles = getSampleStyleSheet()
     story = []
-    
+
     title_style = ParagraphStyle(
         'BruggenTitle',
         parent=styles['Heading1'],
@@ -1822,7 +1829,7 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
         spaceAfter=10,
         fontName='Helvetica-Bold'
     )
-    
+
     subtitle_style = ParagraphStyle(
         'BruggenSubtitle',
         parent=styles['Heading2'],
@@ -1832,7 +1839,7 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
         spaceAfter=20,
         fontName='Helvetica-Bold'
     )
-    
+
     header_style = ParagraphStyle(
         'SectionHeader',
         parent=styles['Heading2'],
@@ -1842,7 +1849,7 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
         spaceAfter=10,
         fontName='Helvetica-Bold'
     )
-    
+
     normal_style = ParagraphStyle(
         'CustomNormal',
         parent=styles['Normal'],
@@ -1852,7 +1859,7 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
         fontName='Helvetica',
         leading=14
     )
-    
+
     bullet_style = ParagraphStyle(
         'BulletStyle',
         parent=styles['Normal'],
@@ -1863,18 +1870,18 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
         leftIndent=20,
         bulletIndent=10
     )
-    
+
     story.append(Paragraph("H. & J. Brüggen KG", title_style))
     story.append(Paragraph("Trend Analysis Report", subtitle_style))
     story.append(Spacer(1, 20))
-    
+
     story.append(Paragraph(report_data.get('title', 'Custom Trend Report'), header_style))
     story.append(Spacer(1, 10))
-    
+
     metadata_text = f"<b>Keywords:</b> {', '.join(keywords)}<br/><b>Target Markets:</b> {', '.join(countries)}<br/><b>Generated:</b> {datetime.now().strftime('%d.%m.%Y %H:%M')}"
     story.append(Paragraph(metadata_text, normal_style))
     story.append(Spacer(1, 20))
-    
+
     story.append(Paragraph("Executive Summary", header_style))
     description = report_data.get('description', '')
     if description:
@@ -1882,7 +1889,7 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
             if para.strip():
                 story.append(Paragraph(para.strip(), normal_style))
     story.append(Spacer(1, 20))
-    
+
     story.append(Paragraph("Market Data & Statistics", header_style))
     market_data = report_data.get('market_data', '')
     if market_data:
@@ -1890,7 +1897,7 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
             if para.strip():
                 story.append(Paragraph(para.strip(), normal_style))
     story.append(Spacer(1, 20))
-    
+
     story.append(Paragraph("Consumer Insights", header_style))
     consumer_insights = report_data.get('consumer_insights', '')
     if consumer_insights:
@@ -1898,46 +1905,46 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
             if para.strip():
                 story.append(Paragraph(para.strip(), normal_style))
     story.append(Spacer(1, 20))
-    
+
     story.append(PageBreak())
-    
+
     story.append(Paragraph("Detailed Trend Analysis", title_style))
     story.append(Spacer(1, 20))
-    
+
     story.append(Paragraph("Verbrauchertrends (Consumer Trends)", header_style))
     verbrauchertrends = report_data.get('verbrauchertrends', [])
     if verbrauchertrends:
         for trend in verbrauchertrends:
             story.append(Paragraph(f"• {trend}", bullet_style))
     story.append(Spacer(1, 15))
-    
+
     story.append(Paragraph("Konsumtrends (Consumption Trends)", header_style))
     konsumtrends = report_data.get('konsumtrends', [])
     if konsumtrends:
         for trend in konsumtrends:
             story.append(Paragraph(f"• {trend}", bullet_style))
     story.append(Spacer(1, 15))
-    
+
     story.append(Paragraph("Innovationstrends (Innovation Trends)", header_style))
     innovationstrends = report_data.get('innovationstrends', [])
     if innovationstrends:
         for trend in innovationstrends:
             story.append(Paragraph(f"• {trend}", bullet_style))
     story.append(Spacer(1, 30))
-    
+
     # Add sources section
     sources = report_data.get('sources', [])
     if sources:
         story.append(PageBreak())
         story.append(Paragraph("Data Sources & Citations", header_style))
         story.append(Spacer(1, 10))
-        
+
         for source in sources:
             source_text = f"<b>{source.get('name', 'Unknown')}:</b> {source.get('url', 'N/A')}"
             story.append(Paragraph(source_text, normal_style))
-        
+
         story.append(Spacer(1, 20))
-    
+
     footer_style = ParagraphStyle(
         'Footer',
         parent=styles['Normal'],
@@ -1949,7 +1956,7 @@ def generate_trend_report_pdf(report_data: Dict[str, Any], keywords: List[str], 
     story.append(Spacer(1, 30))
     story.append(Paragraph("© 2024 H. & J. Brüggen KG. All rights reserved.", footer_style))
     story.append(Paragraph("The World of Cereals", footer_style))
-    
+
     doc.build(story)
-    
+
     return f'/static/pdfs/{filename}'
