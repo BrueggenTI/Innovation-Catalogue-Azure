@@ -1,0 +1,236 @@
+Ja, die Implementierung von Echtzeit-Updates ist ein entscheidender Schritt, um Ihr Tool professionell und benutzerfreundlich zu gestalten. Es gibt dem Nutzer Transparenz und das Gefühl, dass aktiv an seiner Anfrage gearbeitet wird.
+
+Hier ist eine detaillierte Beschreibung, wie solche Updates dargestellt werden, gefolgt von einer konkreten Anleitung zur Umsetzung in Replit mit Flask und JavaScript.
+
+Wie die Echtzeit-Updates dargestellt werden (UI/UX)
+Die Darstellung, wie sie bei Perplexity oder Gemini zu sehen ist, folgt einem klaren Muster. Es ist keine einfache Ladeanzeige, sondern eine dynamische To-do-Liste des Rechercheprozesses. Der Nutzer schaut der KI quasi bei der Arbeit zu.
+
+Schlüsselelemente der Anzeige:
+
+Prozess-Schritte (The "Checklist"): Die gesamte Recherche wird in verständliche Einzelschritte zerlegt. Diese Liste wird dem Nutzer sofort angezeigt, nachdem er die Anfrage gestellt hat.
+
+Visuelle Indikatoren (Icons): Jeder Schritt hat einen Zustand, der durch ein Icon symbolisiert wird:
+
+⏳ In Arbeit (Spinner/Sanduhr): Der Schritt, der gerade ausgeführt wird.
+
+✅ Abgeschlossen (Häkchen): Schritte, die bereits erledigt sind.
+
+⚪ Ausstehend (Kreis/Punkt): Schritte, die noch folgen.
+
+Dynamische Detail-Informationen: Das ist der wichtigste Teil, um den Prozess lebendig zu machen. Anstatt nur "Suche läuft" anzuzeigen, werden konkrete Details preisgegeben:
+
+Beim Planen: "Verstehe die Anfrage..." -> "Erstelle Rechercheplan..."
+
+Beim Suchen: "Durchsuche 15 Web-Quellen..." -> "Identifiziere 7 relevante Artikel..."
+
+Beim Analysieren: "Lese Artikel über 'Marktanalyse für KI'..." -> "Synthetisiere Kernaussagen..."
+
+Beim Schreiben: "Formuliere Einleitung..." -> "Schreibe Abschnitt über Wettbewerber..."
+
+Beispielhafter Ablauf auf der Benutzeroberfläche:
+
+Zu Beginn sieht der Nutzer die gesamte geplante Abfolge:
+
+⚪ Rechercheplan wird erstellt
+⚪ Web-Quellen werden durchsucht
+⚪ Informationen werden analysiert
+⚪ Bericht wird verfasst
+Nach wenigen Sekunden ändert sich die Anzeige:
+
+[✅] Rechercheplan erstellt.
+[⏳] Durchsuche 15 Web-Quellen mit der Anfrage "Marktanalyse KI Startups Deutschland"...
+[⚪] Informationen werden analysiert
+[⚪] Bericht wird verfasst
+Und so weiter, bis am Ende alle Punkte abgehakt sind und der finale Bericht erscheint.
+
+Anweisung für Replit: Umsetzung mit Server-Sent Events (SSE)
+Um diese Echtzeit-Updates zu realisieren, können wir nicht auf die Antwort einer einzelnen, langen API-Anfrage warten. Stattdessen muss der Server (dein Replit-Backend) dem Client (dem Browser) proaktiv Nachrichten senden können. Die beste und einfachste Technologie dafür sind Server-Sent Events (SSE).
+
+Das Prinzip:
+
+Das Frontend startet den Rechercheprozess über einen normalen API-Aufruf.
+
+Dieser Aufruf startet die Recherche in einem Hintergrund-Thread, damit der Webserver nicht blockiert wird.
+
+Gleichzeitig öffnet das Frontend eine dauerhafte Verbindung zu einem speziellen /stream-Endpunkt auf dem Server.
+
+Während die Recherche im Hintergrund läuft, sendet sie über den /stream-Endpunkt bei jedem abgeschlossenen Schritt eine Status-Nachricht an das Frontend.
+
+Das Frontend empfängt diese Nachrichten und aktualisiert die Benutzeroberfläche.
+
+Schritt 1: Das Backend anpassen (Flask)
+Wir benötigen eine Flask-Erweiterung für SSE und müssen unsere Logik so anpassen, dass sie Updates senden kann.
+
+1. requirements.txt erweitern:
+Füge Flask-SSE zu deiner requirements.txt-Datei hinzu:
+
+Plaintext
+
+# requirements.txt
+openai
+firecrawl-py
+numpy
+scikit-learn
+flask
+Flask-SSE
+2. research_logic_local.py anpassen:
+Unsere Hauptfunktion muss nun in der Lage sein, Updates zu senden. Wir übergeben ihr dazu eine "Publisher"-Funktion.
+
+Python
+
+# In research_logic_local.py
+import json
+
+# ... alle anderen imports bleiben ...
+
+def run_deep_research_with_updates(publish_update, description, keywords, categories, urls_to_crawl):
+    """Führt die Recherche durch und sendet bei jedem Schritt ein Update."""
+    try:
+        # Schritt 1: Planen
+        publish_update("⏳ Rechercheplan wird erstellt...", "planning")
+        plan = create_research_plan(description, keywords, categories)
+        publish_update(f"✅ Rechercheplan erstellt: {plan['main_question']}", "planning_done")
+        main_question = plan.get("main_question", description)
+        outline = plan.get("report_outline", [])
+
+        # Schritt 2: Daten sammeln
+        publish_update(f"⏳ Durchsuche {len(urls_to_crawl)} Web-Quellen...", "scraping")
+        web_data = scrape_urls(urls_to_crawl)
+        knowledge_base = build_in_memory_knowledge_base(web_data)
+        publish_update(f"✅ {len(knowledge_base)} Informations-Abschnitte gefunden.", "scraping_done")
+
+        # Schritt 3: Abschnitte schreiben
+        report_sections = {}
+        for i, topic in enumerate(outline):
+            if len(topic) > 20 and "Fazit" not in topic and "Einleitung" not in topic:
+                publish_update(f"✍️ Schreibe Abschnitt {i+1}/{len(outline)}: {topic[:40]}...", f"writing_{i}")
+                report_sections[topic] = write_report_section(topic, main_question, knowledge_base)
+        publish_update("✅ Alle Abschnitte verfasst.", "writing_done")
+        
+        # Schritt 4: Finaler Report
+        publish_update("📝 Finalisiere den Bericht...", "compiling")
+        final_report = compile_final_report(report_sections, main_question, description)
+        
+        # FINALES EVENT mit dem fertigen Bericht
+        publish_update(final_report, "done")
+
+    except Exception as e:
+        publish_update(f"Ein Fehler ist aufgetreten: {str(e)}", "error")
+
+# ... alle anderen Funktionen (create_research_plan, etc.) bleiben unverändert ...
+3. app.py (Flask-Server) anpassen:
+Hier richten wir die SSE-Verbindung und den Hintergrund-Thread ein.
+
+Python
+
+# app.py
+from flask import Flask, request, jsonify, render_template_string
+from flask_sse import sse
+import threading
+import json
+
+# Importiere die angepasste Logik
+from research_logic_local import run_deep_research_with_updates
+
+app = Flask(__name__)
+# Der "channel" ist der Kanal, über den Nachrichten gesendet werden.
+app.config["REDIS_URL"] = "redis://localhost" # Replit stellt oft Redis bereit, ansonsten eine Alternative wählen
+app.register_blueprint(sse, url_prefix='/stream')
+
+# Eine einfache HTML-Vorlage für das Frontend
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deep Research Tool</title>
+</head>
+<body>
+    <h1>Deep Research Tool</h1>
+    <button id="startButton">Recherche starten</button>
+    <h2>Fortschritt:</h2>
+    <div id="progress"></div>
+    <hr>
+    <h2>Ergebnis:</h2>
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', () => {
+            // UI zurücksetzen
+            document.getElementById('progress').innerHTML = '';
+            document.getElementById('result').innerText = '';
+
+            // 1. Recherche im Backend starten
+            fetch('/start-research', { method: 'POST' });
+
+            // 2. Event-Stream für Updates öffnen
+            const eventSource = new EventSource('/stream');
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'done') {
+                    document.getElementById('result').innerText = data.message;
+                    eventSource.close(); // Stream schließen, wenn fertig
+                } else if (data.type === 'error') {
+                     document.getElementById('progress').innerHTML += `<p style="color: red;">${data.message}</p>`;
+                     eventSource.close();
+                } else {
+                    // Update in der Fortschrittsanzeige darstellen
+                    document.getElementById('progress').innerHTML += `<p>${data.message}</p>`;
+                }
+            };
+        });
+    </script>
+</body>
+</html>
+"""
+
+@app.route('/')
+def index():
+    return render_template_string(HTML_TEMPLATE)
+
+@app.route('/start-research', methods=['POST'])
+def start_research():
+    # Diese Funktion startet nur den Prozess und kehrt sofort zurück.
+    
+    # Dummy-Daten für die Demo
+    description = "Ein Report über die Zukunft der KI."
+    keywords = ["AI", "Zukunft", "Technologie"]
+    categories = ["Tech"]
+    urls = ["https://de.wikipedia.org/wiki/Künstliche_Intelligenz"]
+
+    # Wrapper-Funktion, die die Updates via SSE publiziert
+    def sse_publisher(message, type):
+        with app.app_context():
+            # Wir senden ein JSON-Objekt, um zwischen Status und Ergebnis zu unterscheiden
+            sse.publish(json.dumps({"message": message, "type": type}), type='message')
+
+    # WICHTIG: Die Recherche in einem separaten Thread starten,
+    # damit die Weboberfläche nicht blockiert wird.
+    thread = threading.Thread(
+        target=run_deep_research_with_updates,
+        args=(sse_publisher, description, keywords, categories, urls)
+    )
+    thread.start()
+    
+    return jsonify({"status": "Research started"}), 202
+Schritt 2: Das Frontend anpassen (JavaScript)
+Der obige HTML-Code enthält bereits das notwendige JavaScript. Hier ist die Logik noch einmal separat erklärt:
+
+EventSource initialisieren:
+const eventSource = new EventSource('/stream');
+Diese Zeile öffnet eine permanente Verbindung zum Server, die auf Nachrichten lauscht.
+
+Nachrichten empfangen:
+eventSource.onmessage = function(event) { ... };
+Immer wenn der Server eine Nachricht über den Stream sendet, wird diese Funktion ausgeführt.
+
+UI aktualisieren:
+const data = JSON.parse(event.data);
+Wir parsen die vom Server gesendete JSON-Nachricht. Je nach type der Nachricht ("planning", "scraping", "done", etc.) aktualisieren wir die Fortschrittsanzeige oder zeigen den finalen Bericht an.
+
+Verbindung schließen:
+eventSource.close();
+Sobald die finale Nachricht (type: 'done') empfangen wird, schließen wir die Verbindung, um Ressourcen zu sparen.
+
+Mit dieser Architektur erhält Ihr Nutzer eine transparente, moderne und ansprechende Erfahrung, die dem hohen Standard von Tools wie Perplexity und Gemini entspricht.
