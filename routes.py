@@ -1516,20 +1516,25 @@ def approve_research_plan(job_id):
         
         logging.info(f"Plan approved for job {job_id}, resuming research...")
         
+        # Extract data BEFORE thread starts (to avoid DB access outside app context)
+        description = job.description
+        keywords = json.loads(job.keywords) if job.keywords else []
+        categories = json.loads(job.categories) if job.categories else []
+        
         # Resume job in background thread
         def resume_job():
             from deep_research_worker import process_research_job
-            description = job.description
-            keywords = json.loads(job.keywords) if job.keywords else []
-            categories = json.loads(job.categories) if job.categories else []
+            from app import app
             
-            # Re-initialize updates if needed
-            if job_id not in job_updates:
-                job_updates[job_id] = []
-            
-            for update in process_research_job(job_id, description, keywords, categories):
-                if job_id in job_updates:
-                    job_updates[job_id].append(update)
+            # Use app context for DB access
+            with app.app_context():
+                # Re-initialize updates if needed
+                if job_id not in job_updates:
+                    job_updates[job_id] = []
+                
+                for update in process_research_job(job_id, description, keywords, categories):
+                    if job_id in job_updates:
+                        job_updates[job_id].append(update)
         
         thread = threading.Thread(target=resume_job, daemon=True)
         thread.start()

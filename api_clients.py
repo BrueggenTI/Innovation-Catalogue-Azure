@@ -15,8 +15,9 @@ from bs4 import BeautifulSoup
 import json
 import os
 
-# Rate-Limiting
-REQUEST_DELAY = 0.5  # Sekunden zwischen Requests
+# Rate-Limiting - OPTIMIERT für max 10 Minuten Gesamtdauer
+REQUEST_DELAY = 0.1  # Sekunden zwischen Requests (reduziert für Performance)
+REQUEST_TIMEOUT = 5  # Timeout pro Request in Sekunden
 
 
 class APIClientBase:
@@ -49,17 +50,19 @@ class OpenFoodFactsClient(APIClientBase):
     
     def search(self, keywords: List[str], limit: int = 25) -> List[Dict]:
         results = []
+        start_time = time.time()
         try:
             search_term = " ".join(keywords[:2])
             url = f"{self.base_url}/cgi/search.pl"
             params = {
                 'search_terms': search_term,
                 'json': 1,
-                'page_size': limit,
+                'page_size': min(limit, 15),  # Max 15 für Performance
                 'action': 'process'
             }
             
-            response = self.session.get(url, params=params, timeout=10)
+            logging.info(f"🔎 Open Food Facts: Suche nach '{search_term}'...")
+            response = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT)
             self._delay()
             
             if response.status_code == 200:
@@ -78,12 +81,14 @@ class OpenFoodFactsClient(APIClientBase):
                         }
                     })
                 
-                logging.info(f"✓ Open Food Facts: {len(results)} Produkte gefunden")
+                elapsed = time.time() - start_time
+                logging.info(f"✓ Open Food Facts: {len(results)} Produkte gefunden in {elapsed:.1f}s")
             else:
                 logging.warning(f"Open Food Facts API error: {response.status_code}")
         
         except Exception as e:
-            logging.error(f"Open Food Facts error: {e}")
+            elapsed = time.time() - start_time
+            logging.error(f"❌ Open Food Facts error nach {elapsed:.1f}s: {e}")
         
         return results
 

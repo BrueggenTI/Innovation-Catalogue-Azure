@@ -88,6 +88,8 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
     from app import app, db
     from models import ResearchJob, ResearchSource, Trend
     
+    job_start_time = time.time()
+    
     with app.app_context():
         try:
             # Job aus DB laden
@@ -96,7 +98,12 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 yield json.dumps({"type": "error", "message": "Job nicht gefunden"})
                 return
             
-            logging.info(f"🚀 Starte Research Job {job_id}")
+            logging.info("=" * 80)
+            logging.info(f"🚀 STARTE DEEP RESEARCH JOB: {job_id}")
+            logging.info(f"📋 Beschreibung: {description}")
+            logging.info(f"🔑 Keywords: {', '.join(keywords) if keywords else 'keine'}")
+            logging.info(f"📁 Kategorien: {', '.join(categories) if categories else 'keine'}")
+            logging.info("=" * 80)
             
             # Phase 0: Plan-Generierung (Nur wenn noch nicht approved)
             if not job.plan_approved:
@@ -193,13 +200,15 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 
                 # ECHTE API-CALLS - keine Mock-Daten mehr!
                 try:
-                    logging.info(f"  🌐 Starte echten API-Call für {source_name}...")
+                    start_time = time.time()
+                    logging.info(f"  🌐 Starte API-Call für {source_name}...")
                     
-                    # Hole echte Daten über die API-Clients
-                    api_results = fetch_data_from_source(source, keywords, limit=25)
+                    # Hole echte Daten über die API-Clients (reduziertes Limit für Performance)
+                    api_results = fetch_data_from_source(source, keywords, limit=10)
                     found_items = len(api_results)
+                    elapsed = time.time() - start_time
                     
-                    logging.info(f"  ✓ ECHT gefunden: {found_items} Datenpunkte in {source_name}")
+                    logging.info(f"  ✓ {source_name}: {found_items} Datenpunkte in {elapsed:.1f}s")
                     
                     # Konvertiere API-Ergebnisse in unser Format
                     findings = []
@@ -224,7 +233,8 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                     total_items_found += found_items
                     
                 except Exception as e:
-                    logging.error(f"  ❌ Fehler bei {source_name}: {e}")
+                    elapsed = time.time() - start_time
+                    logging.error(f"  ❌ {source_name}: Fehler nach {elapsed:.1f}s - {str(e)[:100]}")
                     research_source.status = 'error'
                     research_source.found_items = 0
                     db.session.commit()
@@ -254,7 +264,9 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             logging.info(f"✅ Datensammlung abgeschlossen: {total_items_found} Datenpunkte aus {len(sources_to_check)} Quellen")
             
             # Phase 3: Synthese (65% - 75% Progress)
+            start_synthesis = time.time()
             logging.info(f"🧠 Phase 3: Starte KI-Synthese mit {total_items_found} Datenpunkten...")
+            logging.info(f"  📊 Daten aus {len(collected_data)} Quellen werden analysiert")
             yield json.dumps({
                 "type": "info",
                 "message": f"🧠 Phase 3: KI analysiert {total_items_found} Datenpunkte und synthetisiert Report...",
@@ -266,6 +278,8 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             
             logging.info("  🤖 Rufe Gemini 2.5 Pro für Synthese auf...")
             synthesized_report = synthesize_data_with_ai(description, collected_data, keywords, categories)
+            elapsed_synthesis = time.time() - start_synthesis
+            logging.info(f"  ✓ Synthese abgeschlossen in {elapsed_synthesis:.1f}s")
             logging.info(f"  ✓ Synthese abgeschlossen: {len(synthesized_report.get('introduction', ''))} Zeichen Einleitung")
             
             yield json.dumps({
@@ -275,6 +289,7 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             })
             
             # Phase 4: Finalisierung (75% - 85% Progress)
+            start_finalize = time.time()
             logging.info("📝 Phase 4: Starte Report-Finalisierung...")
             yield json.dumps({
                 "type": "info",
@@ -287,7 +302,8 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             
             logging.info("  🤖 Rufe Gemini 2.5 Pro für Finalisierung auf...")
             final_report = finalize_report_with_ai(synthesized_report)
-            logging.info(f"  ✓ Finalisierung abgeschlossen: {len(final_report.get('footnotes', []))} Fußnoten")
+            elapsed_finalize = time.time() - start_finalize
+            logging.info(f"  ✓ Finalisierung in {elapsed_finalize:.1f}s: {len(final_report.get('footnotes', []))} Fußnoten")
             
             yield json.dumps({
                 "type": "info",
@@ -296,6 +312,7 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             })
             
             # Phase 5: PDF-Generierung (85% - 92% Progress)
+            start_pdf = time.time()
             logging.info("📄 Phase 5: Starte PDF-Generierung...")
             yield json.dumps({
                 "type": "info",
@@ -308,7 +325,8 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             
             logging.info("  📝 Erstelle PDF-Dokument mit ReportLab...")
             pdf_path = generate_pdf_report(final_report, job_id)
-            logging.info(f"  ✓ PDF erstellt: {pdf_path}")
+            elapsed_pdf = time.time() - start_pdf
+            logging.info(f"  ✓ PDF erstellt in {elapsed_pdf:.1f}s: {pdf_path}")
             
             yield json.dumps({
                 "type": "info",
@@ -339,10 +357,17 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             job.completed_at = datetime.utcnow()
             db.session.commit()
             
-            logging.info(f"🎉 Research Job {job_id} erfolgreich abgeschlossen!")
-            logging.info(f"   📊 {total_items_found} Datenpunkte analysiert")
-            logging.info(f"   📝 {len(final_report.get('footnotes', []))} Fußnoten")
-            logging.info(f"   📄 PDF: {pdf_path}")
+            total_duration = time.time() - job_start_time
+            minutes = int(total_duration // 60)
+            seconds = int(total_duration % 60)
+            
+            logging.info("=" * 80)
+            logging.info(f"🎉 RESEARCH JOB ERFOLGREICH ABGESCHLOSSEN!")
+            logging.info(f"⏱️  Gesamt-Dauer: {minutes}m {seconds}s ({total_duration:.1f}s)")
+            logging.info(f"📊 Datenpunkte: {total_items_found}")
+            logging.info(f"📝 Fußnoten: {len(final_report.get('footnotes', []))}")
+            logging.info(f"📄 PDF: {pdf_path}")
+            logging.info("=" * 80)
             
             yield json.dumps({
                 "type": "complete",
