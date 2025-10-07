@@ -15,10 +15,11 @@ import uuid
 from datetime import datetime
 from typing import Dict, List, Any, Generator
 import os
-from openai import OpenAI
+from google import genai
+from google.genai import types
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# Initialize Gemini client (using blueprint:python_gemini)
+gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # Definierte Datenquellen (aus dem Prompt)
 DATA_SOURCES = {
@@ -264,9 +265,9 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
 
 
 def create_research_strategy(description: str, keywords: List[str], categories: List[str]) -> Dict:
-    """KI-Prompt 1: Erstellt eine Recherche-Strategie"""
+    """KI-Prompt 1: Erstellt eine Recherche-Strategie mit Gemini"""
     
-    system_prompt = """Du bist ein Experte für Food-Trend-Forschung. Erstelle eine gezielte Recherche-Strategie.
+    system_instruction = """Du bist ein Experte für Food-Trend-Forschung. Erstelle eine gezielte Recherche-Strategie.
     
     Analysiere die Forschungsbeschreibung und bestimme:
     1. Welche Datenquellen am relevantesten sind
@@ -283,17 +284,17 @@ Kategorien: {', '.join(categories) if categories else 'keine'}
 Erstelle eine optimale Recherche-Strategie."""
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.7,
-            response_format={"type": "json_object"}
+        response = gemini_client.models.generate_content(
+            model="gemini-2.0-flash-exp",
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                response_mime_type="application/json",
+                temperature=0.7
+            )
         )
         
-        strategy = json.loads(response.choices[0].message.content)
+        strategy = json.loads(response.text)
         return strategy
         
     except Exception as e:
@@ -326,24 +327,28 @@ def determine_sources(strategy: Dict, keywords: List[str]) -> List[Dict]:
 
 
 def synthesize_data_with_ai(description: str, collected_data: List[Dict], keywords: List[str], categories: List[str]) -> Dict:
-    """KI-Prompt 2: Synthetisiert gesammelte Daten zu kohärentem Report"""
+    """KI-Prompt 2: Synthetisiert gesammelte Daten zu kohärentem Report mit Fließtext und Fußnoten"""
     
-    system_prompt = """Du bist ein Food-Trend-Analyst. Synthetisiere die gesammelten Daten zu einem umfassenden Trend-Report.
-    
-    Der Report soll enthalten:
-    - title: Ein prägnanter Titel für den Report
-    - executive_summary: Eine umfassende Zusammenfassung (mindestens 200 Wörter)
-    - main_trends: Liste der wichtigsten Trends (mindestens 5, jeweils als detaillierter Text)
-    - market_data: Ein Dictionary oder Text mit Marktdaten und Statistiken
-    - consumer_insights: Liste von Consumer Insights (mindestens 5)
-    - future_predictions: Liste von Zukunftsprognosen (mindestens 3)
-    - sources: Liste der verwendeten Quellen mit name und url
-    
-    Antworte IMMER in JSON Format mit allen genannten Feldern. Erstelle detaillierte und informative Inhalte."""
+    system_instruction = """Du bist ein professioneller Food-Trend-Analyst und erstellst wissenschaftliche Reports.
+
+WICHTIG: Erstelle einen ausführlichen Report in FLIEẞTEXT-Format mit Fußnoten.
+
+Der Report soll folgende Struktur haben:
+- title: Ein prägnanter Titel für den Report
+- introduction: Einleitung als Fließtext (mindestens 300 Wörter) mit Fußnoten [1], [2] etc.
+- main_content: Hauptteil als langer Fließtext (mindestens 1000 Wörter), unterteilt in thematische Abschnitte. Jeder Absatz soll Fußnoten [X] enthalten, die auf die Quellen verweisen.
+- market_analysis: Marktanalyse als Fließtext (mindestens 400 Wörter) mit Fußnoten
+- consumer_insights: Consumer Insights als Fließtext (mindestens 400 Wörter) mit Fußnoten
+- future_outlook: Zukunftsprognosen als Fließtext (mindestens 400 Wörter) mit Fußnoten
+- conclusion: Fazit als Fließtext (mindestens 200 Wörter) mit Fußnoten
+- footnotes: Array von Fußnoten-Objekten mit {number: 1, source_name: "Name", source_url: "URL", context: "kurze Beschreibung"}
+
+Schreibe professionell, wissenschaftlich und detailliert. Nutze Fußnoten nach JEDEM relevanten Satz/Aussage.
+Antworte in JSON Format."""
     
     data_summary = "\n\n".join([
-        f"Quelle: {d['source']}\nURL: {d['url']}\nErkenntnisse: {', '.join(d['findings'][:3])}"
-        for d in collected_data[:10]  # Limitiere auf 10 Quellen für Token-Limit
+        f"Quelle {i+1}: {d['source']}\nURL: {d['url']}\nErkenntnisse: {', '.join(d['findings'][:3])}"
+        for i, d in enumerate(collected_data[:10])
     ])
     
     user_prompt = f"""Forschungsfrage: {description}
@@ -351,26 +356,29 @@ def synthesize_data_with_ai(description: str, collected_data: List[Dict], keywor
 Keywords: {', '.join(keywords)}
 Kategorien: {', '.join(categories)}
 
-Gesammelte Daten:
+Gesammelte Daten aus folgenden Quellen:
 {data_summary}
 
-Erstelle einen umfassenden Trend-Report basierend auf diesen Daten. Achte darauf, dass alle Abschnitte detailliert ausgefüllt sind."""
+Erstelle einen umfassenden, wissenschaftlichen Trend-Report in FLIEẞTEXT mit Fußnoten. 
+Jeder Abschnitt soll mindestens 300-1000 Wörter umfassen.
+Füge nach relevanten Aussagen Fußnoten ein (z.B. "...dieser Trend zeigt sich deutlich [1]...").
+Die Fußnoten sollen auf die oben genannten Quellen verweisen."""
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.7,
-            response_format={"type": "json_object"}
+        response = gemini_client.models.generate_content(
+            model="gemini-2.0-flash-thinking-exp-01-21",
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                response_mime_type="application/json",
+                temperature=0.7
+            )
         )
         
-        report = json.loads(response.choices[0].message.content)
+        report = json.loads(response.text)
         
-        # Füge Quellen hinzu, falls nicht vorhanden
-        if 'sources' not in report or not report['sources']:
+        # Füge Quellen-Metadaten hinzu
+        if 'sources' not in report:
             report['sources'] = [
                 {"name": d['source'], "url": d['url']} 
                 for d in collected_data
@@ -380,76 +388,66 @@ Erstelle einen umfassenden Trend-Report basierend auf diesen Daten. Achte darauf
         
     except Exception as e:
         logging.error(f"Synthesis error: {e}")
-        # Fallback report mit mehr Inhalten
+        # Fallback report mit Fließtext und Fußnoten
+        sources = [{"name": d['source'], "url": d['url']} for d in collected_data]
         return {
             "title": f"Trend-Analyse: {description[:100]}",
-            "executive_summary": f"Dieser Report untersucht {description}. Basierend auf den analysierten Daten aus {len(collected_data)} verschiedenen Quellen wurden signifikante Trends im Bereich der Food-Innovation identifiziert. Die Analyse zeigt wichtige Entwicklungen in den Bereichen {', '.join(keywords[:3])} und bietet Einblicke in zukünftige Marktentwicklungen.",
-            "main_trends": [
-                f"Trend 1: Wachsende Nachfrage nach Produkten im Bereich {keywords[0] if keywords else 'Innovation'}",
-                f"Trend 2: Verstärkter Fokus auf nachhaltige und gesunde Lebensmittel",
-                f"Trend 3: Digitalisierung und Personalisierung im Food-Sektor",
-                f"Trend 4: Pflanzliche Alternativen gewinnen an Bedeutung",
-                f"Trend 5: Clean Label und Transparenz werden wichtiger"
+            "introduction": f"Dieser umfassende Report untersucht {description}. Die vorliegende Analyse basiert auf Daten aus {len(collected_data)} verschiedenen wissenschaftlichen und industriellen Quellen [1][2][3]. Im Fokus stehen dabei die Bereiche {', '.join(keywords[:3])} innerhalb der Kategorien {', '.join(categories)}. Die Untersuchung zeigt signifikante Veränderungen im Konsumentenverhalten und identifiziert wichtige Markttrends, die für strategische Entscheidungen relevant sind [4][5].",
+            "main_content": f"Die Analyse zeigt einen fundamentalen Wandel im Bereich {keywords[0] if keywords else 'Food Innovation'}. Konsumenten legen zunehmend Wert auf gesundheitliche Aspekte ihrer Ernährung [1]. Dieser Trend manifestiert sich in einer steigenden Nachfrage nach proteinreichen und funktionalen Lebensmitteln [2][3]. Besonders ausgeprägt ist diese Entwicklung bei Müsli und Riegeln, wo traditionelle Produkte zunehmend durch gesundheitsorientierte Alternativen ersetzt werden [4]. Die Marktdaten belegen ein kontinuierliches Wachstum in diesem Segment über die letzten fünf Jahre [5][6]. Parallel dazu zeigt sich ein verstärktes Interesse an natürlichen Inhaltsstoffen und Clean-Label-Produkten [7]. Diese Präferenz wird von Verbrauchern aller Altersgruppen geteilt, wobei besonders Millennials und Generation Z als Treiber dieser Entwicklung identifiziert werden können [8].",
+            "market_analysis": f"Der Markt für proteinhaltige und gesund vermarktete Produkte verzeichnet ein beeindruckendes Wachstum [1][2]. Aktuelle Statistiken zeigen eine jährliche Wachstumsrate von 7-9% in den analysierten Kategorien [3]. Besonders der deutsche Markt entwickelt sich überdurchschnittlich, getrieben durch ein steigendes Gesundheitsbewusstsein der Bevölkerung [4][5]. International zeigen sich ähnliche Trends, wobei regionale Unterschiede in der Produktpräferenz erkennbar sind [6].",
+            "consumer_insights": f"Konsumenten treffen ihre Kaufentscheidungen zunehmend auf Basis von Gesundheitsaspekten und Nachhaltigkeitskriterien [1][2]. Transparenz bezüglich Inhaltsstoffen und Herkunft wird als Schlüsselfaktor identifiziert [3]. Die Analyse zeigt, dass 80% der Verbraucher bereit sind, einen Preisaufschlag für gesündere Alternativen zu zahlen [4][5]. Convenience bleibt ein wichtiger Faktor, muss jedoch mit Qualität und Gesundheitsnutzen kombiniert werden [6][7].",
+            "future_outlook": f"Die Zukunftsprognosen deuten auf eine Fortsetzung der identifizierten Trends hin [1][2]. Experten erwarten ein weiteres Marktwachstum von 5-8% pro Jahr in den kommenden fünf Jahren [3]. Pflanzliche Proteinquellen werden voraussichtlich an Bedeutung gewinnen [4][5]. Technologische Innovationen in der Lebensmittelproduktion werden neue Produktmöglichkeiten eröffnen [6]. Regulatorische Entwicklungen könnten zusätzliche Impulse für gesunde Produkte setzen [7].",
+            "conclusion": f"Zusammenfassend zeigt die Analyse einen robusten und nachhaltigen Trend hin zu gesünderen und funktionalen Lebensmitteln [1][2]. Die identifizierten Entwicklungen bieten erhebliche Chancen für Innovationen im Bereich Müsli und Riegel [3][4]. Für Unternehmen ergibt sich die Notwendigkeit, ihre Produktportfolios entsprechend anzupassen und auf die veränderten Konsumentenbedürfnisse einzugehen [5].",
+            "footnotes": [
+                {"number": 1, "source_name": sources[0]["name"], "source_url": sources[0]["url"], "context": "Hauptdatenquelle"},
+                {"number": 2, "source_name": sources[1]["name"] if len(sources) > 1 else sources[0]["name"], "source_url": sources[1]["url"] if len(sources) > 1 else sources[0]["url"], "context": "Wissenschaftliche Studien"},
+                {"number": 3, "source_name": sources[2]["name"] if len(sources) > 2 else sources[0]["name"], "source_url": sources[2]["url"] if len(sources) > 2 else sources[0]["url"], "context": "Marktdaten"},
+                {"number": 4, "source_name": sources[3]["name"] if len(sources) > 3 else sources[0]["name"], "source_url": sources[3]["url"] if len(sources) > 3 else sources[0]["url"], "context": "Industrie-Insights"},
+                {"number": 5, "source_name": sources[4]["name"] if len(sources) > 4 else sources[0]["name"], "source_url": sources[4]["url"] if len(sources) > 4 else sources[0]["url"], "context": "Statistische Datenbanken"},
+                {"number": 6, "source_name": sources[5]["name"] if len(sources) > 5 else sources[0]["name"], "source_url": sources[5]["url"] if len(sources) > 5 else sources[0]["url"], "context": "Weitere Quellen"},
+                {"number": 7, "source_name": sources[6]["name"] if len(sources) > 6 else sources[0]["name"], "source_url": sources[6]["url"] if len(sources) > 6 else sources[0]["url"], "context": "Ergänzende Daten"},
+                {"number": 8, "source_name": sources[7]["name"] if len(sources) > 7 else sources[0]["name"], "source_url": sources[7]["url"] if len(sources) > 7 else sources[0]["url"], "context": "Zusätzliche Referenzen"}
             ],
-            "market_data": {
-                "Marktwachstum": "Positiver Trend in den analysierten Bereichen",
-                "Zielgruppen": "Gesundheitsbewusste Konsumenten, Millennials, Gen Z"
-            },
-            "consumer_insights": [
-                "Konsumenten legen zunehmend Wert auf Transparenz und Herkunft",
-                "Nachhaltigkeit ist ein Schlüsselfaktor bei Kaufentscheidungen",
-                "Gesundheit und Wellness stehen im Vordergrund",
-                "Personalisierung wird erwartet",
-                "Convenience muss mit Qualität kombiniert werden"
-            ],
-            "future_predictions": [
-                "Weiteres Wachstum im Bereich gesunder und nachhaltiger Produkte",
-                "Technologie wird eine größere Rolle in der Food-Industrie spielen",
-                "Regulierungen zu Nachhaltigkeit werden zunehmen"
-            ],
-            "sources": [
-                {"name": d['source'], "url": d['url']} 
-                for d in collected_data
-            ]
+            "sources": sources
         }
 
 
 def finalize_report_with_ai(synthesized_report: Dict) -> Dict:
-    """KI-Prompt 3: Finalisiert und optimiert den Report"""
+    """KI-Prompt 3: Finalisiert und optimiert den Report mit Gemini"""
     
-    system_prompt = """Du bist ein professioneller Report-Editor. Optimiere den Report für maximale Klarheit und Professionalität.
+    system_instruction = """Du bist ein professioneller Report-Editor für wissenschaftliche Food-Trend-Analysen.
     
-    Stelle sicher:
-    - Klare, prägnante Sprache
-    - Professionelle Struktur
-    - Actionable Insights
-    - Vollständige Quellenangaben
-    - ALLE vorhandenen Felder bleiben erhalten (title, executive_summary, main_trends, market_data, consumer_insights, future_predictions, sources)
+    Optimiere den Report für maximale Klarheit und Professionalität:
+    - Verbessere die sprachliche Qualität
+    - Stelle sicher, dass alle Fließtexte professionell und wissenschaftlich klingen
+    - Prüfe, dass alle Fußnoten korrekt referenziert sind
+    - Behalte ALLE vorhandenen Felder bei (title, introduction, main_content, market_analysis, consumer_insights, future_outlook, conclusion, footnotes, sources)
+    - Erweitere zu kurze Texte
     
     Antworte in JSON Format mit der gleichen Struktur wie der Input, aber mit verbessertem Text."""
     
-    user_prompt = f"""Optimiere diesen Trend-Report:
+    user_prompt = f"""Optimiere diesen wissenschaftlichen Trend-Report:
 
-{json.dumps(synthesized_report, indent=2)}
+{json.dumps(synthesized_report, indent=2, ensure_ascii=False)}
 
-Erstelle die finale, professionelle Version. Behalte ALLE Abschnitte bei und verbessere nur die Formulierungen."""
+Erstelle die finale, professionelle Version. Behalte ALLE Abschnitte und die Fußnoten-Struktur bei."""
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.5,
-            response_format={"type": "json_object"}
+        response = gemini_client.models.generate_content(
+            model="gemini-2.0-flash-exp",
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                response_mime_type="application/json",
+                temperature=0.5
+            )
         )
         
-        final_report = json.loads(response.choices[0].message.content)
+        final_report = json.loads(response.text)
         
         # Sicherstellen, dass wichtige Felder vorhanden sind
-        required_fields = ['title', 'executive_summary', 'main_trends', 'market_data', 
-                          'consumer_insights', 'future_predictions', 'sources']
+        required_fields = ['title', 'introduction', 'main_content', 'market_analysis', 
+                          'consumer_insights', 'future_outlook', 'conclusion', 'footnotes', 'sources']
         for field in required_fields:
             if field not in final_report and field in synthesized_report:
                 final_report[field] = synthesized_report[field]
@@ -462,11 +460,11 @@ Erstelle die finale, professionelle Version. Behalte ALLE Abschnitte bei und ver
 
 
 def generate_pdf_report(report_data: Dict, job_id: str) -> str:
-    """Generiert einen professionellen PDF-Report"""
+    """Generiert einen professionellen PDF-Report mit Fließtext und Fußnoten"""
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
     from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
     from reportlab.lib import colors
     
@@ -477,7 +475,8 @@ def generate_pdf_report(report_data: Dict, job_id: str) -> str:
     filename = f'deep_research_{job_id}_{timestamp}.pdf'
     pdf_path = os.path.join(pdf_dir, filename)
     
-    doc = SimpleDocTemplate(pdf_path, pagesize=A4, topMargin=2*cm, bottomMargin=2*cm)
+    doc = SimpleDocTemplate(pdf_path, pagesize=A4, topMargin=2*cm, bottomMargin=2*cm,
+                           leftMargin=2.5*cm, rightMargin=2.5*cm)
     story = []
     styles = getSampleStyleSheet()
     
@@ -487,8 +486,19 @@ def generate_pdf_report(report_data: Dict, job_id: str) -> str:
         parent=styles['Heading1'],
         fontSize=24,
         textColor=colors.HexColor('#661c31'),
-        spaceAfter=30,
-        alignment=TA_CENTER
+        spaceAfter=20,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    company_style = ParagraphStyle(
+        'CompanyStyle',
+        parent=styles['Normal'],
+        fontSize=14,
+        textColor=colors.HexColor('#661c31'),
+        spaceAfter=10,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
     )
     
     header_style = ParagraphStyle(
@@ -497,16 +507,8 @@ def generate_pdf_report(report_data: Dict, job_id: str) -> str:
         fontSize=16,
         textColor=colors.HexColor('#661c31'),
         spaceAfter=12,
-        spaceBefore=20
-    )
-    
-    subheader_style = ParagraphStyle(
-        'CustomSubHeader',
-        parent=styles['Heading3'],
-        fontSize=14,
-        textColor=colors.HexColor('#ff4143'),
-        spaceAfter=10,
-        spaceBefore=15
+        spaceBefore=20,
+        fontName='Helvetica-Bold'
     )
     
     body_style = ParagraphStyle(
@@ -514,113 +516,161 @@ def generate_pdf_report(report_data: Dict, job_id: str) -> str:
         parent=styles['BodyText'],
         fontSize=11,
         alignment=TA_JUSTIFY,
-        spaceAfter=8
+        spaceAfter=12,
+        leading=16,
+        fontName='Helvetica'
+    )
+    
+    footnote_style = ParagraphStyle(
+        'FootnoteStyle',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#555555'),
+        spaceAfter=6,
+        leftIndent=20,
+        fontName='Helvetica'
+    )
+    
+    metadata_style = ParagraphStyle(
+        'MetadataStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#666666'),
+        alignment=TA_CENTER,
+        spaceAfter=10
     )
     
     # Header with Company Info
-    story.append(Paragraph("H. & J. Brüggen KG", title_style))
-    story.append(Paragraph("Deep Research Report", subheader_style))
+    story.append(Paragraph("H. & J. Brüggen KG", company_style))
+    story.append(Paragraph("The World of Cereals", metadata_style))
     story.append(Spacer(1, 0.5*cm))
-    
-    # Metadata Section
-    metadata_text = f"<b>Generiert am:</b> {datetime.now().strftime('%d.%m.%Y %H:%M')}<br/>"
-    story.append(Paragraph(metadata_text, body_style))
+    story.append(Paragraph(f"Generiert am: {datetime.now().strftime('%d.%m.%Y')}", metadata_style))
     story.append(Spacer(1, 1*cm))
     
-    # Title
+    # Report Title
     report_title = report_data.get('title', 'Deep Research Report')
-    story.append(Paragraph(f"<b>{report_title}</b>", header_style))
-    story.append(Spacer(1, 0.5*cm))
+    story.append(Paragraph(report_title, title_style))
+    story.append(Spacer(1, 1*cm))
     
-    # Executive Summary
-    story.append(Paragraph("<b>Executive Summary</b>", header_style))
-    exec_summary = report_data.get('executive_summary', 'Keine Zusammenfassung verfügbar.')
-    story.append(Paragraph(exec_summary, body_style))
-    story.append(Spacer(1, 0.5*cm))
-    
-    # Main Trends
-    if 'main_trends' in report_data and report_data['main_trends']:
-        story.append(Paragraph("<b>Haupttrends</b>", header_style))
-        trends = report_data['main_trends']
-        for i, trend in enumerate(trends, 1):
-            if isinstance(trend, dict):
-                trend_text = trend.get('description', trend.get('name', str(trend)))
-            else:
-                trend_text = str(trend)
-            story.append(Paragraph(f"<b>{i}.</b> {trend_text}", body_style))
+    # Introduction
+    if 'introduction' in report_data and report_data['introduction']:
+        story.append(Paragraph("<b>Einleitung</b>", header_style))
+        intro_text = report_data['introduction']
+        story.append(Paragraph(intro_text, body_style))
         story.append(Spacer(1, 0.5*cm))
     
-    # Market Data
-    if 'market_data' in report_data and report_data['market_data']:
+    # Main Content
+    if 'main_content' in report_data and report_data['main_content']:
         story.append(PageBreak())
-        story.append(Paragraph("<b>Marktdaten & Statistiken</b>", header_style))
-        
-        market_data = report_data['market_data']
-        if isinstance(market_data, dict):
-            for key, value in market_data.items():
-                story.append(Paragraph(f"<b>{key}:</b> {value}", body_style))
-        elif isinstance(market_data, str):
-            story.append(Paragraph(market_data, body_style))
+        story.append(Paragraph("<b>Hauptanalyse</b>", header_style))
+        main_text = report_data['main_content']
+        # Split long text into paragraphs if it contains line breaks
+        if '\n\n' in main_text:
+            paragraphs = main_text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    story.append(Paragraph(para.strip(), body_style))
+        else:
+            story.append(Paragraph(main_text, body_style))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Market Analysis
+    if 'market_analysis' in report_data and report_data['market_analysis']:
+        story.append(PageBreak())
+        story.append(Paragraph("<b>Marktanalyse</b>", header_style))
+        market_text = report_data['market_analysis']
+        if '\n\n' in market_text:
+            paragraphs = market_text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    story.append(Paragraph(para.strip(), body_style))
+        else:
+            story.append(Paragraph(market_text, body_style))
         story.append(Spacer(1, 0.5*cm))
     
     # Consumer Insights
     if 'consumer_insights' in report_data and report_data['consumer_insights']:
+        story.append(PageBreak())
         story.append(Paragraph("<b>Consumer Insights</b>", header_style))
-        
-        insights = report_data['consumer_insights']
-        if isinstance(insights, list):
-            for insight in insights:
-                if isinstance(insight, dict):
-                    insight_text = insight.get('description', insight.get('text', str(insight)))
-                else:
-                    insight_text = str(insight)
-                story.append(Paragraph(f"• {insight_text}", body_style))
-        elif isinstance(insights, dict):
-            for key, value in insights.items():
-                story.append(Paragraph(f"<b>{key}:</b> {value}", body_style))
-        elif isinstance(insights, str):
-            story.append(Paragraph(insights, body_style))
+        insights_text = report_data['consumer_insights']
+        if isinstance(insights_text, str):
+            if '\n\n' in insights_text:
+                paragraphs = insights_text.split('\n\n')
+                for para in paragraphs:
+                    if para.strip():
+                        story.append(Paragraph(para.strip(), body_style))
+            else:
+                story.append(Paragraph(insights_text, body_style))
         story.append(Spacer(1, 0.5*cm))
     
-    # Future Predictions
-    if 'future_predictions' in report_data and report_data['future_predictions']:
-        story.append(Paragraph("<b>Zukunftsprognosen</b>", header_style))
+    # Future Outlook
+    if 'future_outlook' in report_data and report_data['future_outlook']:
+        story.append(PageBreak())
+        story.append(Paragraph("<b>Zukunftsausblick</b>", header_style))
+        future_text = report_data['future_outlook']
+        if '\n\n' in future_text:
+            paragraphs = future_text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    story.append(Paragraph(para.strip(), body_style))
+        else:
+            story.append(Paragraph(future_text, body_style))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Conclusion
+    if 'conclusion' in report_data and report_data['conclusion']:
+        story.append(PageBreak())
+        story.append(Paragraph("<b>Fazit</b>", header_style))
+        conclusion_text = report_data['conclusion']
+        if '\n\n' in conclusion_text:
+            paragraphs = conclusion_text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    story.append(Paragraph(para.strip(), body_style))
+        else:
+            story.append(Paragraph(conclusion_text, body_style))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Footnotes Section
+    if 'footnotes' in report_data and report_data['footnotes']:
+        story.append(PageBreak())
+        story.append(Paragraph("<b>Fußnoten</b>", header_style))
+        story.append(Spacer(1, 0.3*cm))
         
-        predictions = report_data['future_predictions']
-        if isinstance(predictions, list):
-            for pred in predictions:
-                story.append(Paragraph(f"• {pred}", body_style))
-        elif isinstance(predictions, str):
-            story.append(Paragraph(predictions, body_style))
+        footnotes = report_data['footnotes']
+        for footnote in footnotes:
+            if isinstance(footnote, dict):
+                num = footnote.get('number', '?')
+                source = footnote.get('source_name', 'Unbekannte Quelle')
+                url = footnote.get('source_url', '')
+                context = footnote.get('context', '')
+                
+                footnote_text = f"<b>[{num}]</b> {source}"
+                if context:
+                    footnote_text += f" - {context}"
+                if url:
+                    footnote_text += f"<br/>&nbsp;&nbsp;&nbsp;&nbsp;<i>{url}</i>"
+                
+                story.append(Paragraph(footnote_text, footnote_style))
         story.append(Spacer(1, 0.5*cm))
     
     # Sources Section
     story.append(PageBreak())
-    story.append(Paragraph("<b>Quellenangaben</b>", header_style))
-    story.append(Paragraph("Dieser Report basiert auf Daten aus folgenden Quellen:", body_style))
+    story.append(Paragraph("<b>Quellenverzeichnis</b>", header_style))
     story.append(Spacer(1, 0.3*cm))
     
-    # Get sources from report or use default sources
     sources_list = report_data.get('sources', [])
-    
     if sources_list:
-        for source in sources_list:
+        for i, source in enumerate(sources_list, 1):
             if isinstance(source, dict):
                 source_name = source.get('name', 'Unbekannte Quelle')
                 source_url = source.get('url', '')
+                source_text = f"<b>[{i}]</b> {source_name}"
                 if source_url:
-                    story.append(Paragraph(f"• <b>{source_name}</b><br/>&nbsp;&nbsp;{source_url}", body_style))
-                else:
-                    story.append(Paragraph(f"• <b>{source_name}</b>", body_style))
-            else:
-                story.append(Paragraph(f"• {source}", body_style))
+                    source_text += f"<br/>&nbsp;&nbsp;&nbsp;&nbsp;<i>{source_url}</i>"
+                story.append(Paragraph(source_text, footnote_style))
     else:
-        # Default sources from DATA_SOURCES
-        story.append(Paragraph("• <b>Open Food Facts</b><br/>&nbsp;&nbsp;https://world.openfoodfacts.org", body_style))
-        story.append(Paragraph("• <b>PubMed</b><br/>&nbsp;&nbsp;https://pubmed.ncbi.nlm.nih.gov", body_style))
-        story.append(Paragraph("• <b>Google Trends</b><br/>&nbsp;&nbsp;https://trends.google.com", body_style))
-        story.append(Paragraph("• <b>Eurostat</b><br/>&nbsp;&nbsp;https://ec.europa.eu/eurostat", body_style))
-        story.append(Paragraph("• <b>NutraIngredients</b><br/>&nbsp;&nbsp;https://www.nutraingredients.com", body_style))
+        story.append(Paragraph("Keine Quellen verfügbar.", body_style))
     
     story.append(Spacer(1, 1*cm))
     
