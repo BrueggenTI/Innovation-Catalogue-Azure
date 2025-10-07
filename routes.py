@@ -1398,7 +1398,8 @@ def get_trend_details(trend_id):
 def generate_trend_report_stream():
     """SSE endpoint for generating custom trend reports with real-time progress updates"""
     from trend_report_generator import generate_report_with_streaming
-    from flask import Response
+    from flask import Response, stream_with_context
+    import sys
     
     try:
         data = request.get_json()
@@ -1424,13 +1425,23 @@ def generate_trend_report_stream():
             countries = ['DE']
         
         def event_stream():
-            for event_data in generate_report_with_streaming(keywords, countries, products, topic):
-                yield f"data: {event_data}\n\n"
+            try:
+                for event_data in generate_report_with_streaming(keywords, countries, products, topic):
+                    yield f"data: {event_data}\n\n"
+                    sys.stdout.flush()
+            except Exception as e:
+                logging.error(f"Error in event stream: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         
-        return Response(event_stream(), mimetype='text/event-stream', headers={
-            'Cache-Control': 'no-cache',
-            'X-Accel-Buffering': 'no'
-        })
+        return Response(stream_with_context(event_stream()), 
+                       mimetype='text/event-stream', 
+                       headers={
+                           'Cache-Control': 'no-cache, no-transform',
+                           'X-Accel-Buffering': 'no',
+                           'Connection': 'keep-alive'
+                       })
         
     except Exception as e:
         logging.error(f"Generate trend report stream error: {str(e)}")
