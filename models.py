@@ -61,7 +61,9 @@ class ResearchJob(db.Model):
     description = db.Column(db.Text, nullable=False)
     keywords = db.Column(db.Text)  # JSON array of keywords
     categories = db.Column(db.Text)  # JSON array of categories
-    status = db.Column(db.String(50), default='queued')  # queued, processing_strategy, scraping_data, synthesizing_report, finalizing_report, generating_pdf, completed, failed, cancelled
+    research_plan = db.Column(db.Text)  # JSON object with detailed research plan
+    plan_approved = db.Column(db.Boolean, default=False)  # Whether user approved the plan
+    status = db.Column(db.String(50), default='queued')  # queued, generating_plan, waiting_approval, processing_strategy, scraping_data, synthesizing_report, finalizing_report, generating_pdf, completed, failed, cancelled
     progress = db.Column(db.Integer, default=0)
     status_log = db.Column(db.Text)  # JSON array of status updates
     result_trend_id = db.Column(db.Integer, db.ForeignKey('trend.id'), nullable=True)

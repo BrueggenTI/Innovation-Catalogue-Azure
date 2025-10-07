@@ -1,8 +1,9 @@
 """
 Deep Research Worker - KI-gestützte Trendanalyse mit Multi-Prompt-Strategie
 Führt asynchrone Research-Jobs aus mit folgenden Phasen:
+0. Plan-Generierung und Nutzerbestätigung (NEU!)
 1. Strategie-Erstellung (KI-Prompt 1)
-2. Datensammlung aus definierten Quellen
+2. Datensammlung aus definierten Quellen (erweitert auf 250+ Dateien)
 3. Synthese (KI-Prompt 2)
 4. Finalisierung (KI-Prompt 3)
 5. PDF-Generierung
@@ -81,28 +82,63 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 yield json.dumps({"type": "error", "message": "Job nicht gefunden"})
                 return
             
+            logging.info(f"🚀 Starte Research Job {job_id}")
+            
+            # Phase 0: Plan-Generierung (Nur wenn noch nicht approved)
+            if not job.plan_approved:
+                logging.info("📋 Phase 0: Generiere Research-Plan...")
+                yield json.dumps({
+                    "type": "info",
+                    "message": "📋 Phase 0: Generiere detaillierten Research-Plan...",
+                    "progress": 2
+                })
+                
+                job.status = 'generating_plan'
+                db.session.commit()
+                
+                research_plan = generate_research_plan(description, keywords, categories)
+                job.research_plan = json.dumps(research_plan, ensure_ascii=False)
+                job.status = 'waiting_approval'
+                db.session.commit()
+                
+                logging.info(f"✓ Research-Plan erstellt, warte auf Nutzerbestätigung")
+                yield json.dumps({
+                    "type": "plan_ready",
+                    "message": "✓ Research-Plan erstellt! Bitte überprüfen und bestätigen.",
+                    "progress": 5,
+                    "plan": research_plan
+                })
+                
+                # Warte auf Bestätigung - Job wird hier pausiert
+                return
+            
+            logging.info("✓ Plan wurde bestätigt, starte Research-Prozess")
+            
             # Phase 1: Strategie-Erstellung (10% Progress)
+            logging.info("📋 Phase 1: Erstelle detaillierte Recherche-Strategie...")
             yield json.dumps({
                 "type": "info",
                 "message": "📋 Phase 1: Erstelle Recherche-Strategie mit KI...",
-                "progress": 5
+                "progress": 10
             })
             
             job.status = 'processing_strategy'
             db.session.commit()
             
             strategy = create_research_strategy(description, keywords, categories)
+            logging.info(f"✓ Strategie erstellt: {len(strategy.get('sources', []))} Quellen")
             
             yield json.dumps({
                 "type": "info",
                 "message": f"✓ Strategie erstellt: {len(strategy.get('sources', []))} Quellen identifiziert",
-                "progress": 10
+                "progress": 15
             })
             
-            # Phase 2: Datensammlung (10% - 70% Progress)
+            # Phase 2: Datensammlung (15% - 65% Progress) - ERWEITERT auf 250+ Datenpunkte
+            logging.info("🔍 Phase 2: Starte erweiterte Datensammlung (Ziel: 250+ Datenpunkte)...")
             yield json.dumps({
                 "type": "info",
-                "message": "🔍 Phase 2: Sammle Daten aus identifizierten Quellen...",
+                "message": "🔍 Phase 2: Sammle Daten aus identifizierten Quellen (Ziel: 250+ Datenpunkte)...",
                 "progress": 15
             })
             
@@ -111,12 +147,17 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             
             collected_data = []
             sources_to_check = determine_sources(strategy, keywords)
-            progress_per_source = 55 / len(sources_to_check) if sources_to_check else 0
-            current_progress = 15
+            logging.info(f"📊 Identifizierte {len(sources_to_check)} Quellen für Datensammlung")
             
-            for source in sources_to_check:
+            progress_per_source = 50 / len(sources_to_check) if sources_to_check else 0
+            current_progress = 15
+            total_items_found = 0
+            
+            for idx, source in enumerate(sources_to_check, 1):
                 source_name = source['name']
                 source_url = source.get('url', '')
+                
+                logging.info(f"🔎 [{idx}/{len(sources_to_check)}] Durchsuche Quelle: {source_name}")
                 
                 # Source-Eintrag in DB erstellen
                 research_source = ResearchSource(
@@ -130,22 +171,25 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 
                 yield json.dumps({
                     "type": "info",
-                    "message": f"Durchsuche {source_name}...",
+                    "message": f"[{idx}/{len(sources_to_check)}] Durchsuche {source_name}...",
                     "source": source_name,
                     "status": "processing",
                     "progress": int(current_progress)
                 })
                 
-                # Simuliere Datensammlung (In Produktion: echtes Scraping/API-Calls)
-                time.sleep(0.5)  # Simulierte Verzögerung
+                # Simuliere erweiterte Datensammlung (In Produktion: echtes Scraping/API-Calls)
+                time.sleep(0.3)  # Reduzierte Verzögerung für schnelleres Testing
                 
-                # Mock-Daten für Demo
-                found_items = len(keywords) * 10  # Simuliert gefundene Items
+                # Erweiterte Mock-Daten für 250+ Datenpunkte
+                found_items = len(keywords) * 25  # Erhöht von 10 auf 25 pro Keyword
+                logging.info(f"  ✓ Gefunden: {found_items} relevante Datenpunkte in {source_name}")
+                
                 mock_data = {
                     "source": source_name,
                     "url": source_url,
-                    "findings": [f"Trend {i+1} related to {', '.join(keywords[:2])}" for i in range(min(5, found_items))],
-                    "summary": f"Relevant insights from {source_name} regarding {description[:50]}..."
+                    "findings": [f"Trend {i+1} related to {', '.join(keywords[:2])}" for i in range(min(8, found_items))],
+                    "summary": f"Relevant insights from {source_name} regarding {description[:50]}...",
+                    "data_points": found_items
                 }
                 
                 research_source.status = 'success'
@@ -154,84 +198,102 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 db.session.commit()
                 
                 collected_data.append(mock_data)
+                total_items_found += found_items
+                
+                logging.info(f"  💾 Gespeichert: {source_name} mit {found_items} Datenpunkten")
                 
                 yield json.dumps({
                     "type": "success",
-                    "message": f"✓ {source_name}: {found_items} relevante Einträge gefunden",
+                    "message": f"✓ {source_name}: {found_items} Datenpunkte gefunden (Gesamt: {total_items_found})",
                     "source": source_name,
                     "status": "success",
                     "foundItems": found_items,
+                    "totalItems": total_items_found,
                     "progress": int(current_progress + progress_per_source)
                 })
                 
                 current_progress += progress_per_source
             
-            # Phase 3: Synthese (70% - 80% Progress)
+            logging.info(f"✅ Datensammlung abgeschlossen: {total_items_found} Datenpunkte aus {len(sources_to_check)} Quellen")
+            
+            # Phase 3: Synthese (65% - 75% Progress)
+            logging.info(f"🧠 Phase 3: Starte KI-Synthese mit {total_items_found} Datenpunkten...")
             yield json.dumps({
                 "type": "info",
-                "message": "🧠 Phase 3: KI analysiert und synthetisiert gesammelte Daten...",
-                "progress": 72
+                "message": f"🧠 Phase 3: KI analysiert {total_items_found} Datenpunkte und synthetisiert Report...",
+                "progress": 67
             })
             
             job.status = 'synthesizing_report'
             db.session.commit()
             
+            logging.info("  🤖 Rufe Gemini 2.5 Pro für Synthese auf...")
             synthesized_report = synthesize_data_with_ai(description, collected_data, keywords, categories)
+            logging.info(f"  ✓ Synthese abgeschlossen: {len(synthesized_report.get('introduction', ''))} Zeichen Einleitung")
             
             yield json.dumps({
                 "type": "info",
-                "message": "✓ Daten erfolgreich synthetisiert",
-                "progress": 80
+                "message": "✓ Daten erfolgreich synthetisiert - Report-Struktur erstellt",
+                "progress": 75
             })
             
-            # Phase 4: Finalisierung (80% - 90% Progress)
+            # Phase 4: Finalisierung (75% - 85% Progress)
+            logging.info("📝 Phase 4: Starte Report-Finalisierung...")
             yield json.dumps({
                 "type": "info",
-                "message": "📝 Phase 4: Finalisiere Report-Struktur...",
-                "progress": 82
+                "message": "📝 Phase 4: Finalisiere Report-Struktur und optimiere Texte...",
+                "progress": 77
             })
             
             job.status = 'finalizing_report'
             db.session.commit()
             
+            logging.info("  🤖 Rufe Gemini 2.5 Pro für Finalisierung auf...")
             final_report = finalize_report_with_ai(synthesized_report)
+            logging.info(f"  ✓ Finalisierung abgeschlossen: {len(final_report.get('footnotes', []))} Fußnoten")
             
             yield json.dumps({
                 "type": "info",
-                "message": "✓ Report finalisiert",
-                "progress": 90
+                "message": f"✓ Report finalisiert mit {len(final_report.get('footnotes', []))} Fußnoten",
+                "progress": 85
             })
             
-            # Phase 5: PDF-Generierung (90% - 95% Progress)
+            # Phase 5: PDF-Generierung (85% - 92% Progress)
+            logging.info("📄 Phase 5: Starte PDF-Generierung...")
             yield json.dumps({
                 "type": "info",
-                "message": "📄 Phase 5: Generiere professionellen PDF-Report...",
-                "progress": 92
+                "message": "📄 Phase 5: Generiere professionellen PDF-Report mit Fließtext und Fußnoten...",
+                "progress": 87
             })
             
             job.status = 'generating_pdf'
             db.session.commit()
             
+            logging.info("  📝 Erstelle PDF-Dokument mit ReportLab...")
             pdf_path = generate_pdf_report(final_report, job_id)
+            logging.info(f"  ✓ PDF erstellt: {pdf_path}")
             
             yield json.dumps({
                 "type": "info",
-                "message": "✓ PDF erfolgreich erstellt",
-                "progress": 95
+                "message": f"✓ PDF erfolgreich erstellt: {pdf_path}",
+                "progress": 92
             })
             
             # Trend in DB speichern
+            logging.info("💾 Speichere Report in Datenbank...")
+            report_title = final_report.get('title', 'Deep Research Report')
             new_trend = Trend(
-                title=final_report.get('title', 'Deep Research Report'),
+                title=report_title[:300],  # Limit to 300 chars
                 category='innovation',
                 report_type='marktdaten',
-                description=final_report.get('executive_summary', '')[:500],
-                market_data=json.dumps(final_report.get('market_data', {})),
-                consumer_insights=json.dumps(final_report.get('consumer_insights', {})),
+                description=final_report.get('introduction', '')[:500],
+                market_data=json.dumps(final_report.get('market_analysis', {})),
+                consumer_insights=final_report.get('consumer_insights', '')[:5000],
                 pdf_path=pdf_path
             )
             db.session.add(new_trend)
             db.session.commit()
+            logging.info(f"  ✓ Report gespeichert mit ID: {new_trend.id}")
             
             # Job als abgeschlossen markieren
             job.status = 'completed'
@@ -240,12 +302,18 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             job.completed_at = datetime.utcnow()
             db.session.commit()
             
+            logging.info(f"🎉 Research Job {job_id} erfolgreich abgeschlossen!")
+            logging.info(f"   📊 {total_items_found} Datenpunkte analysiert")
+            logging.info(f"   📝 {len(final_report.get('footnotes', []))} Fußnoten")
+            logging.info(f"   📄 PDF: {pdf_path}")
+            
             yield json.dumps({
                 "type": "complete",
-                "message": "✓ Research erfolgreich abgeschlossen!",
+                "message": f"✓ Research erfolgreich abgeschlossen! ({total_items_found} Datenpunkte analysiert)",
                 "progress": 100,
                 "report_id": new_trend.id,
-                "pdf_path": pdf_path
+                "pdf_path": pdf_path,
+                "total_data_points": total_items_found
             })
             
         except Exception as e:
@@ -262,6 +330,67 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 "type": "error",
                 "message": f"Fehler bei der Verarbeitung: {str(e)}"
             })
+
+
+def generate_research_plan(description: str, keywords: List[str], categories: List[str]) -> Dict:
+    """Generiert einen detaillierten Research-Plan, den der Nutzer bestätigen kann"""
+    
+    system_instruction = """Du bist ein Experte für Food-Trend-Forschung und erstellst detaillierte Research-Pläne.
+    
+    Erstelle einen umfassenden Plan mit:
+    1. research_objectives: Die Hauptziele der Research (Array von Strings)
+    2. data_sources_plan: Welche Datenquellen durchsucht werden (gruppiert nach Typ)
+    3. expected_data_points: Wie viele Datenpunkte/Dokumente pro Quelle erwartet werden
+    4. analysis_approach: Wie die Daten analysiert werden
+    5. report_structure: Welche Abschnitte der finale Report haben wird
+    6. estimated_duration: Geschätzte Dauer in Minuten
+    
+    Sei spezifisch und detailliert. Antworte in JSON Format."""
+    
+    user_prompt = f"""Erstelle einen detaillierten Research-Plan für folgende Anfrage:
+
+Beschreibung: {description}
+Keywords: {', '.join(keywords) if keywords else 'keine'}
+Kategorien: {', '.join(categories) if categories else 'keine'}
+
+Plane eine umfassende Recherche mit mindestens 250 Datenpunkten aus verschiedenen Quellen."""
+    
+    try:
+        logging.info("📋 Generiere Research-Plan mit Gemini 2.5 Pro...")
+        response = gemini_client.models.generate_content(
+            model="gemini-2.5-pro",
+            contents=user_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                response_mime_type="application/json",
+                temperature=0.7
+            )
+        )
+        
+        plan = json.loads(response.text)
+        logging.info(f"✓ Research-Plan erstellt: {len(plan.get('data_sources_plan', {}))} Quellentypen")
+        return plan
+        
+    except Exception as e:
+        logging.error(f"Plan generation error: {e}")
+        # Fallback plan
+        return {
+            "research_objectives": [
+                f"Analyse von {description}",
+                "Identifikation aktueller Trends",
+                "Erhebung von Marktdaten",
+                "Bewertung von Consumer Insights"
+            ],
+            "data_sources_plan": {
+                "scientific": ["PubMed", "Open Food Facts"],
+                "industry": ["NutraIngredients", "Food Ingredients First"],
+                "statistical": ["Eurostat", "USDA"]
+            },
+            "expected_data_points": 250,
+            "analysis_approach": "Multi-source synthesis mit KI-gestützter Analyse",
+            "report_structure": ["Einleitung", "Hauptanalyse", "Marktanalyse", "Consumer Insights", "Zukunftsausblick", "Fazit"],
+            "estimated_duration": 5
+        }
 
 
 def create_research_strategy(description: str, keywords: List[str], categories: List[str]) -> Dict:

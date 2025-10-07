@@ -1461,6 +1461,90 @@ def start_deep_research():
 # Store job updates in memory for SSE
 job_updates = {}
 
+@app.route('/api/deep-research/plan/<job_id>', methods=['GET'])
+@login_required
+def get_research_plan(job_id):
+    """Get the research plan for a job"""
+    try:
+        job = ResearchJob.query.filter_by(job_id=job_id).first()
+        if not job:
+            return jsonify({'success': False, 'error': 'Job not found'}), 404
+        
+        if not job.research_plan:
+            return jsonify({'success': False, 'error': 'Plan not yet generated'}), 404
+        
+        plan = json.loads(job.research_plan)
+        return jsonify({
+            'success': True,
+            'plan': plan,
+            'status': job.status,
+            'approved': job.plan_approved
+        })
+        
+    except Exception as e:
+        logging.error(f"Get research plan error: {str(e)}")
+        return jsonify({'success': False, 'error': 'Failed to get research plan'}), 500
+
+@app.route('/api/deep-research/plan/<job_id>/approve', methods=['POST'])
+@csrf.exempt
+@login_required
+def approve_research_plan(job_id):
+    """Approve and optionally modify the research plan, then continue job"""
+    import threading
+    from models import ResearchJob
+    
+    try:
+        data = request.get_json() or {}
+        modified_plan = data.get('plan')  # Optional: user can modify the plan
+        
+        job = ResearchJob.query.filter_by(job_id=job_id).first()
+        if not job:
+            return jsonify({'success': False, 'error': 'Job not found'}), 404
+        
+        if job.status != 'waiting_approval':
+            return jsonify({'success': False, 'error': 'Job is not waiting for approval'}), 400
+        
+        # Update plan if modified
+        if modified_plan:
+            job.research_plan = json.dumps(modified_plan, ensure_ascii=False)
+            logging.info(f"Plan modified by user for job {job_id}")
+        
+        # Mark as approved
+        job.plan_approved = True
+        job.status = 'processing_strategy'
+        db.session.commit()
+        
+        logging.info(f"Plan approved for job {job_id}, resuming research...")
+        
+        # Resume job in background thread
+        def resume_job():
+            from deep_research_worker import process_research_job
+            description = job.description
+            keywords = json.loads(job.keywords) if job.keywords else []
+            categories = json.loads(job.categories) if job.categories else []
+            
+            # Re-initialize updates if needed
+            if job_id not in job_updates:
+                job_updates[job_id] = []
+            
+            for update in process_research_job(job_id, description, keywords, categories):
+                if job_id in job_updates:
+                    job_updates[job_id].append(update)
+        
+        thread = threading.Thread(target=resume_job, daemon=True)
+        thread.start()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Plan approved, research job resuming'
+        })
+        
+    except Exception as e:
+        logging.error(f"Approve research plan error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': 'Failed to approve plan'}), 500
+
 @app.route('/api/deep-research/stream/<job_id>')
 @login_required
 def stream_deep_research(job_id):
