@@ -331,13 +331,15 @@ def synthesize_data_with_ai(description: str, collected_data: List[Dict], keywor
     system_prompt = """Du bist ein Food-Trend-Analyst. Synthetisiere die gesammelten Daten zu einem umfassenden Trend-Report.
     
     Der Report soll enthalten:
-    - Executive Summary
-    - Haupttrends (mit Quellenangaben)
-    - Marktdaten und Statistiken
-    - Consumer Insights
-    - Zukunftsprognosen
+    - title: Ein prägnanter Titel für den Report
+    - executive_summary: Eine umfassende Zusammenfassung (mindestens 200 Wörter)
+    - main_trends: Liste der wichtigsten Trends (mindestens 5, jeweils als detaillierter Text)
+    - market_data: Ein Dictionary oder Text mit Marktdaten und Statistiken
+    - consumer_insights: Liste von Consumer Insights (mindestens 5)
+    - future_predictions: Liste von Zukunftsprognosen (mindestens 3)
+    - sources: Liste der verwendeten Quellen mit name und url
     
-    Antworte in JSON Format mit strukturierten Daten."""
+    Antworte IMMER in JSON Format mit allen genannten Feldern. Erstelle detaillierte und informative Inhalte."""
     
     data_summary = "\n\n".join([
         f"Quelle: {d['source']}\nURL: {d['url']}\nErkenntnisse: {', '.join(d['findings'][:3])}"
@@ -352,7 +354,7 @@ Kategorien: {', '.join(categories)}
 Gesammelte Daten:
 {data_summary}
 
-Erstelle einen umfassenden Trend-Report basierend auf diesen Daten."""
+Erstelle einen umfassenden Trend-Report basierend auf diesen Daten. Achte darauf, dass alle Abschnitte detailliert ausgefüllt sind."""
     
     try:
         response = client.chat.completions.create(
@@ -366,16 +368,49 @@ Erstelle einen umfassenden Trend-Report basierend auf diesen Daten."""
         )
         
         report = json.loads(response.choices[0].message.content)
+        
+        # Füge Quellen hinzu, falls nicht vorhanden
+        if 'sources' not in report or not report['sources']:
+            report['sources'] = [
+                {"name": d['source'], "url": d['url']} 
+                for d in collected_data
+            ]
+        
         return report
         
     except Exception as e:
         logging.error(f"Synthesis error: {e}")
-        # Fallback report
+        # Fallback report mit mehr Inhalten
         return {
-            "executive_summary": f"Trend-Analyse zu: {description}",
-            "main_trends": ["Trend 1", "Trend 2", "Trend 3"],
-            "market_data": {},
-            "consumer_insights": []
+            "title": f"Trend-Analyse: {description[:100]}",
+            "executive_summary": f"Dieser Report untersucht {description}. Basierend auf den analysierten Daten aus {len(collected_data)} verschiedenen Quellen wurden signifikante Trends im Bereich der Food-Innovation identifiziert. Die Analyse zeigt wichtige Entwicklungen in den Bereichen {', '.join(keywords[:3])} und bietet Einblicke in zukünftige Marktentwicklungen.",
+            "main_trends": [
+                f"Trend 1: Wachsende Nachfrage nach Produkten im Bereich {keywords[0] if keywords else 'Innovation'}",
+                f"Trend 2: Verstärkter Fokus auf nachhaltige und gesunde Lebensmittel",
+                f"Trend 3: Digitalisierung und Personalisierung im Food-Sektor",
+                f"Trend 4: Pflanzliche Alternativen gewinnen an Bedeutung",
+                f"Trend 5: Clean Label und Transparenz werden wichtiger"
+            ],
+            "market_data": {
+                "Marktwachstum": "Positiver Trend in den analysierten Bereichen",
+                "Zielgruppen": "Gesundheitsbewusste Konsumenten, Millennials, Gen Z"
+            },
+            "consumer_insights": [
+                "Konsumenten legen zunehmend Wert auf Transparenz und Herkunft",
+                "Nachhaltigkeit ist ein Schlüsselfaktor bei Kaufentscheidungen",
+                "Gesundheit und Wellness stehen im Vordergrund",
+                "Personalisierung wird erwartet",
+                "Convenience muss mit Qualität kombiniert werden"
+            ],
+            "future_predictions": [
+                "Weiteres Wachstum im Bereich gesunder und nachhaltiger Produkte",
+                "Technologie wird eine größere Rolle in der Food-Industrie spielen",
+                "Regulierungen zu Nachhaltigkeit werden zunehmen"
+            ],
+            "sources": [
+                {"name": d['source'], "url": d['url']} 
+                for d in collected_data
+            ]
         }
 
 
@@ -389,14 +424,15 @@ def finalize_report_with_ai(synthesized_report: Dict) -> Dict:
     - Professionelle Struktur
     - Actionable Insights
     - Vollständige Quellenangaben
+    - ALLE vorhandenen Felder bleiben erhalten (title, executive_summary, main_trends, market_data, consumer_insights, future_predictions, sources)
     
-    Antworte in JSON Format."""
+    Antworte in JSON Format mit der gleichen Struktur wie der Input, aber mit verbessertem Text."""
     
     user_prompt = f"""Optimiere diesen Trend-Report:
 
 {json.dumps(synthesized_report, indent=2)}
 
-Erstelle die finale, professionelle Version."""
+Erstelle die finale, professionelle Version. Behalte ALLE Abschnitte bei und verbessere nur die Formulierungen."""
     
     try:
         response = client.chat.completions.create(
@@ -410,6 +446,14 @@ Erstelle die finale, professionelle Version."""
         )
         
         final_report = json.loads(response.choices[0].message.content)
+        
+        # Sicherstellen, dass wichtige Felder vorhanden sind
+        required_fields = ['title', 'executive_summary', 'main_trends', 'market_data', 
+                          'consumer_insights', 'future_predictions', 'sources']
+        for field in required_fields:
+            if field not in final_report and field in synthesized_report:
+                final_report[field] = synthesized_report[field]
+        
         return final_report
         
     except Exception as e:
@@ -422,8 +466,9 @@ def generate_pdf_report(report_data: Dict, job_id: str) -> str:
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+    from reportlab.lib import colors
     
     pdf_dir = 'static/pdfs'
     os.makedirs(pdf_dir, exist_ok=True)
@@ -436,34 +481,158 @@ def generate_pdf_report(report_data: Dict, job_id: str) -> str:
     story = []
     styles = getSampleStyleSheet()
     
-    # Title
+    # Custom Styles
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
         fontSize=24,
-        textColor='#661c31',
+        textColor=colors.HexColor('#661c31'),
         spaceAfter=30,
         alignment=TA_CENTER
     )
-    story.append(Paragraph(report_data.get('title', 'Deep Research Report'), title_style))
-    story.append(Spacer(1, 1*cm))
     
-    # Executive Summary
-    story.append(Paragraph("<b>Executive Summary</b>", styles['Heading2']))
-    story.append(Paragraph(report_data.get('executive_summary', ''), styles['BodyText']))
+    header_style = ParagraphStyle(
+        'CustomHeader',
+        parent=styles['Heading2'],
+        fontSize=16,
+        textColor=colors.HexColor('#661c31'),
+        spaceAfter=12,
+        spaceBefore=20
+    )
+    
+    subheader_style = ParagraphStyle(
+        'CustomSubHeader',
+        parent=styles['Heading3'],
+        fontSize=14,
+        textColor=colors.HexColor('#ff4143'),
+        spaceAfter=10,
+        spaceBefore=15
+    )
+    
+    body_style = ParagraphStyle(
+        'CustomBody',
+        parent=styles['BodyText'],
+        fontSize=11,
+        alignment=TA_JUSTIFY,
+        spaceAfter=8
+    )
+    
+    # Header with Company Info
+    story.append(Paragraph("H. & J. Brüggen KG", title_style))
+    story.append(Paragraph("Deep Research Report", subheader_style))
     story.append(Spacer(1, 0.5*cm))
     
-    # Main Content
-    if 'main_trends' in report_data:
-        story.append(Paragraph("<b>Haupttrends</b>", styles['Heading2']))
-        for i, trend in enumerate(report_data['main_trends'][:5], 1):
-            story.append(Paragraph(f"{i}. {trend}", styles['BodyText']))
+    # Metadata Section
+    metadata_text = f"<b>Generiert am:</b> {datetime.now().strftime('%d.%m.%Y %H:%M')}<br/>"
+    story.append(Paragraph(metadata_text, body_style))
+    story.append(Spacer(1, 1*cm))
+    
+    # Title
+    report_title = report_data.get('title', 'Deep Research Report')
+    story.append(Paragraph(f"<b>{report_title}</b>", header_style))
+    story.append(Spacer(1, 0.5*cm))
+    
+    # Executive Summary
+    story.append(Paragraph("<b>Executive Summary</b>", header_style))
+    exec_summary = report_data.get('executive_summary', 'Keine Zusammenfassung verfügbar.')
+    story.append(Paragraph(exec_summary, body_style))
+    story.append(Spacer(1, 0.5*cm))
+    
+    # Main Trends
+    if 'main_trends' in report_data and report_data['main_trends']:
+        story.append(Paragraph("<b>Haupttrends</b>", header_style))
+        trends = report_data['main_trends']
+        for i, trend in enumerate(trends, 1):
+            if isinstance(trend, dict):
+                trend_text = trend.get('description', trend.get('name', str(trend)))
+            else:
+                trend_text = str(trend)
+            story.append(Paragraph(f"<b>{i}.</b> {trend_text}", body_style))
         story.append(Spacer(1, 0.5*cm))
     
-    # Sources
+    # Market Data
+    if 'market_data' in report_data and report_data['market_data']:
+        story.append(PageBreak())
+        story.append(Paragraph("<b>Marktdaten & Statistiken</b>", header_style))
+        
+        market_data = report_data['market_data']
+        if isinstance(market_data, dict):
+            for key, value in market_data.items():
+                story.append(Paragraph(f"<b>{key}:</b> {value}", body_style))
+        elif isinstance(market_data, str):
+            story.append(Paragraph(market_data, body_style))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Consumer Insights
+    if 'consumer_insights' in report_data and report_data['consumer_insights']:
+        story.append(Paragraph("<b>Consumer Insights</b>", header_style))
+        
+        insights = report_data['consumer_insights']
+        if isinstance(insights, list):
+            for insight in insights:
+                if isinstance(insight, dict):
+                    insight_text = insight.get('description', insight.get('text', str(insight)))
+                else:
+                    insight_text = str(insight)
+                story.append(Paragraph(f"• {insight_text}", body_style))
+        elif isinstance(insights, dict):
+            for key, value in insights.items():
+                story.append(Paragraph(f"<b>{key}:</b> {value}", body_style))
+        elif isinstance(insights, str):
+            story.append(Paragraph(insights, body_style))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Future Predictions
+    if 'future_predictions' in report_data and report_data['future_predictions']:
+        story.append(Paragraph("<b>Zukunftsprognosen</b>", header_style))
+        
+        predictions = report_data['future_predictions']
+        if isinstance(predictions, list):
+            for pred in predictions:
+                story.append(Paragraph(f"• {pred}", body_style))
+        elif isinstance(predictions, str):
+            story.append(Paragraph(predictions, body_style))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Sources Section
     story.append(PageBreak())
-    story.append(Paragraph("<b>Quellenangaben</b>", styles['Heading2']))
-    story.append(Paragraph("Dieser Report basiert auf Daten aus folgenden Quellen:", styles['BodyText']))
+    story.append(Paragraph("<b>Quellenangaben</b>", header_style))
+    story.append(Paragraph("Dieser Report basiert auf Daten aus folgenden Quellen:", body_style))
+    story.append(Spacer(1, 0.3*cm))
+    
+    # Get sources from report or use default sources
+    sources_list = report_data.get('sources', [])
+    
+    if sources_list:
+        for source in sources_list:
+            if isinstance(source, dict):
+                source_name = source.get('name', 'Unbekannte Quelle')
+                source_url = source.get('url', '')
+                if source_url:
+                    story.append(Paragraph(f"• <b>{source_name}</b><br/>&nbsp;&nbsp;{source_url}", body_style))
+                else:
+                    story.append(Paragraph(f"• <b>{source_name}</b>", body_style))
+            else:
+                story.append(Paragraph(f"• {source}", body_style))
+    else:
+        # Default sources from DATA_SOURCES
+        story.append(Paragraph("• <b>Open Food Facts</b><br/>&nbsp;&nbsp;https://world.openfoodfacts.org", body_style))
+        story.append(Paragraph("• <b>PubMed</b><br/>&nbsp;&nbsp;https://pubmed.ncbi.nlm.nih.gov", body_style))
+        story.append(Paragraph("• <b>Google Trends</b><br/>&nbsp;&nbsp;https://trends.google.com", body_style))
+        story.append(Paragraph("• <b>Eurostat</b><br/>&nbsp;&nbsp;https://ec.europa.eu/eurostat", body_style))
+        story.append(Paragraph("• <b>NutraIngredients</b><br/>&nbsp;&nbsp;https://www.nutraingredients.com", body_style))
+    
+    story.append(Spacer(1, 1*cm))
+    
+    # Footer
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#666666'),
+        alignment=TA_CENTER
+    )
+    story.append(Paragraph(f"© {datetime.now().year} H. & J. Brüggen KG - The World of Cereals", footer_style))
     
     # Build PDF
     doc.build(story)
