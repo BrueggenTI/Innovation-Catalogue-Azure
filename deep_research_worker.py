@@ -578,7 +578,7 @@ def get_default_research_plan(description: str, keywords: List[str], categories:
             "Zukunftsausblick & Prognosen",
             "Fazit & Handlungsempfehlungen"
         ],
-        "estimated_duration": 8
+        "estimated_duration": 5
     }
 
 
