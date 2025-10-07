@@ -710,10 +710,10 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Placeholder for submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, generatedReportData, showReportPreview, addProgressStep, initializeProgress
+// Placeholder for submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, addProgressStep, initializeProgress
 // These are assumed to be defined in the scope where this script is used, likely within a function like 'generateReport' or similar.
-// Note: generatedReportData is now declared in trends.html to avoid conflicts
-let submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, showReportPreview, addProgressStep, initializeProgress;
+// Note: generatedReportData and showReportPreview are declared in trends.html to avoid conflicts
+let submitButton, cancelButton, loadingIndicator, keywordsInput, selectedCountries, addProgressStep, initializeProgress;
 
 // Example of how the report generation might be initiated, including the new live log integration.
 async function generateReport(event) {
@@ -728,10 +728,8 @@ async function generateReport(event) {
     // Dummy assignments for demonstration. In a real scenario, these would be actual DOM elements or values.
     keywordsInput = keywordsInputEl ? keywordsInputEl.value : 'default keywords';
     selectedCountries = countriesSelect ? Array.from(countriesSelect.selectedOptions).map(option => option.value) : ['DE'];
-    generatedReportData = null; // Reset report data
     
-    // Assume showReportPreview and addProgressStep are defined elsewhere
-    showReportPreview = (data) => console.log("Showing report preview:", data);
+    // Note: showReportPreview is defined in trends.html
     addProgressStep = (container, data) => console.log("Adding progress step:", data);
 
     if (submitButton) submitButton.disabled = true;
@@ -798,8 +796,12 @@ async function generateReport(event) {
                         addLiveLog(`Titel: ${data.report.title}`, 'data');
                         addLiveLog(`Quellen analysiert: ${data.report.sources ? data.report.sources.length : 'N/A'}`, 'data');
 
-                        generatedReportData = data;
-                        showReportPreview(data);
+                        if (typeof window.generatedReportData !== 'undefined') {
+                            window.generatedReportData = data;
+                        }
+                        if (typeof showReportPreview === 'function') {
+                            showReportPreview(data);
+                        }
                         return; // Exit loop and function after completion
                     } else if (data.type === 'error') {
                         addLiveLog(`✗ Fehler: ${data.message}`, 'error');
@@ -822,8 +824,12 @@ async function generateReport(event) {
                     addLiveLog(data.message, logType);
                 } else if (data.type === 'complete') {
                     addLiveLog('✓ Report erfolgreich generiert!', 'success');
-                    generatedReportData = data;
-                    showReportPreview(data);
+                    if (typeof window.generatedReportData !== 'undefined') {
+                        window.generatedReportData = data;
+                    }
+                    if (typeof showReportPreview === 'function') {
+                        showReportPreview(data);
+                    }
                 } else if (data.type === 'error') {
                     addLiveLog(`✗ Fehler: ${data.message}`, 'error');
                     throw new Error(data.message);
