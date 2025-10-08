@@ -1651,129 +1651,71 @@ def add_recipe():
 @csrf.exempt
 @master_required
 def analyze_recipe():
-    # Check for file in request - handle both field names
-    file = None
+    # Check for files in request - handle both single and multiple files
+    files = []
     if 'recipe_file' in request.files:
-        file = request.files['recipe_file']
+        files = request.files.getlist('recipe_file')
     elif 'recipeFile' in request.files:
-        file = request.files['recipeFile']
+        files = request.files.getlist('recipeFile')
     elif 'file' in request.files:
-        file = request.files['file']
+        files = request.files.getlist('file')
     
-    if not file:
-        return jsonify({'success': False, 'error': 'No file uploaded'})
-
-    file = file
-    if file.filename == '':
-        return jsonify({'success': False, 'error': 'No file selected'})
+    if not files or all(f.filename == '' for f in files):
+        return jsonify({'success': False, 'error': 'No files uploaded'})
 
     try:
-        # Save uploaded file
-        filename = secure_filename(file.filename or 'uploaded_file')
-        upload_path = os.path.join('static', 'uploads', filename)
-
-        # Create uploads directory if it doesn't exist
-        os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-        file.save(upload_path)
-
-        # Read file content for AI analysis
-        file_content = ""
-        file_extension = filename.lower().split('.')[-1] if '.' in filename else ''
-
-        try:
-            # Extract actual content from different file types
-            if file_extension == 'txt':
-                with open(upload_path, 'r', encoding='utf-8') as f:
-                    file_content = f.read()
-            elif file_extension == 'pdf':
-                # Extract text from PDF
-                import PyPDF2
-                file_content = ""
-                try:
-                    with open(upload_path, 'rb') as pdf_file:
-                        pdf_reader = PyPDF2.PdfReader(pdf_file)
-                        for page in pdf_reader.pages:
-                            file_content += page.extract_text() + "\n"
-                except Exception as pdf_error:
-                    logging.warning(f"Could not extract PDF content: {pdf_error}")
-                    file_content = f"PDF document: {filename} - content extraction failed, analyzing filename only"
-            elif file_extension in ['doc', 'docx']:
-                # Extract text from Word documents
-                from docx import Document
-                try:
-                    doc = Document(upload_path)
-                    file_content = ""
-                    for paragraph in doc.paragraphs:
-                        file_content += paragraph.text + "\n"
-                    # Also extract text from tables
-                    for table in doc.tables:
-                        for row in table.rows:
-                            for cell in row.cells:
-                                file_content += cell.text + " "
-                        file_content += "\n"
-                except Exception as docx_error:
-                    logging.warning(f"Could not extract Word document content: {docx_error}")
-                    file_content = f"Word document: {filename} - content extraction failed, analyzing filename only"
-            elif file_extension in ['ppt', 'pptx']:
-                # Enhanced PowerPoint processing with better text extraction
-                from pptx import Presentation
-                try:
-                    prs = Presentation(upload_path)
-                    slide_texts = []
-                    slide_number = 0
-                    
-                    for slide in prs.slides:
-                        slide_number += 1
-                        slide_content = [f"=== SLIDE {slide_number} ==="]
-                        
-                        # Extract all text from shapes
-                        for shape in slide.shapes:
-                            try:
-                                if hasattr(shape, "text") and shape.text.strip():
-                                    text_content = shape.text.strip()
-                                    slide_content.append(text_content)
-                                
-                                # Extract text from tables if present
-                                if hasattr(shape, "table"):
-                                    table_content = []
-                                    for row in shape.table.rows:
-                                        row_data = []
-                                        for cell in row.cells:
-                                            if cell.text.strip():
-                                                row_data.append(cell.text.strip())
-                                        if row_data:
-                                            table_content.append(" | ".join(row_data))
-                                    if table_content:
-                                        slide_content.extend(["TABLE DATA:", *table_content])
-                            except Exception:
-                                continue  # Skip shapes that can't be processed
-                        
-                        if len(slide_content) > 1:  # More than just the slide header
-                            slide_texts.extend(slide_content)
-                    
-                    file_content = '\n'.join(slide_texts) if slide_texts else ""
-                    logging.info(f"PowerPoint extraction: {len(slide_texts)} text elements from {slide_number} slides")
-                    
-                    if not file_content or len(file_content.strip()) < 50:
-                        file_content = f"PowerPoint document: {filename} - limited content extracted, analyzing available data and filename"
-                        
-                except Exception as pptx_error:
-                    logging.warning(f"Could not extract PowerPoint content: {pptx_error}")
-                    file_content = f"PowerPoint document: {filename} - content extraction failed, analyzing filename only"
-            else:
-                # Fallback for unknown formats
-                file_content = f"Document uploaded: {filename}. Please provide realistic recipe details based on the filename."
-
-            # If content is empty or too short, provide context
-            if not file_content.strip() or len(file_content.strip()) < 10:
-                file_content = f"Document: {filename} ({file_extension.upper()}) - Please provide realistic recipe details for a typical Brüggen cereal/muesli product based on the filename."
-
-        except Exception as read_error:
-            logging.warning(f"Could not read file content: {read_error}")
-            file_content = f"Recipe document: {filename} ({file_extension.upper()} format) - Please provide realistic recipe details based on the filename."
-
-        # Extract images from document before AI analysis
-        extracted_images = extract_images_from_document(upload_path, file_extension, filename)
+        # Process multiple files using DocumentProcessor
+        files_data = []
+        temp_file_paths = []
+        extracted_images_all = []
+        filenames_list = []
+        
+        for file in files:
+            if file and file.filename:
+                # Validate file type
+                file_type = file.content_type
+                if not document_processor.is_supported(file_type):
+                    return jsonify({
+                        'success': False,
+                        'error': f'Unsupported file type: {file.filename}. Supported: PDF, DOCX, PPTX, XLSX, TXT'
+                    }), 400
+                
+                # Save file temporarily
+                file_path = document_processor.save_uploaded_file(file)
+                temp_file_paths.append(file_path)
+                files_data.append((file_path, file_type, file.filename))
+                filenames_list.append(file.filename)
+                
+                # Extract images from each file
+                file_extension = os.path.splitext(file.filename.lower())[1][1:]  # Remove dot
+                images = extract_images_from_document(file_path, file_extension, file.filename)
+                if images.get('all_images'):
+                    extracted_images_all.extend(images['all_images'])
+        
+        if not files_data:
+            return jsonify({'success': False, 'error': 'No valid files found'}), 400
+        
+        # Process all files and extract text
+        processing_result = document_processor.process_multiple_files(files_data)
+        
+        if processing_result['successful_files'] == 0:
+            document_processor.cleanup_files(temp_file_paths)
+            return jsonify({
+                'success': False,
+                'error': 'Failed to process any uploaded files'
+            }), 400
+        
+        # Get combined text content
+        file_content = processing_result['combined_text']
+        if len(file_content.strip()) < 10:
+            file_content = f"Documents: {', '.join(filenames_list)} - Please provide realistic recipe details based on the filenames."
+        
+        # Use first filename for compatibility
+        filename = filenames_list[0] if filenames_list else 'uploaded_file'
+        file_extension = os.path.splitext(filename.lower())[1][1:]  # Remove dot
+        
+        # Prepare extracted images dict
+        extracted_images = {'all_images': extracted_images_all}
         
         # Initialize OpenAI client
         openai_api_key = os.environ.get('OPENAI_API_KEY')
@@ -2041,11 +1983,19 @@ def analyze_recipe():
         # Add all extracted images to recipe data for user selection
         recipe_data['extracted_images'] = extracted_images.get('all_images', [])
         
-        logging.info(f"AI analysis completed for {filename}")
+        # Cleanup temporary files
+        document_processor.cleanup_files(temp_file_paths)
+        
+        logging.info(f"AI analysis completed for {len(filenames_list)} file(s)")
         return jsonify({'success': True, 'recipe_data': recipe_data})
 
     except Exception as e:
         logging.error(f"Recipe analysis error: {str(e)}")
+        
+        # Cleanup temporary files on error
+        if 'temp_file_paths' in locals():
+            document_processor.cleanup_files(temp_file_paths)
+        
         # More specific error handling
         error_message = "An error occurred during AI analysis."
         if "openai" in str(e).lower():
