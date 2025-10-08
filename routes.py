@@ -1677,7 +1677,7 @@ def analyze_recipe():
                 if not document_processor.is_supported(file_type):
                     return jsonify({
                         'success': False,
-                        'error': f'Unsupported file type: {file.filename}. Supported: PDF, DOCX, PPTX, XLSX, TXT'
+                        'error': f'Unsupported file type: {file.filename}. Supported: PDF, DOCX, PPTX, XLSX, TXT, JPG, PNG'
                     }), 400
                 
                 # Save file temporarily

@@ -1,14 +1,17 @@
 import os
 import tempfile
 import zipfile
+import base64
 from pathlib import Path
 import fitz  # PyMuPDF for PDF processing
 from docx import Document  # python-docx for DOCX processing
 from pptx import Presentation  # python-pptx for PowerPoint processing
 from openpyxl import load_workbook  # openpyxl for Excel processing
 import logging
+from openai import OpenAI
 
 logger = logging.getLogger(__name__)
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 class DocumentProcessor:
     """
@@ -21,7 +24,10 @@ class DocumentProcessor:
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'application/vnd.openxmlformats-officedocument.presentationml.presentation',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'text/plain'
+            'text/plain',
+            'image/jpeg',
+            'image/jpg',
+            'image/png'
         ]
     
     def is_supported(self, file_type):
@@ -50,6 +56,8 @@ class DocumentProcessor:
                 return self._process_xlsx(file_path)
             elif file_type == 'text/plain':
                 return self._process_txt(file_path)
+            elif file_type in ['image/jpeg', 'image/jpg', 'image/png']:
+                return self._process_image(file_path)
             else:
                 raise ValueError(f"Unsupported file type: {file_type}")
                 
@@ -193,6 +201,57 @@ class DocumentProcessor:
             
         except Exception as e:
             raise Exception(f"Failed to process Excel: {str(e)}")
+    
+    def _process_image(self, file_path):
+        """Process image file using OpenAI Vision API"""
+        try:
+            # Read image and encode to base64
+            with open(file_path, 'rb') as image_file:
+                image_data = base64.b64encode(image_file.read()).decode('utf-8')
+            
+            # Determine image format from file extension
+            file_ext = os.path.splitext(file_path)[1].lower()
+            mime_type = 'image/jpeg' if file_ext in ['.jpg', '.jpeg'] else 'image/png'
+            
+            # Use OpenAI Vision API to analyze image
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Analyze this image and extract all text, product information, ingredients, nutritional data, or any recipe-related information visible. Provide a detailed description of what you see."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{mime_type};base64,{image_data}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=1000
+            )
+            
+            extracted_text = response.choices[0].message.content
+            
+            return {
+                'text': extracted_text,
+                'word_count': len(extracted_text.split()),
+                'file_type': 'Image (Vision API)'
+            }
+            
+        except Exception as e:
+            logger.error(f"Vision API error: {str(e)}")
+            # Fallback to placeholder if Vision API fails
+            return {
+                'text': '[IMAGE FILE - Could not analyze visual content]',
+                'word_count': 0,
+                'file_type': 'Image'
+            }
     
     def process_multiple_files(self, files_data):
         """
