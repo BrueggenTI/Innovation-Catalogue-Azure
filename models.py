@@ -30,9 +30,8 @@ class Product(db.Model):
     production_tech = db.Column(db.String(100))
     recipe_number = db.Column(db.String(50))  # Store extracted recipe number from documents
     is_exclusive = db.Column(db.Boolean, default=False)  # Whether this is an exclusive recipe
-    department = db.Column(db.String(100))  # Department information (e.g., Production, R&D)
-    customer = db.Column(db.String(200))  # Customer name or company
-    market = db.Column(db.String(200))  # Market information for exclusive recipes
+    customer = db.Column(db.String(200))  # Customer name or company (mutually exclusive with market)
+    market = db.Column(db.String(200))  # Market information (mutually exclusive with customer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class ConceptSession(db.Model):
