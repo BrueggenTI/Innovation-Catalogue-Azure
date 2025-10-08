@@ -565,6 +565,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     ` : ''}
 
+                    <!-- Additional Product Info Section (Exclusive, Department, Customer) -->
+                    <div class="col-lg-12 mb-4">
+                        <div class="card">
+                            <div class="card-header" style="background-color: #661c31;">
+                                <h5 class="mb-0 text-white">
+                                    <i class="fas fa-info-circle me-2"></i>Zusätzliche Produktinformationen
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Exclusive</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="exclusiveCheck" 
+                                                   ${data.exclusive === 'ja' ? 'checked' : ''}>
+                                            <label class="form-check-label" for="exclusiveCheck">
+                                                Exklusives Produkt
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="department" class="form-label fw-bold">Department</label>
+                                        <input type="text" id="department" class="form-control" 
+                                               value="${data.department || ''}" 
+                                               placeholder="z.B. Production, R&D">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="customer" class="form-label fw-bold">Customer</label>
+                                        <input type="text" id="customer" class="form-control" 
+                                               value="${data.customer || ''}" 
+                                               placeholder="Kundenname">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Extracted Images Section -->
                     ${data.extracted_images && data.extracted_images.length > 0 ? `
                     <div class="col-lg-12 mb-4">
@@ -963,7 +1000,11 @@ document.addEventListener('DOMContentLoaded', function() {
             recipe_number: document.getElementById('recipeNumber')?.value || window.currentRecipeData?.recipe_number || null,
             // Preserve other metadata if available
             storage_conditions: document.getElementById('storageConditions')?.value || window.currentRecipeData?.storage_conditions || 'Store in a cool, dry place, protect from direct sunlight',
-            extracted_images: window.currentRecipeData?.extracted_images || []
+            extracted_images: window.currentRecipeData?.extracted_images || [],
+            // New fields: Exclusive, Department, Customer
+            exclusive: document.getElementById('exclusiveCheck')?.checked ? 'ja' : 'nein',
+            department: document.getElementById('department')?.value || null,
+            customer: document.getElementById('customer')?.value || null
         };
 
         // Collect ingredients
@@ -1097,7 +1138,10 @@ document.addEventListener('DOMContentLoaded', function() {
             allergens: Array.from(document.querySelectorAll('.allergen-input')).map(input => input.value.trim()).filter(Boolean),
             claims: Array.from(document.querySelectorAll('.claim-input')).map(input => input.value.trim()).filter(Boolean),
             storage_conditions: document.getElementById('storageConditions')?.value || 'Kühl und trocken lagern, vor direkter Sonneneinstrahlung schützen',
-            recipe_number: document.getElementById('recipeNumber')?.value || null
+            recipe_number: document.getElementById('recipeNumber')?.value || null,
+            exclusive: document.getElementById('exclusiveCheck')?.checked ? 'ja' : 'nein',
+            department: document.getElementById('department')?.value || null,
+            customer: document.getElementById('customer')?.value || null
         };
     }
 
