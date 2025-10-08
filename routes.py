@@ -719,14 +719,25 @@ def update_exclusive_info(id):
         else:
             product.is_exclusive = bool(is_exclusive_value)
         
-        # Update department, customer, and market
-        product.department = data.get('department') or None
-        product.customer = data.get('customer') or None
-        product.market = data.get('market') or None
+        # Mutual exclusivity: customer OR market, never both
+        # The frontend sends either customer OR market, the other is None
+        customer_value = data.get('customer')
+        market_value = data.get('market')
+        
+        if customer_value:
+            product.customer = customer_value
+            product.market = None
+        elif market_value:
+            product.market = market_value
+            product.customer = None
+        else:
+            # If both are None, clear both
+            product.customer = None
+            product.market = None
         
         db.session.commit()
         
-        logging.info(f"Updated exclusive info for product {id}: Exclusive={product.is_exclusive}, Dept={product.department}, Customer={product.customer}, Market={product.market}")
+        logging.info(f"Updated exclusive info for product {id}: Exclusive={product.is_exclusive}, Customer={product.customer}, Market={product.market}")
         
         return jsonify({
             'success': True,
