@@ -2164,6 +2164,20 @@ def publish_recipe():
         if isinstance(has_base, str):
             has_base = has_base.lower() in ('true', '1', 'yes')
         
+        # FALLBACK: If base_recipe_number not found in base_recipe, check ingredients for recipe_number
+        if has_base and not base_recipe_number:
+            logging.info("Base recipe detected but no base_recipe_number - checking ingredients for recipe_number")
+            for ing in ingredients:
+                if isinstance(ing, dict):
+                    ing_percentage = ing.get('percentage', 0)
+                    ing_recipe_number = ing.get('recipe_number')
+                    # Check if ingredient percentage > 80% and has recipe_number
+                    if ing_percentage > 80 and ing_recipe_number:
+                        base_recipe_number = ing_recipe_number
+                        base_ingredient_name = ing.get('name')
+                        logging.info(f"Found base recipe number in ingredient: {base_recipe_number} ({base_ingredient_name})")
+                        break
+        
         if has_base and base_recipe_number:
             logging.info(f"Mix recipe detected with base recipe number: {base_recipe_number}")
             
