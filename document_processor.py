@@ -4,6 +4,8 @@ import zipfile
 from pathlib import Path
 import fitz  # PyMuPDF for PDF processing
 from docx import Document  # python-docx for DOCX processing
+from pptx import Presentation  # python-pptx for PowerPoint processing
+from openpyxl import load_workbook  # openpyxl for Excel processing
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,6 +19,8 @@ class DocumentProcessor:
         self.supported_types = [
             'application/pdf',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'text/plain'
         ]
     
@@ -40,6 +44,10 @@ class DocumentProcessor:
                 return self._process_pdf(file_path)
             elif file_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
                 return self._process_docx(file_path)
+            elif file_type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+                return self._process_pptx(file_path)
+            elif file_type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                return self._process_xlsx(file_path)
             elif file_type == 'text/plain':
                 return self._process_txt(file_path)
             else:
@@ -122,6 +130,69 @@ class DocumentProcessor:
             
         except Exception as e:
             raise Exception(f"Failed to process TXT: {str(e)}")
+    
+    def _process_pptx(self, file_path):
+        """Extract text from PowerPoint file using python-pptx"""
+        try:
+            prs = Presentation(file_path)
+            text_content = ""
+            slide_count = 0
+            
+            for slide in prs.slides:
+                slide_count += 1
+                # Extract text from shapes (only those with text frames)
+                for shape in slide.shapes:
+                    if hasattr(shape, "has_text_frame") and shape.has_text_frame:
+                        if shape.text and shape.text.strip():
+                            text_content += shape.text + "\n"
+                
+                # Extract notes if available
+                if slide.has_notes_slide and slide.notes_slide.notes_text_frame:
+                    notes_text = slide.notes_slide.notes_text_frame.text
+                    if notes_text and notes_text.strip():
+                        text_content += f"[Notes: {notes_text}]\n"
+                
+                # Add slide separator
+                text_content += "\n"
+            
+            return {
+                'text': text_content.strip(),
+                'slide_count': slide_count,
+                'word_count': len(text_content.split()),
+                'file_type': 'PowerPoint'
+            }
+            
+        except Exception as e:
+            raise Exception(f"Failed to process PowerPoint: {str(e)}")
+    
+    def _process_xlsx(self, file_path):
+        """Extract text from Excel file using openpyxl"""
+        try:
+            workbook = load_workbook(file_path, data_only=True)
+            text_content = ""
+            sheet_count = len(workbook.sheetnames)
+            
+            for sheet_name in workbook.sheetnames:
+                sheet = workbook[sheet_name]
+                text_content += f"--- Sheet: {sheet_name} ---\n"
+                
+                for row in sheet.iter_rows(values_only=True):
+                    row_data = [str(cell) if cell is not None else '' for cell in row]
+                    row_text = ' | '.join(row_data)
+                    if row_text.strip():
+                        text_content += row_text + "\n"
+                
+                text_content += "\n"
+            
+            return {
+                'text': text_content.strip(),
+                'sheet_count': sheet_count,
+                'word_count': len(text_content.split()),
+                'file_type': 'Excel'
+            }
+            
+        except Exception as e:
+            raise Exception(f"Failed to process Excel: {str(e)}")
     
     def process_multiple_files(self, files_data):
         """
