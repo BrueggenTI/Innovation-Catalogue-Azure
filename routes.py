@@ -669,12 +669,11 @@ def product_detail(id):
     if request.method == 'POST':
         # Handle exclusive recipe form submission
         product.is_exclusive = 'is_exclusive' in request.form
-        if product.is_exclusive:
-            exclusive_type = request.form.get('exclusive_type', 'Market')
-            exclusive_name = request.form.get('exclusive_name', '')
-            product.target_market = f"{exclusive_type}:{exclusive_name}" if exclusive_name else ''
-        else:
-            product.target_market = ''
+        
+        # Update all exclusive information fields
+        product.department = request.form.get('department', '').strip() or None
+        product.customer = request.form.get('customer', '').strip() or None
+        product.market = request.form.get('market', '').strip() or None
         
         try:
             db.session.commit()

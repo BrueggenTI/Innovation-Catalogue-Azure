@@ -57,38 +57,42 @@
                                     <div class="collapse{% if product.is_exclusive %} show{% endif %}" id="exclusiveFieldsContainer" role="region" aria-labelledby="isExclusive">
                                         <div class="exclusive-fields-content">
                                             <div class="mb-3">
-                                                <label class="form-label small fw-medium text-muted mb-2">Target Type</label>
-                                                {% set target_parts = (product.target_market or '').split(':') %}
-                                                {% set current_type = target_parts[0] if target_parts|length > 1 else 'Market' %}
-                                                <div class="btn-group w-100" role="group" aria-label="Exclusive recipe target type">
-                                                    <input type="radio" class="btn-check" name="exclusive_type" id="typeMarket" value="Market" 
-                                                           {% if current_type == 'Market' %}checked{% endif %} onchange="debouncedAutoSave()">
-                                                    <label class="btn btn-outline-primary" for="typeMarket">
-                                                        <i class="fas fa-globe-americas me-1"></i>Market
-                                                    </label>
-                                                    
-                                                    <input type="radio" class="btn-check" name="exclusive_type" id="typeCustomer" value="Customer" 
-                                                           {% if current_type == 'Customer' %}checked{% endif %} onchange="debouncedAutoSave()">
-                                                    <label class="btn btn-outline-primary" for="typeCustomer">
-                                                        <i class="fas fa-user-tie me-1"></i>Customer
-                                                    </label>
-                                                </div>
+                                                <label for="departmentField" class="form-label small fw-medium text-muted mb-2">
+                                                    <i class="fas fa-building me-1"></i>Department
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="departmentField" 
+                                                       name="department"
+                                                       value="{{ product.department or '' }}"
+                                                       placeholder="e.g., Production, R&D, Quality"
+                                                       oninput="debouncedAutoSave()">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="customerField" class="form-label small fw-medium text-muted mb-2">
+                                                    <i class="fas fa-user-tie me-1"></i>Customer
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="customerField" 
+                                                       name="customer"
+                                                       value="{{ product.customer or '' }}"
+                                                       placeholder="Customer name or company"
+                                                       oninput="debouncedAutoSave()">
                                             </div>
                                             
                                             <div class="mb-2">
-                                                <label for="exclusiveName" class="form-label small fw-medium text-muted mb-2">Name</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text bg-light border-end-0">
-                                                        <i class="fas fa-tag text-muted"></i>
-                                                    </span>
-                                                    <input type="text" 
-                                                           class="form-control border-start-0 ps-0" 
-                                                           id="exclusiveName" 
-                                                           name="exclusive_name"
-                                                           value="{{ target_parts[1] if target_parts|length > 1 else (product.target_market or '') }}"
-                                                           placeholder="Enter market or customer name"
-                                                           oninput="debouncedAutoSave()">
-                                                </div>
+                                                <label for="marketField" class="form-label small fw-medium text-muted mb-2">
+                                                    <i class="fas fa-globe-americas me-1"></i>Market
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="marketField" 
+                                                       name="market"
+                                                       value="{{ product.market or '' }}"
+                                                       placeholder="e.g., Region:Country:Retailer"
+                                                       oninput="debouncedAutoSave()">
                                                 <div class="form-text">
                                                     <i class="fas fa-info-circle me-1"></i>
                                                     This information is visible internally only
@@ -110,19 +114,32 @@
                             
                             <!-- View Mode Display -->
                             <div id="exclusiveViewMode">
-                                {% if product.is_exclusive and product.customer %}
+                                {% if product.is_exclusive and (product.department or product.customer or product.market) %}
                                     <div class="exclusive-display-content">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="exclusive-info">
-                                                <div class="exclusive-details d-flex align-items-center flex-wrap">
-                                                    <span class="text-muted small me-2">Exclusive for</span>
-                                                    <span class="badge badge-outline-primary me-2">
-                                                        <i class="fas fa-user-tie me-1"></i>Customer
-                                                    </span>
-                                                    <span class="exclusive-target-name">{{ product.customer }}</span>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="exclusive-info flex-grow-1">
+                                                <div class="exclusive-details">
+                                                    {% if product.department %}
+                                                    <div class="mb-2">
+                                                        <span class="text-muted small me-2"><i class="fas fa-building me-1"></i>Department:</span>
+                                                        <span class="fw-medium">{{ product.department }}</span>
+                                                    </div>
+                                                    {% endif %}
+                                                    {% if product.customer %}
+                                                    <div class="mb-2">
+                                                        <span class="text-muted small me-2"><i class="fas fa-user-tie me-1"></i>Customer:</span>
+                                                        <span class="fw-medium">{{ product.customer }}</span>
+                                                    </div>
+                                                    {% endif %}
+                                                    {% if product.market %}
+                                                    <div class="mb-2">
+                                                        <span class="text-muted small me-2"><i class="fas fa-globe-americas me-1"></i>Market:</span>
+                                                        <span class="fw-medium">{{ product.market }}</span>
+                                                    </div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
-                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="enterEditMode()">
+                                            <button type="button" class="btn btn-outline-primary btn-sm align-self-start" onclick="enterEditMode()">
                                                 <i class="fas fa-edit me-1"></i>Edit
                                             </button>
                                         </div>
