@@ -1829,7 +1829,7 @@ def analyze_recipe():
             "market": "SEARCH FOR 'Market', 'Markt', 'Region', 'Target Market', or 'Zielmarkt' information. Extract ONLY if it refers to a geographical market or region (e.g., 'Deutschland', 'Europe', 'Asia'). Return null if no market information found or if it refers to a specific customer",
             "ingredients": [
                 "SCAN ENTIRE DOCUMENT for ingredient lists, Zutatenliste, compositions. Include ALL ingredients found:",
-                {{"name": "TRANSLATE ingredient name to English (e.g., Haferflocken → Oat flakes)", "percentage": "EXTRACT exact percentage if given, otherwise 0"}}
+                {{"name": "TRANSLATE ingredient name to English (e.g., Haferflocken → Oat flakes)", "percentage": "EXTRACT exact percentage if given, otherwise 0", "recipe_number": "SEARCH FOR recipe number (Ref.: or number pattern like 000001234567) associated with THIS specific ingredient. Look in tables, component lists, or ingredient sections. Extract ONLY the number. If not found: null"}}
             ],
             "base_recipe": {{
                 "has_base": "CHECK IF ANY SINGLE INGREDIENT has a percentage GREATER THAN 80%. If yes: true, if no: false",
