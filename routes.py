@@ -2150,6 +2150,54 @@ def publish_recipe():
 
         # Store ingredients as JSON
         ingredients = data.get('ingredients', [])
+        
+        # BASE RECIPE LOGIC: Check if this is a mix recipe with a base recipe
+        base_recipe_data = data.get('base_recipe', {})
+        has_base = base_recipe_data.get('has_base', False)
+        base_recipe_number = base_recipe_data.get('base_recipe_number')
+        base_ingredient_name = base_recipe_data.get('base_ingredient_name')
+        
+        if has_base and base_recipe_number:
+            logging.info(f"Mix recipe detected with base recipe number: {base_recipe_number}")
+            
+            # Search for base recipe in database by recipe_number
+            base_product = Product.query.filter_by(recipe_number=base_recipe_number).first()
+            
+            if base_product:
+                logging.info(f"Found base recipe: {base_product.name} (ID: {base_product.id})")
+                
+                # Parse base recipe ingredients
+                try:
+                    base_ingredients = json.loads(base_product.ingredients) if base_product.ingredients else []
+                    
+                    # Mark mix ingredients with type "mix"
+                    for ingredient in ingredients:
+                        if isinstance(ingredient, dict):
+                            ingredient['type'] = 'mix'
+                    
+                    # Add base ingredients with type "base" and base_recipe_name
+                    for base_ing in base_ingredients:
+                        if isinstance(base_ing, dict):
+                            base_ing_copy = base_ing.copy()
+                            base_ing_copy['type'] = 'base'
+                            base_ing_copy['base_recipe_name'] = base_product.name
+                            base_ing_copy['base_recipe_number'] = base_recipe_number
+                            ingredients.append(base_ing_copy)
+                    
+                    logging.info(f"Combined {len(ingredients)} total ingredients (mix + base)")
+                    
+                except json.JSONDecodeError as e:
+                    logging.error(f"Failed to parse base recipe ingredients: {e}")
+            else:
+                logging.warning(f"Base recipe with number {base_recipe_number} not found in database")
+                # Mark all ingredients as mix anyway
+                for ingredient in ingredients:
+                    if isinstance(ingredient, dict):
+                        ingredient['type'] = 'mix'
+        else:
+            # Regular recipe without base - mark all as mix (or leave unmarked for backward compatibility)
+            logging.info("Regular recipe without base recipe")
+        
         new_product.ingredients = json.dumps(ingredients)
 
         # Store nutritional info as JSON  
