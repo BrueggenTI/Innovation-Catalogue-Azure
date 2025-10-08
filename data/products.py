@@ -5,9 +5,7 @@ import json
 def init_products():
     """Initialize products with sample data"""
 
-    # Clear existing products first
-    Product.query.delete()
-
+    # Only add sample products if they don't exist - do NOT delete existing products
     products_data = [
         {
             "name": "Traditional Swiss Muesli",
