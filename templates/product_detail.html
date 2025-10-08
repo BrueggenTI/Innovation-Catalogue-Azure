@@ -30,7 +30,7 @@
                             <!-- View Mode -->
                             <div id="exclusiveInfoView">
                                 <div class="row g-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-12">
                                         <label class="form-label small fw-medium text-muted mb-1">Exclusive Status</label>
                                         <div class="text-dark">
                                             {% if product.is_exclusive %}
@@ -40,18 +40,23 @@
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label small fw-medium text-muted mb-1">Department</label>
-                                        <div class="text-dark">{{ product.department or '—' }}</div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label small fw-medium text-muted mb-1">Customer</label>
-                                        <div class="text-dark">{{ product.customer or '—' }}</div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label small fw-medium text-muted mb-1">Market</label>
-                                        <div class="text-dark">{{ product.market or '—' }}</div>
-                                    </div>
+                                    {% if product.is_exclusive %}
+                                        {% if product.customer %}
+                                            <div class="col-md-12">
+                                                <label class="form-label small fw-medium text-muted mb-1">Exclusive for Customer</label>
+                                                <div class="text-dark fw-medium">{{ product.customer }}</div>
+                                            </div>
+                                        {% elif product.market %}
+                                            <div class="col-md-12">
+                                                <label class="form-label small fw-medium text-muted mb-1">Exclusive for Market</label>
+                                                <div class="text-dark fw-medium">{{ product.market }}</div>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-md-12">
+                                                <div class="text-muted">—</div>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
                                 </div>
                             </div>
                             
@@ -59,27 +64,49 @@
                             <div id="exclusiveInfoEdit" style="display: none;">
                                 <form id="exclusiveInfoForm">
                                     <div class="row g-3">
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <label for="exclusiveStatus" class="form-label small fw-medium text-muted mb-2">Exclusive Status</label>
-                                            <select class="form-select" id="exclusiveStatus" name="is_exclusive">
+                                            <select class="form-select" id="exclusiveStatus" name="is_exclusive" onchange="toggleExclusiveFields()">
                                                 <option value="true" {% if product.is_exclusive %}selected{% endif %}>Ja</option>
                                                 <option value="false" {% if not product.is_exclusive %}selected{% endif %}>Nein</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label for="department" class="form-label small fw-medium text-muted mb-2">Department</label>
-                                            <input type="text" class="form-control" id="department" name="department" 
-                                                   value="{{ product.department or '' }}" placeholder="z.B. Production, R&D">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="customer" class="form-label small fw-medium text-muted mb-2">Customer</label>
-                                            <input type="text" class="form-control" id="customer" name="customer" 
-                                                   value="{{ product.customer or '' }}" placeholder="z.B. REWE, EDEKA">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="market" class="form-label small fw-medium text-muted mb-2">Market</label>
-                                            <input type="text" class="form-control" id="market" name="market" 
-                                                   value="{{ product.market or '' }}" placeholder="z.B. Deutschland, Europe">
+                                        
+                                        <!-- Exclusive Type Selection (only shown when exclusive is enabled) -->
+                                        <div id="exclusiveTypeContainer" class="col-md-12" style="display: {% if product.is_exclusive %}block{% else %}none{% endif %};">
+                                            <label class="form-label small fw-medium text-muted mb-2">Exclusive Type</label>
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="exclusive_type" id="exclusiveTypeMarket" 
+                                                           value="market" onchange="updateExclusiveInputField()" 
+                                                           {% if product.market and not product.customer %}checked{% endif %}>
+                                                    <label class="form-check-label" for="exclusiveTypeMarket">
+                                                        Exclusive for Market
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="exclusive_type" id="exclusiveTypeCustomer" 
+                                                           value="customer" onchange="updateExclusiveInputField()"
+                                                           {% if product.customer %}checked{% elif not product.market %}checked{% endif %}>
+                                                    <label class="form-check-label" for="exclusiveTypeCustomer">
+                                                        Exclusive for Customer
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Market Input (conditionally shown) -->
+                                            <div id="marketInputContainer" style="display: {% if product.market and not product.customer %}block{% else %}none{% endif %};">
+                                                <label for="market" class="form-label small fw-medium text-muted mb-2">Market Name</label>
+                                                <input type="text" class="form-control" id="market" name="market" 
+                                                       value="{{ product.market or '' }}" placeholder="z.B. Deutschland, Europe">
+                                            </div>
+                                            
+                                            <!-- Customer Input (conditionally shown) -->
+                                            <div id="customerInputContainer" style="display: {% if product.customer or (not product.market and not product.customer) %}block{% else %}none{% endif %};">
+                                                <label for="customer" class="form-label small fw-medium text-muted mb-2">Customer Name</label>
+                                                <input type="text" class="form-control" id="customer" name="customer" 
+                                                       value="{{ product.customer or '' }}" placeholder="z.B. REWE, EDEKA">
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="d-flex gap-2 mt-3">
@@ -126,18 +153,9 @@
                     
                     <!-- Recipe Number Centered Under Product Name -->
                     {% if product.recipe_number %}
-                    <div class="recipe-number-display text-center mb-2">
+                    <div class="recipe-number-display text-center mb-4">
                         <span class="fs-4 fw-bold" style="color: #ff4143;">{{ product.recipe_number }}</span>
                     </div>
-                    {% endif %}
-                    
-                    <!-- Department Under Recipe Number -->
-                    {% if product.department %}
-                    <div class="department-display text-center mb-4">
-                        <span class="text-muted"><strong>Department:</strong> {{ product.department }}</span>
-                    </div>
-                    {% elif product.recipe_number %}
-                    <div class="mb-4"></div>
                     {% endif %}
                     
                     <p class="lead text-muted mb-4">{{ product.description }}</p>
@@ -582,17 +600,53 @@ function cancelExclusiveEdit() {
     location.reload();
 }
 
+function toggleExclusiveFields() {
+    const exclusiveStatus = document.getElementById('exclusiveStatus').value;
+    const typeContainer = document.getElementById('exclusiveTypeContainer');
+    
+    if (exclusiveStatus === 'true') {
+        typeContainer.style.display = 'block';
+    } else {
+        typeContainer.style.display = 'none';
+    }
+}
+
+function updateExclusiveInputField() {
+    const exclusiveType = document.querySelector('input[name="exclusive_type"]:checked')?.value;
+    const marketContainer = document.getElementById('marketInputContainer');
+    const customerContainer = document.getElementById('customerInputContainer');
+    
+    if (exclusiveType === 'market') {
+        marketContainer.style.display = 'block';
+        customerContainer.style.display = 'none';
+        // Clear customer field when market is selected
+        document.getElementById('customer').value = '';
+    } else if (exclusiveType === 'customer') {
+        marketContainer.style.display = 'none';
+        customerContainer.style.display = 'block';
+        // Clear market field when customer is selected
+        document.getElementById('market').value = '';
+    }
+}
+
 function saveExclusiveInfo() {
     const form = document.getElementById('exclusiveInfoForm');
     const formData = new FormData(form);
+    const exclusiveType = document.querySelector('input[name="exclusive_type"]:checked')?.value;
     
-    // Convert to JSON
+    // Mutual exclusivity: only send the selected field
     const data = {
         is_exclusive: formData.get('is_exclusive') === 'true',
-        department: formData.get('department') || null,
-        customer: formData.get('customer') || null,
-        market: formData.get('market') || null
+        customer: null,
+        market: null
     };
+    
+    // Only include the selected exclusive type value
+    if (data.is_exclusive && exclusiveType === 'customer') {
+        data.customer = formData.get('customer') || null;
+    } else if (data.is_exclusive && exclusiveType === 'market') {
+        data.market = formData.get('market') || null;
+    }
     
     // Show loading state
     const saveButton = event.target;
