@@ -72,7 +72,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted mb-4">Upload documents and let AI analyze them to create professional trend reports</p>
+                <p class="text-muted mb-4">Upload documents (PDF, Word, PowerPoint, Excel, TXT) and let AI analyze them to create professional trend reports</p>
 
                 <!-- Upload Area -->
                 <div class="upload-area" id="uploadArea">
@@ -85,11 +85,13 @@
                         <div class="upload-formats mb-3">
                             <span class="badge bg-primary me-2">PDF</span>
                             <span class="badge bg-primary me-2">DOCX</span>
-                            <span class="badge bg-primary">TXT</span>
+                            <span class="badge bg-primary me-2">TXT</span>
+                            <span class="badge bg-primary me-2">PPTX</span>
+                            <span class="badge bg-primary">XLSX</span>
                         </div>
                         <small class="text-muted">Max file size: 10MB</small>
                     </div>
-                    <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt" style="display: none;">
+                    <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.pptx,.xlsx" style="display: none;">
                 </div>
 
                 <!-- File List -->
