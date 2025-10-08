@@ -2157,6 +2157,13 @@ def publish_recipe():
         base_recipe_number = base_recipe_data.get('base_recipe_number')
         base_ingredient_name = base_recipe_data.get('base_ingredient_name')
         
+        # Debug logging
+        logging.info(f"BASE RECIPE DEBUG - has_base: {has_base} (type: {type(has_base)}), base_recipe_number: {base_recipe_number}")
+        
+        # Convert has_base to boolean if it's a string
+        if isinstance(has_base, str):
+            has_base = has_base.lower() in ('true', '1', 'yes')
+        
         if has_base and base_recipe_number:
             logging.info(f"Mix recipe detected with base recipe number: {base_recipe_number}")
             
