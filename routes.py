@@ -2124,7 +2124,7 @@ def publish_recipe():
             new_product.image_url = image_url
             logging.info(f"Using extracted/uploaded product image: {image_url}")
         else:
-            new_product.image_url = 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            new_product.image_url = '/static/images/product-placeholder.png'
             logging.info("Using fallback product image")
 
         # Set nutri-score image if uploaded
