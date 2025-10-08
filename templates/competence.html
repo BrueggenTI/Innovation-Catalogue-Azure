@@ -193,11 +193,15 @@
                                     
                                     <!-- Exclusive Badge (wraps to next line if needed) -->
                                     {% if product.is_exclusive %}
+                                        {# Single Source of Truth: target_market (Info Paper/DB) - format: "Type:Name" #}
+                                        {% set target_parts = (product.target_market or '').split(':') %}
+                                        {% set target_type = target_parts[0] if target_parts|length > 1 else 'Market' %}
+                                        {% set target_name = target_parts[1] if target_parts|length > 1 else (product.target_market or '') %}
                                         <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
                                              data-bs-toggle="tooltip" 
                                              data-bs-placement="top" 
                                              data-bs-html="true"
-                                             title="{% if product.customer %}Exclusive for <strong>{{ product.customer }}</strong>{% else %}Exclusive Product{% endif %}">
+                                             title="{% if target_name %}Exclusive for <strong>{{ target_type }}: {{ target_name }}</strong>{% else %}Exclusive Product{% endif %}">
                                             Exclusive
                                         </div>
                                     {% endif %}

@@ -668,6 +668,7 @@ def product_detail(id):
     
     if request.method == 'POST':
         # Handle exclusive recipe form submission
+        # Single Source of Truth: target_market (Info Paper/DB) - format: "Type:Name"
         product.is_exclusive = 'is_exclusive' in request.form
         if product.is_exclusive:
             exclusive_type = request.form.get('exclusive_type', 'Market')

@@ -56,10 +56,13 @@
                                     <!-- Collapsible Fields -->
                                     <div class="collapse{% if product.is_exclusive %} show{% endif %}" id="exclusiveFieldsContainer" role="region" aria-labelledby="isExclusive">
                                         <div class="exclusive-fields-content">
+                                            {# Single Source of Truth: target_market (Info Paper/DB) - format: "Type:Name" #}
+                                            {% set target_parts = (product.target_market or '').split(':') %}
+                                            {% set current_type = target_parts[0] if target_parts|length > 1 else 'Market' %}
+                                            {% set exclusive_value = target_parts[1] if target_parts|length > 1 else (product.target_market or '') %}
+                                            
                                             <div class="mb-3">
                                                 <label class="form-label small fw-medium text-muted mb-2">Target Type</label>
-                                                {% set target_parts = (product.target_market or '').split(':') %}
-                                                {% set current_type = target_parts[0] if target_parts|length > 1 else 'Market' %}
                                                 <div class="btn-group w-100" role="group" aria-label="Exclusive recipe target type">
                                                     <input type="radio" class="btn-check" name="exclusive_type" id="typeMarket" value="Market" 
                                                            {% if current_type == 'Market' %}checked{% endif %} onchange="debouncedAutoSave()">
@@ -85,7 +88,7 @@
                                                            class="form-control border-start-0 ps-0" 
                                                            id="exclusiveName" 
                                                            name="exclusive_name"
-                                                           value="{{ target_parts[1] if target_parts|length > 1 else (product.target_market or '') }}"
+                                                           value="{{ exclusive_value }}"
                                                            placeholder="Enter market or customer name"
                                                            oninput="debouncedAutoSave()">
                                                 </div>
@@ -110,16 +113,25 @@
                             
                             <!-- View Mode Display -->
                             <div id="exclusiveViewMode">
-                                {% if product.is_exclusive and product.customer %}
+                                {% if product.is_exclusive and product.target_market %}
+                                    {# Single Source of Truth: target_market (Info Paper/DB) - format: "Type:Name" #}
+                                    {% set target_parts = product.target_market.split(':') %}
+                                    {% set target_type = target_parts[0] if target_parts|length > 1 else 'Market' %}
+                                    {% set target_name = target_parts[1] if target_parts|length > 1 else product.target_market %}
+                                    
                                     <div class="exclusive-display-content">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div class="exclusive-info">
                                                 <div class="exclusive-details d-flex align-items-center flex-wrap">
                                                     <span class="text-muted small me-2">Exclusive for</span>
                                                     <span class="badge badge-outline-primary me-2">
-                                                        <i class="fas fa-user-tie me-1"></i>Customer
+                                                        {% if target_type == 'Market' %}
+                                                            <i class="fas fa-globe-americas me-1"></i>{{ target_type }}
+                                                        {% else %}
+                                                            <i class="fas fa-user-tie me-1"></i>{{ target_type }}
+                                                        {% endif %}
                                                     </span>
-                                                    <span class="exclusive-target-name">{{ product.customer }}</span>
+                                                    <span class="exclusive-target-name">{{ target_name }}</span>
                                                 </div>
                                             </div>
                                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="enterEditMode()">
