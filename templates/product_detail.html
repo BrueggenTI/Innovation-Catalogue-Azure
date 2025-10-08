@@ -153,9 +153,18 @@
                     
                     <!-- Recipe Number Centered Under Product Name -->
                     {% if product.recipe_number %}
-                    <div class="recipe-number-display text-center mb-4">
+                    <div class="recipe-number-display text-center mb-2">
                         <span class="fs-4 fw-bold" style="color: #ff4143;">{{ product.recipe_number }}</span>
                     </div>
+                    {% endif %}
+                    
+                    <!-- Department Under Recipe Number -->
+                    {% if product.department %}
+                    <div class="department-display text-center mb-4">
+                        <span class="text-muted"><strong>Department:</strong> {{ product.department }}</span>
+                    </div>
+                    {% elif product.recipe_number %}
+                    <div class="mb-4"></div>
                     {% endif %}
                     
                     <p class="lead text-muted mb-4">{{ product.description }}</p>
