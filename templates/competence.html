@@ -193,23 +193,17 @@
                                     
                                     <!-- Exclusive Badge (wraps to next line if needed) -->
                                     {% if product.is_exclusive %}
-                                        {% set tooltip_parts = [] %}
+                                        {% set tooltip_text = 'Exclusive Product' %}
                                         {% if product.customer %}
-                                            {% set _ = tooltip_parts.append('Customer: <strong>' + (product.customer|e) + '</strong>') %}
-                                        {% endif %}
-                                        {% if product.market %}
-                                            {% set parts = product.market.split(':') %}
-                                            {% if parts|length > 1 %}
-                                                {% set _ = tooltip_parts.append((parts[0]|e) + ': <strong>' + (':'.join(parts[1:])|trim|e) + '</strong>') %}
-                                            {% else %}
-                                                {% set _ = tooltip_parts.append('<strong>' + (product.market|trim|e) + '</strong>') %}
-                                            {% endif %}
+                                            {% set tooltip_text = 'Exclusive for customer: <strong>' + (product.customer|e) + '</strong>' %}
+                                        {% elif product.market %}
+                                            {% set tooltip_text = 'Exclusive for market: <strong>' + (product.market|e) + '</strong>' %}
                                         {% endif %}
                                         <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
                                              data-bs-toggle="tooltip" 
                                              data-bs-placement="top" 
                                              data-bs-html="true"
-                                             title="{% if tooltip_parts %}Exclusive for {{ tooltip_parts|join('<br>')|safe }}{% else %}Exclusive Product{% endif %}">
+                                             title="{{ tooltip_text|safe }}">
                                             Exclusive
                                         </div>
                                     {% endif %}
