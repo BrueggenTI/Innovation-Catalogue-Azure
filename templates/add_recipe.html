@@ -148,21 +148,21 @@
                 <div class="card-body p-4">
                     <form id="recipeUploadForm" enctype="multipart/form-data">
                         <div class="mb-4">
-                            <label for="recipeFile" class="form-label fw-bold">Recipe Document</label>
+                            <label for="recipeFile" class="form-label fw-bold">Recipe Documents</label>
                             <div class="upload-area border border-2 border-dashed rounded-3 p-4 text-center" 
                                  ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">
                                 <input type="file" class="form-control d-none" id="recipeFile" name="recipe_file" 
-                                       accept=".pdf,.doc,.docx,.txt,.ppt,.pptx" required>
+                                       accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xlsx" multiple required>
                                 <div class="upload-content">
                                     <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                                    <h5>Drag & drop your recipe document here</h5>
+                                    <h5>Drag & drop your recipe documents here</h5>
                                     <p class="text-muted">or <a href="#" onclick="document.getElementById('recipeFile').click()">browse files</a></p>
-                                    <small class="text-muted">Supported formats: PDF, DOC, DOCX, TXT, PPT, PPTX</small>
+                                    <small class="text-muted">Supported formats: PDF, DOC, DOCX, TXT, PPT, PPTX, XLSX<br>Multiple files supported</small>
                                 </div>
-                                <div class="selected-file d-none">
+                                <div class="selected-files d-none">
                                     <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
-                                    <p class="filename fw-bold mb-1"></p>
-                                    <p class="filesize text-muted mb-0"></p>
+                                    <p class="files-info fw-bold mb-1"></p>
+                                    <div class="files-list small text-muted"></div>
                                 </div>
                             </div>
                         </div>
@@ -304,22 +304,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadForm = document.getElementById('recipeUploadForm');
     const analysisProgress = document.getElementById('analysisProgress');
 
-    function handleFileSelect(file) {
-        if (file) {
+    function handleFileSelect(files) {
+        if (files && files.length > 0) {
             const uploadContent = uploadArea.querySelector('.upload-content');
-            const selectedFile = uploadArea.querySelector('.selected-file');
+            const selectedFiles = uploadArea.querySelector('.selected-files');
 
             uploadContent.classList.add('d-none');
-            selectedFile.classList.remove('d-none');
+            selectedFiles.classList.remove('d-none');
 
-            selectedFile.querySelector('.filename').textContent = file.name;
-            selectedFile.querySelector('.filesize').textContent = formatFileSize(file.size);
+            // Update files info
+            const filesInfo = selectedFiles.querySelector('.files-info');
+            const filesList = selectedFiles.querySelector('.files-list');
+            
+            filesInfo.textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
+            
+            // Build files list
+            let listHTML = '';
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                listHTML += `<div class="mb-1"><i class="fas fa-file me-1"></i>${file.name} (${formatFileSize(file.size)})</div>`;
+            }
+            filesList.innerHTML = listHTML;
         }
     }
 
     // File input change handler
     fileInput.addEventListener('change', function(e) {
-        handleFileSelect(e.target.files[0]);
+        handleFileSelect(e.target.files);
     });
 
     // Form submission handler
@@ -338,9 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     function analyzeRecipe() {
-        const file = fileInput.files[0];
-        if (!file) {
-            alert('Please select a file first.');
+        const files = fileInput.files;
+        if (!files || files.length === 0) {
+            alert('Please select at least one file first.');
             return;
         }
 
@@ -353,9 +364,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Simulate AI analysis progress
         simulateAnalysis();
 
-        // Create FormData and submit
+        // Create FormData and submit all files
         const formData = new FormData();
-        formData.append('recipe_file', file);
+        for (let i = 0; i < files.length; i++) {
+            formData.append('recipe_file', files[i]);
+        }
 
         fetch('/api/analyze-recipe', {
             method: 'POST',
@@ -1762,7 +1775,7 @@ function dropHandler(ev) {
     const files = ev.dataTransfer.files;
     if (files.length > 0) {
         document.getElementById('recipeFile').files = files;
-        handleFileSelect(files[0]);
+        handleFileSelect(files);
     }
 }
 </script>
