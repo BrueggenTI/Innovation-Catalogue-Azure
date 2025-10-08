@@ -452,7 +452,119 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Store recipe data globally for later use
             window.currentRecipeData = recipeData;
+            
+            // Check if this is a Mix recipe with base recipe and load base ingredients
+            if (recipeData.base_recipe && recipeData.base_recipe.has_base && recipeData.base_recipe.base_recipe_number) {
+                loadBaseRecipeIngredients(recipeData.base_recipe.base_recipe_number, recipeData);
+            }
         }, 100);
+    }
+    
+    function loadBaseRecipeIngredients(baseRecipeNumber, currentRecipeData) {
+        console.log('Loading base recipe ingredients for recipe number:', baseRecipeNumber);
+        
+        // IDEMPOTENCE: Check if base ingredients already loaded
+        const alreadyLoaded = currentRecipeData.ingredients.some(ing => ing.type === 'base');
+        if (alreadyLoaded) {
+            console.log('Base ingredients already loaded, skipping...');
+            return;
+        }
+        
+        // Show loading indicator
+        const ingredientsTable = document.querySelector('#ingredientsList');
+        if (ingredientsTable) {
+            const loadingRow = document.createElement('tr');
+            loadingRow.id = 'base-ingredients-loading';
+            loadingRow.innerHTML = '<td colspan="2" class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>Loading base recipe ingredients...</td>';
+            ingredientsTable.appendChild(loadingRow);
+        }
+        
+        // Fetch base recipe from database
+        fetch(`/api/recipe-number/${baseRecipeNumber}/product`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.product) {
+                    const baseProduct = data.product;
+                    console.log('Base recipe found:', baseProduct.name);
+                    
+                    // Parse base ingredients
+                    let baseIngredients = [];
+                    try {
+                        baseIngredients = JSON.parse(baseProduct.ingredients || '[]');
+                    } catch (e) {
+                        console.error('Failed to parse base ingredients:', e);
+                        baseIngredients = [];
+                    }
+                    
+                    console.log('Base ingredients:', baseIngredients);
+                    
+                    // Find the base ingredient percentage in mix (should be >80%)
+                    let basePercentageInMix = 0;
+                    for (const ing of currentRecipeData.ingredients) {
+                        if (ing.percentage > 80) {
+                            basePercentageInMix = ing.percentage / 100; // Convert to decimal
+                            console.log(`Base ingredient percentage in mix: ${ing.percentage}% (${basePercentageInMix})`);
+                            break;
+                        }
+                    }
+                    
+                    if (basePercentageInMix === 0) {
+                        console.warn('Could not find base ingredient percentage, defaulting to 1.0');
+                        basePercentageInMix = 1.0;
+                    }
+                    
+                    // Add base ingredients to current recipe data
+                    if (baseIngredients.length > 0) {
+                        // Mark current ingredients as "mix"
+                        currentRecipeData.ingredients.forEach(ing => {
+                            ing.type = 'mix';
+                        });
+                        
+                        // Add base ingredients with type "base" and SCALED percentages
+                        baseIngredients.forEach(baseIng => {
+                            // CRITICAL FIX: Scale base ingredient percentages by base percentage in mix
+                            const scaledPercentage = (baseIng.percentage || 0) * basePercentageInMix;
+                            
+                            currentRecipeData.ingredients.push({
+                                name: baseIng.name,
+                                percentage: parseFloat(scaledPercentage.toFixed(2)), // Round to 2 decimals
+                                type: 'base',
+                                base_recipe_name: baseProduct.name,
+                                base_recipe_number: baseRecipeNumber
+                            });
+                        });
+                        
+                        // Update the global recipe data
+                        window.currentRecipeData = currentRecipeData;
+                        
+                        // Regenerate the preview HTML with updated ingredients
+                        const previewContent = document.getElementById('recipePreviewContent');
+                        previewContent.innerHTML = generatePreviewHTML(currentRecipeData);
+                        
+                        // Reattach event listeners
+                        attachDragAndDropEventListeners();
+                        
+                        console.log('Base ingredients added successfully with scaled percentages');
+                    }
+                } else {
+                    console.warn('Base recipe not found in database');
+                }
+                
+                // Remove loading indicator
+                const loadingRow = document.getElementById('base-ingredients-loading');
+                if (loadingRow) {
+                    loadingRow.remove();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading base recipe:', error);
+                
+                // Remove loading indicator
+                const loadingRow = document.getElementById('base-ingredients-loading');
+                if (loadingRow) {
+                    loadingRow.remove();
+                }
+            });
     }
 
     function generatePreviewHTML(data) {
