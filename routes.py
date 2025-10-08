@@ -1773,6 +1773,9 @@ def analyze_recipe():
             "name": "FIND AND EXTRACT the product name/title from document headers, titles, or descriptions. Translate to English. If not found: 'Unknown Product'",
             "category": "ANALYZE product type and select from: Flakes, Multigrain & Branflakes, Puffed Cereals, Extrudates & Co-Extrudates, Traditional Muesli, Crunchy Muesli, Bio & Fair-Trade Muesli, Oat Flakes, Wheat, Rye & Barley Flakes, Bars",
             "description": "EXTRACT product description, benefits, or marketing text from document. Translate to English. If none found: 'No description available'",
+            "exclusive": "SEARCH FOR 'Exclusive' field or similar exclusive product markers. Return exactly 'ja' if found and marked as exclusive, 'nein' if explicitly marked as non-exclusive, null if no information found",
+            "department": "SEARCH FOR 'Department' or 'Abteilung' information. Extract department name if found (e.g., 'Production', 'R&D', 'Quality Control'). Return null if no information found",
+            "customer": "SEARCH FOR 'Customer' or 'Kunde' information. Extract customer name or company if found. Return null if no information found",
             "ingredients": [
                 "SCAN ENTIRE DOCUMENT for ingredient lists, Zutatenliste, compositions. Include ALL ingredients found:",
                 {{"name": "TRANSLATE ingredient name to English (e.g., Haferflocken → Oat flakes)", "percentage": "EXTRACT exact percentage if given, otherwise 0"}}
