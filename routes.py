@@ -1832,9 +1832,9 @@ def analyze_recipe():
                 {{"name": "TRANSLATE ingredient name to English (e.g., Haferflocken → Oat flakes)", "percentage": "EXTRACT exact percentage if given, otherwise 0", "recipe_number": "SEARCH FOR recipe number (Ref.: or number pattern like 000001234567) associated with THIS specific ingredient. Look in tables, component lists, or ingredient sections. Extract ONLY the number. If not found: null"}}
             ],
             "base_recipe": {{
-                "has_base": "CHECK IF ANY SINGLE INGREDIENT has a percentage GREATER THAN 80%. If yes: true, if no: false",
-                "base_ingredient_name": "IF has_base is true: Extract the NAME of the ingredient that is >80% (translate to English). Otherwise: null",
-                "base_recipe_number": "IF has_base is true: SEARCH FOR the recipe number (Ref.:) associated with this base ingredient. Look for patterns like 'Base Recipe:', 'Grundrezept:', 'Ref.:', or recipe numbers near the high-percentage ingredient. Extract ONLY the number. Otherwise: null"
+                "has_base": "CRITICAL: PERFORM NUMERICAL COMPARISON. STEP-BY-STEP: (1) Extract ALL ingredient percentages as numbers. (2) Find the MAXIMUM percentage value. (3) Compare: IF max_percentage > 80 THEN return true, ELSE return false. EXAMPLES: 90% → true (because 90 > 80), 85% → true (because 85 > 80), 75% → false (because 75 < 80), 50% → false. THIS MUST BE A BOOLEAN VALUE (true or false), NOT A STRING.",
+                "base_ingredient_name": "IF has_base is true: Extract the NAME of the ingredient that has percentage >80% (translate to English). EXAMPLE: If 'Chococrisp Caramel' has 90%, return 'Chococrisp Caramel'. Otherwise: null",
+                "base_recipe_number": "IF has_base is true: SEARCH FOR the recipe number (Ref.:) associated with this base ingredient. Look in the SAME ROW or NEAR the high-percentage ingredient in tables. Look for patterns like 'Base Recipe:', 'Grundrezept:', 'Ref.:', or 12-digit numbers (e.g., 000001002664). Extract ONLY the number. Otherwise: null"
             }},
             "nutritional_info": {{
                 "energy": "FIND energy/Energie/Brennwert in kcal per 100g. Convert kJ to kcal if needed (divide by 4.184). Extract number only",
