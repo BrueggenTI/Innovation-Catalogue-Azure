@@ -11,136 +11,86 @@
                     <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded-4 shadow">
                 </div>
                 
-                <!-- Exclusive Recipe Section -->
-                <div class="exclusive-recipe-section mt-4">
-                    <div class="card border-0 shadow-sm exclusive-card">
+                <!-- Exclusive Information Section -->
+                <div class="exclusive-info-section mt-4">
+                    <div class="card border-0 shadow-sm">
                         <div class="card-header bg-transparent border-0 pb-0">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="fas fa-crown text-primary me-1"></i>
-                                    <h6 class="mb-0 fw-semibold exclusive-title">Exclusive Recipe</h6>
+                                    <h6 class="mb-0 fw-semibold">Exclusive Information</h6>
                                 </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    {% if product.is_exclusive %}
-                                        <span class="badge exclusive-status-active">Active</span>
-                                    {% else %}
-                                        <span class="badge exclusive-status-inactive">Off</span>
-                                    {% endif %}
-                                    <div class="autosave-indicator" id="autosaveIndicator"></div>
-                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleExclusiveEdit()">
+                                    <i class="fas fa-edit me-1"></i><span id="editButtonText">Edit</span>
+                                </button>
                             </div>
                         </div>
                         
                         <div class="card-body pt-3">
-                            <!-- Edit Mode Form -->
-                            <div id="exclusiveEditMode" style="display: none;">
-                                <form method="POST" action="{{ url_for('product_detail', id=product.id) }}" id="exclusiveForm">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                    
-                                    <!-- Form Switch -->
-                                    <div class="form-check form-switch mb-3">
-                                        <input class="form-check-input exclusive-switch" 
-                                               type="checkbox" 
-                                               role="switch"
-                                               id="isExclusive" 
-                                               name="is_exclusive"
-                                               {% if product.is_exclusive %}checked{% endif %}
-                                               onchange="handleExclusiveChange()"
-                                               aria-controls="exclusiveFieldsContainer"
-                                               aria-expanded="{% if product.is_exclusive %}true{% else %}false{% endif %}">
-                                        <label class="form-check-label fw-medium exclusive-switch-label" for="isExclusive">
-                                            Enable exclusive recipe settings
-                                        </label>
-                                    </div>
-                                    
-                                    <!-- Collapsible Fields -->
-                                    <div class="collapse{% if product.is_exclusive %} show{% endif %}" id="exclusiveFieldsContainer" role="region" aria-labelledby="isExclusive">
-                                        <div class="exclusive-fields-content">
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-medium text-muted mb-2">Target Type</label>
-                                                {% set target_parts = (product.market or '').split(':') %}
-                                                {% set current_type = target_parts[0] if target_parts|length > 1 else 'Market' %}
-                                                <div class="btn-group w-100" role="group" aria-label="Exclusive recipe target type">
-                                                    <input type="radio" class="btn-check" name="exclusive_type" id="typeMarket" value="Market" 
-                                                           {% if current_type == 'Market' %}checked{% endif %} onchange="debouncedAutoSave()">
-                                                    <label class="btn btn-outline-primary" for="typeMarket">
-                                                        <i class="fas fa-globe-americas me-1"></i>Market
-                                                    </label>
-                                                    
-                                                    <input type="radio" class="btn-check" name="exclusive_type" id="typeCustomer" value="Customer" 
-                                                           {% if current_type == 'Customer' %}checked{% endif %} onchange="debouncedAutoSave()">
-                                                    <label class="btn btn-outline-primary" for="typeCustomer">
-                                                        <i class="fas fa-user-tie me-1"></i>Customer
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-2">
-                                                <label for="exclusiveName" class="form-label small fw-medium text-muted mb-2">Name</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text bg-light border-end-0">
-                                                        <i class="fas fa-tag text-muted"></i>
-                                                    </span>
-                                                    <input type="text" 
-                                                           class="form-control border-start-0 ps-0" 
-                                                           id="exclusiveName" 
-                                                           name="exclusive_name"
-                                                           value="{{ target_parts[1] if target_parts|length > 1 else (product.market or '') }}"
-                                                           placeholder="Enter market or customer name"
-                                                           oninput="debouncedAutoSave()">
-                                                </div>
-                                                <div class="form-text">
-                                                    <i class="fas fa-info-circle me-1"></i>
-                                                    This information is visible internally only
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="d-flex gap-2 mt-3">
-                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelEdit()">
-                                                    <i class="fas fa-times me-1"></i>Cancel
-                                                </button>
-                                                <button type="button" class="btn btn-primary btn-sm" onclick="saveAndExitEdit()">
-                                                    <i class="fas fa-save me-1"></i>Save & Close
-                                                </button>
-                                            </div>
+                            <!-- View Mode -->
+                            <div id="exclusiveInfoView">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-medium text-muted mb-1">Exclusive Status</label>
+                                        <div class="text-dark">
+                                            {% if product.is_exclusive %}
+                                                <span class="badge bg-warning text-dark">Ja</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Nein</span>
+                                            {% endif %}
                                         </div>
                                     </div>
-                                </form>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-medium text-muted mb-1">Department</label>
+                                        <div class="text-dark">{{ product.department or '—' }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-medium text-muted mb-1">Customer</label>
+                                        <div class="text-dark">{{ product.customer or '—' }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-medium text-muted mb-1">Market</label>
+                                        <div class="text-dark">{{ product.market or '—' }}</div>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <!-- View Mode Display -->
-                            <div id="exclusiveViewMode">
-                                {% if product.is_exclusive and product.customer %}
-                                    <div class="exclusive-display-content">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="exclusive-info">
-                                                <div class="exclusive-details d-flex align-items-center flex-wrap">
-                                                    <span class="text-muted small me-2">Exclusive for</span>
-                                                    <span class="badge badge-outline-primary me-2">
-                                                        <i class="fas fa-user-tie me-1"></i>Customer
-                                                    </span>
-                                                    <span class="exclusive-target-name">{{ product.customer }}</span>
-                                                </div>
-                                            </div>
-                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="enterEditMode()">
-                                                <i class="fas fa-edit me-1"></i>Edit
-                                            </button>
+                            <!-- Edit Mode -->
+                            <div id="exclusiveInfoEdit" style="display: none;">
+                                <form id="exclusiveInfoForm">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="exclusiveStatus" class="form-label small fw-medium text-muted mb-2">Exclusive Status</label>
+                                            <select class="form-select" id="exclusiveStatus" name="is_exclusive">
+                                                <option value="true" {% if product.is_exclusive %}selected{% endif %}>Ja</option>
+                                                <option value="false" {% if not product.is_exclusive %}selected{% endif %}>Nein</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="department" class="form-label small fw-medium text-muted mb-2">Department</label>
+                                            <input type="text" class="form-control" id="department" name="department" 
+                                                   value="{{ product.department or '' }}" placeholder="z.B. Production, R&D">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="customer" class="form-label small fw-medium text-muted mb-2">Customer</label>
+                                            <input type="text" class="form-control" id="customer" name="customer" 
+                                                   value="{{ product.customer or '' }}" placeholder="z.B. REWE, EDEKA">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="market" class="form-label small fw-medium text-muted mb-2">Market</label>
+                                            <input type="text" class="form-control" id="market" name="market" 
+                                                   value="{{ product.market or '' }}" placeholder="z.B. Deutschland, Europe">
                                         </div>
                                     </div>
-                                {% else %}
-                                    <div class="exclusive-empty-state py-2">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input exclusive-switch" 
-                                                   type="checkbox" 
-                                                   role="switch"
-                                                   id="isExclusiveView" 
-                                                   onchange="enterEditMode()">
-                                            <label class="form-check-label fw-medium exclusive-switch-label" for="isExclusiveView">
-                                                Enable exclusive recipe
-                                            </label>
-                                        </div>
+                                    <div class="d-flex gap-2 mt-3">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelExclusiveEdit()">
+                                            <i class="fas fa-times me-1"></i>Cancel
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="saveExclusiveInfo()">
+                                            <i class="fas fa-save me-1"></i>Save
+                                        </button>
                                     </div>
-                                {% endif %}
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -602,10 +552,101 @@ function saveAndExitEdit() {
     });
 }
 
+// Exclusive Information Edit/View Toggle Functions
+function toggleExclusiveEdit() {
+    const viewMode = document.getElementById('exclusiveInfoView');
+    const editMode = document.getElementById('exclusiveInfoEdit');
+    const editButton = document.getElementById('editButtonText');
+    
+    if (editMode.style.display === 'none') {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+        editButton.textContent = 'Cancel';
+    } else {
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+        editButton.textContent = 'Edit';
+    }
+}
+
+function cancelExclusiveEdit() {
+    const viewMode = document.getElementById('exclusiveInfoView');
+    const editMode = document.getElementById('exclusiveInfoEdit');
+    const editButton = document.getElementById('editButtonText');
+    
+    viewMode.style.display = 'block';
+    editMode.style.display = 'none';
+    editButton.textContent = 'Edit';
+    
+    // Reset form to original values
+    location.reload();
+}
+
+function saveExclusiveInfo() {
+    const form = document.getElementById('exclusiveInfoForm');
+    const formData = new FormData(form);
+    
+    // Convert to JSON
+    const data = {
+        is_exclusive: formData.get('is_exclusive') === 'true',
+        department: formData.get('department') || null,
+        customer: formData.get('customer') || null,
+        market: formData.get('market') || null
+    };
+    
+    // Show loading state
+    const saveButton = event.target;
+    const originalText = saveButton.innerHTML;
+    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+    saveButton.disabled = true;
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    
+    // Send AJAX request
+    fetch(`/product/{{ product.id }}/update-exclusive-info`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Show success message
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = '<i class="fas fa-check me-2"></i>Exclusive information saved successfully!';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+                location.reload();
+            }, 1500);
+        } else {
+            throw new Error(result.error || 'Save failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving exclusive info:', error);
+        saveButton.innerHTML = originalText;
+        saveButton.disabled = false;
+        alert('Failed to save exclusive information. Please try again.');
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize in view mode by default
-    document.getElementById('exclusiveViewMode').style.display = 'block';
-    document.getElementById('exclusiveEditMode').style.display = 'none';
+    // Initialize in view mode by default (if old system exists)
+    const exclusiveViewMode = document.getElementById('exclusiveViewMode');
+    const exclusiveEditMode = document.getElementById('exclusiveEditMode');
+    if (exclusiveViewMode && exclusiveEditMode) {
+        exclusiveViewMode.style.display = 'block';
+        exclusiveEditMode.style.display = 'none';
+    }
     
     // Initialize Bootstrap components for edit mode
     if (typeof bootstrap !== 'undefined') {

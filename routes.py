@@ -702,6 +702,45 @@ def product_detail(id):
                          allergens=allergens,
                          claims=claims)
 
+@app.route('/product/<int:id>/update-exclusive-info', methods=['POST'])
+@login_required
+def update_exclusive_info(id):
+    """Update exclusive information for a product"""
+    init_user_session()
+    product = Product.query.get_or_404(id)
+    
+    try:
+        data = request.get_json()
+        
+        # Update exclusive status (convert string to boolean)
+        is_exclusive_value = data.get('is_exclusive', False)
+        if isinstance(is_exclusive_value, str):
+            product.is_exclusive = is_exclusive_value.lower() == 'true'
+        else:
+            product.is_exclusive = bool(is_exclusive_value)
+        
+        # Update department, customer, and market
+        product.department = data.get('department') or None
+        product.customer = data.get('customer') or None
+        product.market = data.get('market') or None
+        
+        db.session.commit()
+        
+        logging.info(f"Updated exclusive info for product {id}: Exclusive={product.is_exclusive}, Dept={product.department}, Customer={product.customer}, Market={product.market}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Exclusive information updated successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error updating exclusive info: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/trends')
 @login_required
 def trends():
