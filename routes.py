@@ -1831,6 +1831,11 @@ def analyze_recipe():
                 "SCAN ENTIRE DOCUMENT for ingredient lists, Zutatenliste, compositions. Include ALL ingredients found:",
                 {{"name": "TRANSLATE ingredient name to English (e.g., Haferflocken → Oat flakes)", "percentage": "EXTRACT exact percentage if given, otherwise 0"}}
             ],
+            "base_recipe": {{
+                "has_base": "CHECK IF ANY SINGLE INGREDIENT has a percentage GREATER THAN 80%. If yes: true, if no: false",
+                "base_ingredient_name": "IF has_base is true: Extract the NAME of the ingredient that is >80% (translate to English). Otherwise: null",
+                "base_recipe_number": "IF has_base is true: SEARCH FOR the recipe number (Ref.:) associated with this base ingredient. Look for patterns like 'Base Recipe:', 'Grundrezept:', 'Ref.:', or recipe numbers near the high-percentage ingredient. Extract ONLY the number. Otherwise: null"
+            }},
             "nutritional_info": {{
                 "energy": "FIND energy/Energie/Brennwert in kcal per 100g. Convert kJ to kcal if needed (divide by 4.184). Extract number only",
                 "fat": "FIND fat/Fett content per 100g in grams. Extract number only",
