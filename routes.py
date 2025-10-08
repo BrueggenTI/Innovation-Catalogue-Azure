@@ -1775,7 +1775,8 @@ def analyze_recipe():
             "description": "EXTRACT product description, benefits, or marketing text from document. Translate to English. If none found: 'No description available'",
             "exclusive": "SEARCH FOR 'Exclusive' field or similar exclusive product markers. Return exactly 'ja' if found and marked as exclusive, 'nein' if explicitly marked as non-exclusive, null if no information found",
             "department": "SEARCH FOR 'Department' or 'Abteilung' information. Extract department name if found (e.g., 'Production', 'R&D', 'Quality Control'). Return null if no information found",
-            "customer": "SEARCH FOR 'Customer' or 'Kunde' information. Extract customer name or company if found. Return null if no information found",
+            "customer": "SEARCH FOR 'Customer', 'Kunde', or 'Kundenname' information. Extract ONLY if it refers to a specific customer name or company (e.g., 'REWE', 'EDEKA', 'Kaufland'). Return null if no customer information found or if it refers to a market/region",
+            "market": "SEARCH FOR 'Market', 'Markt', 'Region', 'Target Market', or 'Zielmarkt' information. Extract ONLY if it refers to a geographical market or region (e.g., 'Deutschland', 'Europe', 'Asia'). Return null if no market information found or if it refers to a specific customer",
             "ingredients": [
                 "SCAN ENTIRE DOCUMENT for ingredient lists, Zutatenliste, compositions. Include ALL ingredients found:",
                 {{"name": "TRANSLATE ingredient name to English (e.g., Haferflocken → Oat flakes)", "percentage": "EXTRACT exact percentage if given, otherwise 0"}}
@@ -2130,7 +2131,8 @@ def publish_recipe():
         
         new_product.department = data.get('department')
         new_product.customer = data.get('customer')
-        logging.info(f"Business fields - Exclusive: {exclusive}, Department: {new_product.department}, Customer: {new_product.customer}")
+        new_product.market = data.get('market')
+        logging.info(f"Business fields - Exclusive: {exclusive}, Department: {new_product.department}, Customer: {new_product.customer}, Market: {new_product.market}")
 
         # Use uploaded image URL or default
         image_url = data.get('image_url')
