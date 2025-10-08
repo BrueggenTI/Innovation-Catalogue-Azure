@@ -2170,7 +2170,7 @@ def publish_recipe():
             new_product.recipe_number = recipe_number
             logging.info(f"Recipe number set to: {new_product.recipe_number}")
 
-        # Store new business fields: Exclusive, Customer, Market
+        # Store new business fields: Exclusive, Department, Customer, Market
         exclusive = data.get('exclusive')
         if exclusive == 'ja':
             new_product.is_exclusive = True
@@ -2178,6 +2178,9 @@ def publish_recipe():
             new_product.is_exclusive = False
         else:
             new_product.is_exclusive = None
+        
+        # Store department (read-only, from AI extraction)
+        new_product.department = data.get('department')
         
         # Mutual exclusivity: customer OR market, never both
         customer_value = data.get('customer')
@@ -2193,7 +2196,7 @@ def publish_recipe():
             new_product.customer = None
             new_product.market = None
         
-        logging.info(f"Business fields - Exclusive: {exclusive}, Customer: {new_product.customer}, Market: {new_product.market}")
+        logging.info(f"Business fields - Exclusive: {exclusive}, Department: {new_product.department}, Customer: {new_product.customer}, Market: {new_product.market}")
 
         # Use uploaded image URL or default
         image_url = data.get('image_url')
