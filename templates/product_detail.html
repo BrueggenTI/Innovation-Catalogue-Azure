@@ -110,24 +110,16 @@
                             
                             <!-- View Mode Display -->
                             <div id="exclusiveViewMode">
-                                {% if product.is_exclusive and product.target_market %}
-                                    {% set target_parts = product.target_market.split(':') %}
-                                    {% set target_type = target_parts[0] if target_parts|length > 1 else 'Market' %}
-                                    {% set target_name = target_parts[1] if target_parts|length > 1 else product.target_market %}
-                                    
+                                {% if product.is_exclusive and product.customer %}
                                     <div class="exclusive-display-content">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div class="exclusive-info">
                                                 <div class="exclusive-details d-flex align-items-center flex-wrap">
                                                     <span class="text-muted small me-2">Exclusive for</span>
                                                     <span class="badge badge-outline-primary me-2">
-                                                        {% if target_type == 'Market' %}
-                                                            <i class="fas fa-globe-americas me-1"></i>{{ target_type }}
-                                                        {% else %}
-                                                            <i class="fas fa-user-tie me-1"></i>{{ target_type }}
-                                                        {% endif %}
+                                                        <i class="fas fa-user-tie me-1"></i>Customer
                                                     </span>
-                                                    <span class="exclusive-target-name">{{ target_name }}</span>
+                                                    <span class="exclusive-target-name">{{ product.customer }}</span>
                                                 </div>
                                             </div>
                                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="enterEditMode()">
@@ -184,10 +176,20 @@
                     
                     <!-- Recipe Number Centered Under Product Name -->
                     {% if product.recipe_number %}
-                    <div class="recipe-number-display text-center mb-4">
+                    <div class="recipe-number-display text-center mb-2">
                         <span class="fs-4 fw-bold" style="color: #ff4143;">{{ product.recipe_number }}</span>
                     </div>
                     {% endif %}
+                    
+                    <!-- Department Under Recipe Number -->
+                    {% if product.department %}
+                    <div class="department-display text-center mb-4">
+                        <span class="text-muted fs-6">{{ product.department }}</span>
+                    </div>
+                    {% elif product.recipe_number %}
+                    <div class="mb-4"></div>
+                    {% endif %}
+                    
                     <p class="lead text-muted mb-4">{{ product.description }}</p>
                     
                     <div class="product-actions d-flex flex-column align-items-center gap-3">
