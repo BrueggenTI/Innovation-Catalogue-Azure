@@ -197,12 +197,12 @@
                                         {% if product.customer %}
                                             {% set _ = tooltip_parts.append('Customer: <strong>' + (product.customer|e) + '</strong>') %}
                                         {% endif %}
-                                        {% if product.target_market %}
-                                            {% set parts = product.target_market.split(':') %}
+                                        {% if product.market %}
+                                            {% set parts = product.market.split(':') %}
                                             {% if parts|length > 1 %}
                                                 {% set _ = tooltip_parts.append((parts[0]|e) + ': <strong>' + (':'.join(parts[1:])|trim|e) + '</strong>') %}
                                             {% else %}
-                                                {% set _ = tooltip_parts.append('<strong>' + (product.target_market|trim|e) + '</strong>') %}
+                                                {% set _ = tooltip_parts.append('<strong>' + (product.market|trim|e) + '</strong>') %}
                                             {% endif %}
                                         {% endif %}
                                         <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 

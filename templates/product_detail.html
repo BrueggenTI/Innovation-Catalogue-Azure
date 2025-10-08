@@ -58,7 +58,7 @@
                                         <div class="exclusive-fields-content">
                                             <div class="mb-3">
                                                 <label class="form-label small fw-medium text-muted mb-2">Target Type</label>
-                                                {% set target_parts = (product.target_market or '').split(':') %}
+                                                {% set target_parts = (product.market or '').split(':') %}
                                                 {% set current_type = target_parts[0] if target_parts|length > 1 else 'Market' %}
                                                 <div class="btn-group w-100" role="group" aria-label="Exclusive recipe target type">
                                                     <input type="radio" class="btn-check" name="exclusive_type" id="typeMarket" value="Market" 
@@ -85,7 +85,7 @@
                                                            class="form-control border-start-0 ps-0" 
                                                            id="exclusiveName" 
                                                            name="exclusive_name"
-                                                           value="{{ target_parts[1] if target_parts|length > 1 else (product.target_market or '') }}"
+                                                           value="{{ target_parts[1] if target_parts|length > 1 else (product.market or '') }}"
                                                            placeholder="Enter market or customer name"
                                                            oninput="debouncedAutoSave()">
                                                 </div>

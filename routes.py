@@ -672,9 +672,9 @@ def product_detail(id):
         if product.is_exclusive:
             exclusive_type = request.form.get('exclusive_type', 'Market')
             exclusive_name = request.form.get('exclusive_name', '')
-            product.target_market = f"{exclusive_type}:{exclusive_name}" if exclusive_name else ''
+            product.market = f"{exclusive_type}:{exclusive_name}" if exclusive_name else ''
         else:
-            product.target_market = ''
+            product.market = ''
         
         try:
             db.session.commit()
