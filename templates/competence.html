@@ -193,12 +193,12 @@
                                     
                                     <!-- Exclusive Badge (wraps to next line if needed) -->
                                     {% if product.is_exclusive %}
-                                        <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
-                                             data-bs-toggle="tooltip" 
-                                             data-bs-placement="top" 
-                                             data-bs-html="true"
-                                             title="{% if product.target_market %}{% set parts = product.target_market.split(':') %}{% if parts|length > 1 %}Exclusive for <strong>{{ parts[0] }}: {{ parts[1] }}</strong>{% else %}Exclusive for <strong>{{ product.target_market }}</strong>{% endif %}{% else %}Exclusive Product{% endif %}">
-                                            Exclusive
+                                        <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto;">
+                                            {% if product.customer %}
+                                                Exclusive for {{ product.customer }}
+                                            {% else %}
+                                                Exclusive
+                                            {% endif %}
                                         </div>
                                     {% endif %}
                                 </div>
