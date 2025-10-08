@@ -205,7 +205,52 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {% set mix_ingredients = [] %}
+                                        {% set base_ingredients = [] %}
+                                        {% set regular_ingredients = [] %}
+                                        
                                         {% for ingredient in ingredients %}
+                                            {% if ingredient.type == 'mix' %}
+                                                {% set _ = mix_ingredients.append(ingredient) %}
+                                            {% elif ingredient.type == 'base' %}
+                                                {% set _ = base_ingredients.append(ingredient) %}
+                                            {% else %}
+                                                {% set _ = regular_ingredients.append(ingredient) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        <!-- Mix Ingredients (bold) -->
+                                        {% for ingredient in mix_ingredients %}
+                                            <tr>
+                                                <td class="fw-bold">{{ ingredient.name }}</td>
+                                                <td class="text-end fw-bold">{{ ingredient.percentage }}%</td>
+                                            </tr>
+                                        {% endfor %}
+                                        
+                                        <!-- Base Ingredients (grouped under base recipe name) -->
+                                        {% if base_ingredients %}
+                                            {% set current_base = namespace(name='') %}
+                                            {% for ingredient in base_ingredients %}
+                                                {% if ingredient.base_recipe_name != current_base.name %}
+                                                    <tr style="background-color: #f8f9fa;">
+                                                        <td colspan="2" class="fw-semibold text-muted pt-3">
+                                                            <i class="fas fa-layer-group me-2"></i>{{ ingredient.base_recipe_name }}
+                                                            {% if ingredient.base_recipe_number %}
+                                                                <span class="badge bg-secondary ms-2">{{ ingredient.base_recipe_number }}</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {% set current_base.name = ingredient.base_recipe_name %}
+                                                {% endif %}
+                                                <tr>
+                                                    <td class="ps-4">{{ ingredient.name }}</td>
+                                                    <td class="text-end">{{ ingredient.percentage }}%</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        
+                                        <!-- Regular ingredients (backward compatibility) -->
+                                        {% for ingredient in regular_ingredients %}
                                             <tr>
                                                 <td class="fw-medium">{{ ingredient.name }}</td>
                                                 <td class="text-end">{{ ingredient.percentage }}%</td>
