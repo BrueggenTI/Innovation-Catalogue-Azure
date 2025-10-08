@@ -2119,6 +2119,19 @@ def publish_recipe():
             new_product.recipe_number = recipe_number
             logging.info(f"Recipe number set to: {new_product.recipe_number}")
 
+        # Store new business fields: Exclusive, Department, Customer
+        exclusive = data.get('exclusive')
+        if exclusive == 'ja':
+            new_product.is_exclusive = True
+        elif exclusive == 'nein':
+            new_product.is_exclusive = False
+        else:
+            new_product.is_exclusive = None
+        
+        new_product.department = data.get('department')
+        new_product.customer = data.get('customer')
+        logging.info(f"Business fields - Exclusive: {exclusive}, Department: {new_product.department}, Customer: {new_product.customer}")
+
         # Use uploaded image URL or default
         image_url = data.get('image_url')
         logging.info(f"Publishing recipe with product image URL: {image_url}")
