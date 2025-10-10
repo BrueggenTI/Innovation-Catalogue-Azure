@@ -498,18 +498,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     console.log('Base ingredients:', baseIngredients);
                     
-                    // Find the base ingredient percentage in mix (should be >80%)
+                    // CRITICAL FIX: Find the base carrier ingredient by matching name or using metadata
                     let basePercentageInMix = 0;
-                    for (const ing of currentRecipeData.ingredients) {
-                        if (ing.percentage > 80) {
-                            basePercentageInMix = ing.percentage / 100; // Convert to decimal
-                            console.log(`Base ingredient percentage in mix: ${ing.percentage}% (${basePercentageInMix})`);
-                            break;
+                    let carrierIngredient = null;
+                    
+                    // Method 1: Try to find carrier by matching base recipe name (most reliable)
+                    if (currentRecipeData.base_recipe && currentRecipeData.base_recipe.base_ingredient_name) {
+                        const baseIngredientName = currentRecipeData.base_recipe.base_ingredient_name.toLowerCase();
+                        carrierIngredient = currentRecipeData.ingredients.find(ing => 
+                            ing.name.toLowerCase().includes(baseIngredientName) || 
+                            baseIngredientName.includes(ing.name.toLowerCase())
+                        );
+                        if (carrierIngredient) {
+                            basePercentageInMix = carrierIngredient.percentage / 100;
+                            console.log(`Found base carrier by name match: ${carrierIngredient.name} at ${carrierIngredient.percentage}%`);
                         }
                     }
                     
+                    // Method 2: Fallback - find ingredient with highest percentage (likely the base)
+                    if (!carrierIngredient) {
+                        carrierIngredient = currentRecipeData.ingredients.reduce((max, ing) => 
+                            ing.percentage > (max?.percentage || 0) ? ing : max, null);
+                        if (carrierIngredient) {
+                            basePercentageInMix = carrierIngredient.percentage / 100;
+                            console.log(`Found base carrier by highest percentage: ${carrierIngredient.name} at ${carrierIngredient.percentage}%`);
+                        }
+                    }
+                    
+                    // Method 3: Last resort - default to 100% if no carrier found
                     if (basePercentageInMix === 0) {
-                        console.warn('Could not find base ingredient percentage, defaulting to 1.0');
+                        console.warn('Could not determine base carrier percentage, defaulting to 100%');
                         basePercentageInMix = 1.0;
                     }
                     
@@ -567,6 +585,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // HTML escaping function to prevent XSS and DOM corruption
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        return String(unsafe)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     function generatePreviewHTML(data) {
         const ingredientsHTML = data.ingredients.map((ing, index) => {
             // Extract metadata for base recipe ingredients
@@ -574,18 +603,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const baseRecipeName = ing.base_recipe_name || '';
             const baseRecipeNumber = ing.base_recipe_number || '';
             
+            // SECURITY: Escape all values before inserting into HTML
+            const escapedName = escapeHtml(ing.name);
+            const escapedType = escapeHtml(ingredientType);
+            const escapedBaseRecipeName = escapeHtml(baseRecipeName);
+            const escapedBaseRecipeNumber = escapeHtml(baseRecipeNumber);
+            const escapedBaseRecipeNameForTitle = escapeHtml(baseRecipeName);
+            
             // Visual styling for base vs mix ingredients
             const rowStyle = ingredientType === 'base' 
                 ? 'background-color: #fff3cd; border-left: 4px solid #ffc107;' 
                 : '';
             const badge = ingredientType === 'base' 
-                ? `<span class="badge bg-warning text-dark ms-2" title="From base recipe: ${baseRecipeName}">BASE</span>` 
+                ? `<span class="badge bg-warning text-dark ms-2" title="From base recipe: ${escapedBaseRecipeNameForTitle}">BASE</span>` 
                 : '';
             
             return `<tr class="draggable-ingredient" draggable="true" 
-                        data-type="${ingredientType}" 
-                        data-base-recipe-name="${baseRecipeName}" 
-                        data-base-recipe-number="${baseRecipeNumber}"
+                        data-type="${escapedType}" 
+                        data-base-recipe-name="${escapedBaseRecipeName}" 
+                        data-base-recipe-number="${escapedBaseRecipeNumber}"
                         style="${rowStyle}">
                 <td>
                     <div class="input-group">
@@ -593,11 +629,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="fas fa-grip-vertical"></i>
                         </span>
                         <input type="text" class="form-control ingredient-name-input" 
-                               value="${ing.name}" 
+                               value="${escapedName}" 
                                data-index="${index}" 
-                               data-type="${ingredientType}"
-                               data-base-recipe-name="${baseRecipeName}"
-                               data-base-recipe-number="${baseRecipeNumber}"
+                               data-type="${escapedType}"
+                               data-base-recipe-name="${escapedBaseRecipeName}"
+                               data-base-recipe-number="${escapedBaseRecipeNumber}"
                                style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
                         ${badge}
                     </div>
@@ -607,9 +643,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <input type="number" class="form-control percentage-input text-end" 
                                value="${ing.percentage}" 
                                data-index="${index}" 
-                               data-type="${ingredientType}"
-                               data-base-recipe-name="${baseRecipeName}"
-                               data-base-recipe-number="${baseRecipeNumber}"
+                               data-type="${escapedType}"
+                               data-base-recipe-name="${escapedBaseRecipeName}"
+                               data-base-recipe-number="${escapedBaseRecipeNumber}"
                                min="0" max="100" step="0.1"
                                style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem; min-width: 100px; width: 100px;">
                         <button type="button" class="btn btn-outline-danger btn-sm remove-existing-ingredient-btn" data-index="${index}" style="display: inline-block;">
@@ -620,8 +656,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>`;
         }).join('');
 
-        const allergensHTML = data.allergens.map((allergen, index) => 
-            `<div class="input-group mb-2 me-2 draggable-allergen" draggable="true" style="width: 100%; display: flex; margin-bottom: 8px;">
+        const allergensHTML = data.allergens.map((allergen, index) => {
+            const escapedAllergen = escapeHtml(allergen);
+            return `<div class="input-group mb-2 me-2 draggable-allergen" draggable="true" style="width: 100%; display: flex; margin-bottom: 8px;">
                 <span class="input-group-text bg-warning text-dark drag-handle" style="cursor: move; display: inline-flex;">
                     <i class="fas fa-grip-vertical"></i>
                 </span>
@@ -629,16 +666,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-exclamation-triangle"></i>
                 </span>
                 <input type="text" class="form-control allergen-input" 
-                       value="${allergen}" data-index="${index}"
+                       value="${escapedAllergen}" data-index="${index}"
                        style="flex: 1; white-space: normal; word-wrap: break-word; overflow: visible; border: 1px solid #ced4da; background: #fff; cursor: text; min-height: 38px; height: auto; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
                 <button type="button" class="btn btn-outline-danger btn-sm remove-existing-allergen-btn" data-index="${index}" style="display: inline-block;">
                     <i class="fas fa-times"></i>
                 </button>
-            </div>`
-        ).join('');
+            </div>`;
+        }).join('');
 
-        const claimsHTML = data.claims.map((claim, index) => 
-            `<div class="input-group mb-2 me-2 draggable-claim" draggable="true" style="width: 100%; display: flex; margin-bottom: 8px;">
+        const claimsHTML = data.claims.map((claim, index) => {
+            const escapedClaim = escapeHtml(claim);
+            return `<div class="input-group mb-2 me-2 draggable-claim" draggable="true" style="width: 100%; display: flex; margin-bottom: 8px;">
                 <span class="input-group-text bg-success text-white drag-handle" style="cursor: move; display: inline-flex;">
                     <i class="fas fa-grip-vertical"></i>
                 </span>
@@ -646,13 +684,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-check"></i>
                 </span>
                 <input type="text" class="form-control claim-input" 
-                       value="${claim}" data-index="${index}" 
+                       value="${escapedClaim}" data-index="${index}" 
                        style="flex: 1; white-space: normal; word-wrap: break-word; overflow: visible; border: 1px solid #ced4da; background: #fff; cursor: text; min-height: 38px; height: auto; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
                 <button type="button" class="btn btn-outline-danger btn-sm remove-existing-claim-btn" data-index="${index}" style="display: inline-block;">
                     <i class="fas fa-times"></i>
                 </button>
-            </div>`
-        ).join('');
+            </div>`;
+        }).join('');
 
         return `
             <div class="container-fluid p-4 recipe-preview-modal">
@@ -660,9 +698,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="col-lg-12">
                         <div class="text-center mb-4">
                             <input type="text" id="recipeName" class="form-control text-center fs-3 fw-bold" 
-                                   value="${data.name}" style="border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
+                                   value="${escapeHtml(data.name)}" style="border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
                             <textarea id="recipeDescription" class="form-control text-center text-muted mt-2" 
-                                     rows="2" style="border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem; resize: none;">${data.description}</textarea>
+                                     rows="2" style="border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem; resize: none;">${escapeHtml(data.description)}</textarea>
                             <select id="recipeCategory" class="form-select mt-3" style="width: 300px; margin: 0 auto; border: 1px solid #ced4da; background: #fff; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
                                 <option value="Flakes" ${data.category === 'Flakes' ? 'selected' : ''}>Flakes</option>
                                 <option value="Multigrain & Branflakes" ${data.category === 'Multigrain & Branflakes' ? 'selected' : ''}>Multigrain & Branflakes</option>
