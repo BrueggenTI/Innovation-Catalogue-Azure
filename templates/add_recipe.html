@@ -513,17 +513,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.product) {
                     const baseProduct = data.product;
                     console.log('Base recipe found:', baseProduct.name);
+                    console.log('Base product data:', baseProduct);
                     
-                    // Parse base ingredients
+                    // Parse base ingredients - ROBUST: Accept both String (JSON) and Array
                     let baseIngredients = [];
-                    try {
-                        baseIngredients = JSON.parse(baseProduct.ingredients || '[]');
-                    } catch (e) {
-                        console.error('Failed to parse base ingredients:', e);
+                    if (Array.isArray(baseProduct.ingredients)) {
+                        // Already an array from API
+                        baseIngredients = baseProduct.ingredients;
+                        console.log('Base ingredients (already array):', baseIngredients);
+                    } else if (typeof baseProduct.ingredients === 'string') {
+                        // JSON string - parse it
+                        try {
+                            baseIngredients = JSON.parse(baseProduct.ingredients || '[]');
+                            console.log('Base ingredients (parsed from JSON):', baseIngredients);
+                        } catch (e) {
+                            console.error('Failed to parse base ingredients:', e);
+                            baseIngredients = [];
+                        }
+                    } else {
+                        console.warn('Base ingredients is neither array nor string:', baseProduct.ingredients);
                         baseIngredients = [];
                     }
                     
-                    console.log('Base ingredients:', baseIngredients);
+                    console.log(`Total base ingredients found: ${baseIngredients.length}`);
                     
                     // CRITICAL FIX: Find the base carrier ingredient by matching name or using metadata
                     let basePercentageInMix = 0;

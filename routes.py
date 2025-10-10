@@ -2515,6 +2515,23 @@ def get_product_by_recipe_number(recipe_number):
         
         logging.info(f"Found product: ID={product.id}, Name={product.name}, RecipeNum={product.recipe_number}")
         
+        # Parse ingredients from JSON
+        ingredients = []
+        if product.ingredients:
+            try:
+                ingredients_data = json.loads(product.ingredients)
+                if isinstance(ingredients_data, list):
+                    ingredients = ingredients_data
+                    logging.info(f"Product {product.id} has {len(ingredients)} ingredients")
+                else:
+                    logging.warning(f"Product {product.id} ingredients is not a list: {ingredients_data}")
+            except json.JSONDecodeError as e:
+                logging.error(f"Failed to parse ingredients for product {product.id}: {e}")
+        else:
+            logging.warning(f"Product {product.id} has no ingredients field")
+        
+        logging.info(f"Returning product data with {len(ingredients)} ingredients")
+        
         return jsonify({
             'success': True,
             'recipe_number': recipe_number,
@@ -2523,7 +2540,8 @@ def get_product_by_recipe_number(recipe_number):
                 'name': product.name,
                 'image': product.image_url,
                 'category': product.category,
-                'description': product.description
+                'description': product.description,
+                'ingredients': ingredients  # CRITICAL: Include ingredients!
             }
         })
         
