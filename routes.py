@@ -2151,73 +2151,26 @@ def publish_recipe():
         # Store ingredients as JSON
         ingredients = data.get('ingredients', [])
         
-        # BASE RECIPE LOGIC: Check if this is a mix recipe with a base recipe
-        base_recipe_data = data.get('base_recipe', {})
-        has_base = base_recipe_data.get('has_base', False)
-        base_recipe_number = base_recipe_data.get('base_recipe_number')
-        base_ingredient_name = base_recipe_data.get('base_ingredient_name')
-        
-        # Debug logging
-        logging.info(f"BASE RECIPE DEBUG - has_base: {has_base} (type: {type(has_base)}), base_recipe_number: {base_recipe_number}")
-        
-        # Convert has_base to boolean if it's a string
-        if isinstance(has_base, str):
-            has_base = has_base.lower() in ('true', '1', 'yes')
-        
-        # FALLBACK: If base_recipe_number not found in base_recipe, check ingredients for recipe_number
-        if has_base and not base_recipe_number:
-            logging.info("Base recipe detected but no base_recipe_number - checking ingredients for recipe_number")
-            for ing in ingredients:
-                if isinstance(ing, dict):
-                    ing_percentage = ing.get('percentage', 0)
-                    ing_recipe_number = ing.get('recipe_number')
-                    # Check if ingredient percentage > 80% and has recipe_number
-                    if ing_percentage > 80 and ing_recipe_number:
-                        base_recipe_number = ing_recipe_number
-                        base_ingredient_name = ing.get('name')
-                        logging.info(f"Found base recipe number in ingredient: {base_recipe_number} ({base_ingredient_name})")
-                        break
-        
-        if has_base and base_recipe_number:
-            logging.info(f"Mix recipe detected with base recipe number: {base_recipe_number}")
-            
-            # Search for base recipe in database by recipe_number
-            base_product = Product.query.filter_by(recipe_number=base_recipe_number).first()
-            
-            if base_product:
-                logging.info(f"Found base recipe: {base_product.name} (ID: {base_product.id})")
+        # NESTED STRUCTURE: Flatten ingredients with children structure
+        # Frontend sends ingredients with "children" array for base recipe ingredients
+        flattened_ingredients = []
+        for ing in ingredients:
+            if isinstance(ing, dict):
+                # Add the main ingredient (without children and has_children fields in final output)
+                main_ing = {k: v for k, v in ing.items() if k not in ('children', 'has_children')}
+                flattened_ingredients.append(main_ing)
                 
-                # Parse base recipe ingredients
-                try:
-                    base_ingredients = json.loads(base_product.ingredients) if base_product.ingredients else []
-                    
-                    # Mark mix ingredients with type "mix"
-                    for ingredient in ingredients:
-                        if isinstance(ingredient, dict):
-                            ingredient['type'] = 'mix'
-                    
-                    # Add base ingredients with type "base" and base_recipe_name
-                    for base_ing in base_ingredients:
-                        if isinstance(base_ing, dict):
-                            base_ing_copy = base_ing.copy()
-                            base_ing_copy['type'] = 'base'
-                            base_ing_copy['base_recipe_name'] = base_product.name
-                            base_ing_copy['base_recipe_number'] = base_recipe_number
-                            ingredients.append(base_ing_copy)
-                    
-                    logging.info(f"Combined {len(ingredients)} total ingredients (mix + base)")
-                    
-                except json.JSONDecodeError as e:
-                    logging.error(f"Failed to parse base recipe ingredients: {e}")
-            else:
-                logging.warning(f"Base recipe with number {base_recipe_number} not found in database")
-                # Mark all ingredients as mix anyway
-                for ingredient in ingredients:
-                    if isinstance(ingredient, dict):
-                        ingredient['type'] = 'mix'
-        else:
-            # Regular recipe without base - mark all as mix (or leave unmarked for backward compatibility)
-            logging.info("Regular recipe without base recipe")
+                # Add children as separate ingredients (already have correct metadata from frontend)
+                if 'children' in ing and isinstance(ing['children'], list):
+                    for child in ing['children']:
+                        if isinstance(child, dict):
+                            flattened_ingredients.append(child)
+                            logging.info(f"Added child ingredient: {child.get('name')} (type: {child.get('type')}) from parent {ing.get('name')}")
+        
+        # Replace ingredients with flattened structure
+        ingredients = flattened_ingredients
+        
+        logging.info(f"Total ingredients after flattening: {len(ingredients)} ingredients")
         
         new_product.ingredients = json.dumps(ingredients)
 

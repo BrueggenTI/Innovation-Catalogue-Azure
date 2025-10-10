@@ -531,38 +531,44 @@ document.addEventListener('DOMContentLoaded', function() {
                         basePercentageInMix = 1.0;
                     }
                     
-                    // Add base ingredients to current recipe data
-                    if (baseIngredients.length > 0) {
+                    // NESTED DISPLAY: Add base ingredients as CHILDREN of the carrier ingredient
+                    if (baseIngredients.length > 0 && carrierIngredient) {
                         // Mark current ingredients as "mix"
                         currentRecipeData.ingredients.forEach(ing => {
                             ing.type = 'mix';
                         });
                         
-                        // Add base ingredients with type "base" and SCALED percentages
-                        baseIngredients.forEach(baseIng => {
-                            // CRITICAL FIX: Scale base ingredient percentages by base percentage in mix
+                        // Add base ingredients as CHILDREN of the carrier (nested display)
+                        const baseChildren = baseIngredients.map(baseIng => {
+                            // Scale base ingredient percentages by base percentage in mix
                             const scaledPercentage = (baseIng.percentage || 0) * basePercentageInMix;
                             
-                            currentRecipeData.ingredients.push({
+                            return {
                                 name: baseIng.name,
                                 percentage: parseFloat(scaledPercentage.toFixed(2)), // Round to 2 decimals
                                 type: 'base',
                                 base_recipe_name: baseProduct.name,
                                 base_recipe_number: baseRecipeNumber
-                            });
+                            };
                         });
+                        
+                        // Attach base ingredients as children to the carrier ingredient
+                        carrierIngredient.children = baseChildren;
+                        carrierIngredient.has_children = true;
+                        carrierIngredient.base_recipe_name = baseProduct.name;
+                        carrierIngredient.base_recipe_number = baseRecipeNumber;
                         
                         // Update the global recipe data
                         window.currentRecipeData = currentRecipeData;
                         
-                        // Regenerate the preview HTML with updated ingredients
+                        // Regenerate the preview HTML with nested display
                         const previewContent = document.getElementById('recipePreviewContent');
                         previewContent.innerHTML = generatePreviewHTML(currentRecipeData);
                         
                         // Reattach event listeners
                         attachDragAndDropEventListeners();
                         
-                        console.log('Base ingredients added successfully with scaled percentages');
+                        console.log(`Base ingredients added as children of ${carrierIngredient.name} (${baseChildren.length} items)`);
                     }
                 } else {
                     console.warn('Base recipe not found in database');
@@ -597,32 +603,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generatePreviewHTML(data) {
-        const ingredientsHTML = data.ingredients.map((ing, index) => {
+        let ingredientIndex = 0;
+        const ingredientsHTML = data.ingredients.map((ing) => {
+            const currentIndex = ingredientIndex;
+            ingredientIndex++;
+            
             // Extract metadata for base recipe ingredients
             const ingredientType = ing.type || 'mix';
             const baseRecipeName = ing.base_recipe_name || '';
             const baseRecipeNumber = ing.base_recipe_number || '';
+            const hasChildren = ing.has_children || (ing.children && ing.children.length > 0);
             
             // SECURITY: Escape all values before inserting into HTML
             const escapedName = escapeHtml(ing.name);
             const escapedType = escapeHtml(ingredientType);
             const escapedBaseRecipeName = escapeHtml(baseRecipeName);
             const escapedBaseRecipeNumber = escapeHtml(baseRecipeNumber);
-            const escapedBaseRecipeNameForTitle = escapeHtml(baseRecipeName);
             
-            // Visual styling for base vs mix ingredients
-            const rowStyle = ingredientType === 'base' 
-                ? 'background-color: #fff3cd; border-left: 4px solid #ffc107;' 
-                : '';
-            const badge = ingredientType === 'base' 
-                ? `<span class="badge bg-warning text-dark ms-2" title="From base recipe: ${escapedBaseRecipeNameForTitle}">BASE</span>` 
+            // Visual styling for mix ingredients with base recipe
+            const badge = hasChildren 
+                ? `<span class="badge bg-info text-white ms-2" title="Contains base recipe: ${escapeHtml(baseRecipeName)}">
+                     <i class="fas fa-layer-group me-1"></i>BASE RECIPE
+                   </span>` 
                 : '';
             
-            return `<tr class="draggable-ingredient" draggable="true" 
+            // Main ingredient row
+            let html = `<tr class="draggable-ingredient" draggable="true" 
                         data-type="${escapedType}" 
                         data-base-recipe-name="${escapedBaseRecipeName}" 
                         data-base-recipe-number="${escapedBaseRecipeNumber}"
-                        style="${rowStyle}">
+                        data-has-children="${hasChildren ? 'true' : 'false'}">
                 <td>
                     <div class="input-group">
                         <span class="input-group-text drag-handle" style="cursor: move; display: inline-flex;">
@@ -630,10 +640,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                         <input type="text" class="form-control ingredient-name-input" 
                                value="${escapedName}" 
-                               data-index="${index}" 
+                               data-index="${currentIndex}" 
                                data-type="${escapedType}"
                                data-base-recipe-name="${escapedBaseRecipeName}"
                                data-base-recipe-number="${escapedBaseRecipeNumber}"
+                               data-has-children="${hasChildren ? 'true' : 'false'}"
                                style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
                         ${badge}
                     </div>
@@ -642,18 +653,75 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="input-group">
                         <input type="number" class="form-control percentage-input text-end" 
                                value="${ing.percentage}" 
-                               data-index="${index}" 
+                               data-index="${currentIndex}" 
                                data-type="${escapedType}"
                                data-base-recipe-name="${escapedBaseRecipeName}"
                                data-base-recipe-number="${escapedBaseRecipeNumber}"
+                               data-has-children="${hasChildren ? 'true' : 'false'}"
                                min="0" max="100" step="0.1"
                                style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem; min-width: 100px; width: 100px;">
-                        <button type="button" class="btn btn-outline-danger btn-sm remove-existing-ingredient-btn" data-index="${index}" style="display: inline-block;">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-existing-ingredient-btn" data-index="${currentIndex}" style="display: inline-block;">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </td>
             </tr>`;
+            
+            // Add nested children rows (base ingredients) - INDENTED, ITALIC, SMALLER
+            if (ing.children && ing.children.length > 0) {
+                ing.children.forEach((child) => {
+                    const childIndex = ingredientIndex;
+                    ingredientIndex++;
+                    
+                    const escapedChildName = escapeHtml(child.name);
+                    const escapedChildType = escapeHtml(child.type || 'base');
+                    const escapedChildBaseRecipeName = escapeHtml(child.base_recipe_name || '');
+                    const escapedChildBaseRecipeNumber = escapeHtml(child.base_recipe_number || '');
+                    
+                    html += `<tr class="draggable-ingredient base-ingredient-child" draggable="false" 
+                                data-type="${escapedChildType}" 
+                                data-base-recipe-name="${escapedChildBaseRecipeName}" 
+                                data-base-recipe-number="${escapedChildBaseRecipeNumber}"
+                                data-is-child="true"
+                                style="background-color: #f8f9fa;">
+                        <td style="padding-left: 50px;">
+                            <div class="input-group">
+                                <span class="input-group-text" style="background: transparent; border: none; color: #6c757d;">
+                                    <i class="fas fa-level-up-alt fa-rotate-90"></i>
+                                </span>
+                                <input type="text" class="form-control ingredient-name-input" 
+                                       value="${escapedChildName}" 
+                                       data-index="${childIndex}" 
+                                       data-type="${escapedChildType}"
+                                       data-base-recipe-name="${escapedChildBaseRecipeName}"
+                                       data-base-recipe-number="${escapedChildBaseRecipeNumber}"
+                                       data-is-child="true"
+                                       readonly
+                                       style="border: 1px solid #dee2e6; background: #f8f9fa; font-style: italic; font-size: 0.85rem; color: #6c757d; padding: 0.25rem 0.5rem;">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <input type="number" class="form-control percentage-input text-end" 
+                                       value="${child.percentage}" 
+                                       data-index="${childIndex}" 
+                                       data-type="${escapedChildType}"
+                                       data-base-recipe-name="${escapedChildBaseRecipeName}"
+                                       data-base-recipe-number="${escapedChildBaseRecipeNumber}"
+                                       data-is-child="true"
+                                       readonly
+                                       min="0" max="100" step="0.1"
+                                       style="border: 1px solid #dee2e6; background: #f8f9fa; font-style: italic; font-size: 0.85rem; color: #6c757d; padding: 0.25rem 0.5rem; min-width: 100px; width: 100px;">
+                                <span class="input-group-text" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #adb5bd; font-size: 0.75rem;">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            }
+            
+            return html;
         }).join('');
 
         const allergensHTML = data.allergens.map((allergen, index) => {
@@ -1187,14 +1255,21 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // Collect ingredients WITH METADATA from data-* attributes
-        document.querySelectorAll('.ingredient-name-input').forEach((input, index) => {
+        // IMPORTANT: Skip child ingredients (data-is-child="true") as they're part of their parent
+        document.querySelectorAll('.ingredient-name-input').forEach((input) => {
+            const isChild = input.getAttribute('data-is-child') === 'true';
+            if (isChild) return; // Skip children, they're handled with their parent
+            
+            const index = input.getAttribute('data-index');
             const name = input.value;
-            const percentage = parseFloat(document.querySelector(`.percentage-input[data-index="${index}"]`).value) || 0;
+            const percentageInput = document.querySelector(`.percentage-input[data-index="${index}"]`);
+            const percentage = percentageInput ? parseFloat(percentageInput.value) || 0 : 0;
             
             // CRITICAL FIX: Extract metadata from data-* attributes
             const ingredientType = input.getAttribute('data-type') || 'mix';
             const baseRecipeName = input.getAttribute('data-base-recipe-name') || '';
             const baseRecipeNumber = input.getAttribute('data-base-recipe-number') || '';
+            const hasChildren = input.getAttribute('data-has-children') === 'true';
             
             if (name.trim()) {
                 const ingredient = { 
@@ -1202,7 +1277,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     percentage: percentage 
                 };
                 
-                // Add metadata if this is a base ingredient
+                // Add metadata
                 if (ingredientType) {
                     ingredient.type = ingredientType;
                 }
@@ -1211,6 +1286,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (baseRecipeNumber) {
                     ingredient.base_recipe_number = baseRecipeNumber;
+                }
+                if (hasChildren) {
+                    ingredient.has_children = true;
+                    
+                    // Collect children from window.currentRecipeData if available
+                    const currentIng = window.currentRecipeData?.ingredients?.find(ing => 
+                        ing.name === ingredient.name && ing.has_children
+                    );
+                    if (currentIng && currentIng.children) {
+                        ingredient.children = currentIng.children;
+                    }
                 }
                 
                 editedData.ingredients.push(ingredient);
@@ -1281,15 +1367,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // CRITICAL FIX: Ensure base_recipe is properly included
-        // Check if we have base ingredients and construct base_recipe object
-        const baseIngredients = recipeData.ingredients.filter(ing => ing.type === 'base');
-        if (baseIngredients.length > 0 && !recipeData.base_recipe) {
-            // Construct base_recipe from base ingredients
-            const firstBaseIngredient = baseIngredients[0];
+        // Check if we have ingredients with children (base recipe structure) and construct base_recipe object
+        const ingredientsWithChildren = recipeData.ingredients.filter(ing => ing.has_children);
+        if (ingredientsWithChildren.length > 0 && !recipeData.base_recipe) {
+            // Construct base_recipe from ingredient with children
+            const parentIngredient = ingredientsWithChildren[0];
             recipeData.base_recipe = {
                 has_base: true,
-                base_recipe_number: firstBaseIngredient.base_recipe_number || null,
-                base_ingredient_name: firstBaseIngredient.base_recipe_name || firstBaseIngredient.name
+                base_recipe_number: parentIngredient.base_recipe_number || null,
+                base_ingredient_name: parentIngredient.base_recipe_name || parentIngredient.name
             };
         }
 
@@ -1297,7 +1383,8 @@ document.addEventListener('DOMContentLoaded', function() {
             product_image: recipeData.image_url,
             nutri_score_image: recipeData.nutri_score_image,
             base_recipe: recipeData.base_recipe,
-            has_base_ingredients: baseIngredients.length > 0
+            ingredients_with_children: ingredientsWithChildren.length,
+            total_ingredients: recipeData.ingredients.length
         });
 
         // Send to backend to create new recipe
@@ -1333,37 +1420,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getCurrentRecipeData() {
         // Extract current data from form fields WITH METADATA
-        const ingredients = Array.from(document.querySelectorAll('.ingredient-name-input')).map((input, index) => {
-            const name = input.value;
-            const percentage = parseFloat(document.querySelector(`.percentage-input[data-index="${index}"]`)?.value) || 0;
-            
-            // Extract metadata from data-* attributes
-            const ingredientType = input.getAttribute('data-type') || '';
-            const baseRecipeName = input.getAttribute('data-base-recipe-name') || '';
-            const baseRecipeNumber = input.getAttribute('data-base-recipe-number') || '';
-            
-            const ingredient = { name, percentage };
-            
-            // Add metadata if present
-            if (ingredientType) {
-                ingredient.type = ingredientType;
-            }
-            if (baseRecipeName) {
-                ingredient.base_recipe_name = baseRecipeName;
-            }
-            if (baseRecipeNumber) {
-                ingredient.base_recipe_number = baseRecipeNumber;
-            }
-            
-            return ingredient;
-        }).filter(ing => ing.name.trim());
+        // IMPORTANT: Skip child ingredients, they're part of their parent
+        const ingredients = Array.from(document.querySelectorAll('.ingredient-name-input'))
+            .filter(input => input.getAttribute('data-is-child') !== 'true')
+            .map((input) => {
+                const index = input.getAttribute('data-index');
+                const name = input.value;
+                const percentageInput = document.querySelector(`.percentage-input[data-index="${index}"]`);
+                const percentage = percentageInput ? parseFloat(percentageInput.value) || 0 : 0;
+                
+                // Extract metadata from data-* attributes
+                const ingredientType = input.getAttribute('data-type') || '';
+                const baseRecipeName = input.getAttribute('data-base-recipe-name') || '';
+                const baseRecipeNumber = input.getAttribute('data-base-recipe-number') || '';
+                const hasChildren = input.getAttribute('data-has-children') === 'true';
+                
+                const ingredient = { name, percentage };
+                
+                // Add metadata if present
+                if (ingredientType) {
+                    ingredient.type = ingredientType;
+                }
+                if (baseRecipeName) {
+                    ingredient.base_recipe_name = baseRecipeName;
+                }
+                if (baseRecipeNumber) {
+                    ingredient.base_recipe_number = baseRecipeNumber;
+                }
+                if (hasChildren) {
+                    ingredient.has_children = true;
+                    
+                    // Collect children from window.currentRecipeData if available
+                    const currentIng = window.currentRecipeData?.ingredients?.find(ing => 
+                        ing.name === ingredient.name && ing.has_children
+                    );
+                    if (currentIng && currentIng.children) {
+                        ingredient.children = currentIng.children;
+                    }
+                }
+                
+                return ingredient;
+            }).filter(ing => ing.name.trim());
         
-        // Check if we have base ingredients and construct base_recipe object
-        const baseIngredients = ingredients.filter(ing => ing.type === 'base');
-        const base_recipe = baseIngredients.length > 0 ? {
+        // Check if we have ingredients with children (base recipe structure) and construct base_recipe object
+        const ingredientsWithChildren = ingredients.filter(ing => ing.has_children);
+        const base_recipe = ingredientsWithChildren.length > 0 ? {
             has_base: true,
-            base_recipe_number: baseIngredients[0].base_recipe_number || null,
-            base_ingredient_name: baseIngredients[0].base_recipe_name || baseIngredients[0].name
+            base_recipe_number: ingredientsWithChildren[0].base_recipe_number || null,
+            base_ingredient_name: ingredientsWithChildren[0].base_recipe_name || ingredientsWithChildren[0].name
         } : {};
         
         return {
