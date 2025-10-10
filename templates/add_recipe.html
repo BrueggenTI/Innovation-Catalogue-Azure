@@ -454,19 +454,26 @@ document.addEventListener('DOMContentLoaded', function() {
             window.currentRecipeData = recipeData;
             
             // Check if this is a Mix recipe with base recipe and load base ingredients
+            console.log('Checking for base recipe...', recipeData.base_recipe);
             if (recipeData.base_recipe && recipeData.base_recipe.has_base && recipeData.base_recipe.base_recipe_number) {
+                console.log('Base recipe detected! Loading base ingredients...');
                 loadBaseRecipeIngredients(recipeData.base_recipe.base_recipe_number, recipeData);
+            } else {
+                console.log('No base recipe detected or missing base_recipe_number');
             }
         }, 100);
     }
     
     function loadBaseRecipeIngredients(baseRecipeNumber, currentRecipeData) {
         console.log('Loading base recipe ingredients for recipe number:', baseRecipeNumber);
+        console.log('Current recipe data:', currentRecipeData);
+        console.log('Current ingredients:', currentRecipeData.ingredients);
         
-        // IDEMPOTENCE: Check if base ingredients already loaded
-        const alreadyLoaded = currentRecipeData.ingredients.some(ing => ing.type === 'base');
+        // IDEMPOTENCE: Check if base ingredients already loaded (check for children, not top-level base ingredients)
+        const alreadyLoaded = currentRecipeData.ingredients.some(ing => ing.children && ing.children.length > 0);
+        console.log('Already loaded check:', alreadyLoaded);
         if (alreadyLoaded) {
-            console.log('Base ingredients already loaded, skipping...');
+            console.log('Base ingredients already loaded (children exist), skipping...');
             return;
         }
         
