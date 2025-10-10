@@ -1798,9 +1798,13 @@ def analyze_recipe():
         - EXTRACT information from paragraphs and bullet points
 
         EXTRACTION PRIORITY ORDER:
-        1. FIND THE RECIPE NUMBER - Look specifically for "Ref.:" followed by a number pattern (e.g., "Ref.: 000014567", "Ref.: 00001234")
+        1. FIND THE RECIPE NUMBER - Look specifically for:
+           - "Ref.:" followed by a number pattern (e.g., "Ref.: 000014567", "Ref.: 00001234")
+           - In PDF tables: FIRST COLUMN named "Spezifikation" contains recipe numbers (12-digit patterns like 000001002664)
+           - Recipe numbers are typically 12-digit numbers starting with zeros
         2. FIND THE PRODUCT NAME - Look for slide titles, headings, product descriptions, main headers
         3. IDENTIFY ALL INGREDIENTS - Search for ingredient lists, Zutatenliste, compositions, percentage tables
+           - CRITICAL: Each ingredient row may have its OWN recipe number in the "Spezifikation" column
         4. EXTRACT ALL NUTRITIONAL DATA - Look for Nährwerte, nutritional tables, "per 100g" values, energy values
         5. LOCATE ALLERGEN INFORMATION - Find allergen declarations, "Enthält", allergy warnings, disclaimers
         6. IDENTIFY PRODUCT CLAIMS - Look for health claims, certifications, quality statements, marketing text
@@ -1819,7 +1823,7 @@ def analyze_recipe():
         MANDATORY JSON OUTPUT FORMAT (ALL TEXT IN ENGLISH):
 
         {{
-            "recipe_number": "SEARCH FOR 'Ref.:' followed by number pattern. Extract ONLY the number (e.g., 'Ref.: 000014567' → '000014567'). If not found: null",
+            "recipe_number": "SEARCH FOR recipe number using MULTIPLE METHODS: (1) Look for 'Ref.:' followed by number pattern (e.g., 'Ref.: 000014567'). (2) In PDF tables, check FIRST COLUMN labeled 'Spezifikation' for 12-digit numbers (e.g., 000001002664, 000001003320). (3) Look for 12-digit patterns starting with zeros. Extract ONLY the number. If not found: null",
             "name": "FIND AND EXTRACT the product name/title from document headers, titles, or descriptions. Translate to English. If not found: 'Unknown Product'",
             "category": "ANALYZE product type and select from: Flakes, Multigrain & Branflakes, Puffed Cereals, Extrudates & Co-Extrudates, Traditional Muesli, Crunchy Muesli, Bio & Fair-Trade Muesli, Oat Flakes, Wheat, Rye & Barley Flakes, Bars",
             "description": "EXTRACT product description, benefits, or marketing text from document. Translate to English. If none found: 'No description available'",
@@ -1829,12 +1833,12 @@ def analyze_recipe():
             "market": "SEARCH FOR 'Market', 'Markt', 'Region', 'Target Market', or 'Zielmarkt' information. Extract ONLY if it refers to a geographical market or region (e.g., 'Deutschland', 'Europe', 'Asia'). Return null if no market information found or if it refers to a specific customer",
             "ingredients": [
                 "SCAN ENTIRE DOCUMENT for ingredient lists, Zutatenliste, compositions. Include ALL ingredients found:",
-                {{"name": "TRANSLATE ingredient name to English (e.g., Haferflocken → Oat flakes)", "percentage": "EXTRACT exact percentage if given, otherwise 0", "recipe_number": "SEARCH FOR recipe number (Ref.: or number pattern like 000001234567) associated with THIS specific ingredient. Look in tables, component lists, or ingredient sections. Extract ONLY the number. If not found: null"}}
+                {{"name": "TRANSLATE ingredient name to English (e.g., Haferflocken → Oat flakes)", "percentage": "EXTRACT exact percentage if given, otherwise 0", "recipe_number": "CRITICAL: SEARCH FOR recipe number associated with THIS SPECIFIC INGREDIENT using these methods: (1) In PDF tables, check the 'Spezifikation' column (FIRST COLUMN) in the SAME ROW as this ingredient - it contains the ingredient's recipe number (12-digit pattern like 000001002664). (2) Look for 'Ref.:' near the ingredient. (3) Look for 12-digit number patterns in the same row. Extract ONLY the number. If not found: null"}}
             ],
             "base_recipe": {{
                 "has_base": "CRITICAL: PERFORM NUMERICAL COMPARISON. STEP-BY-STEP: (1) Extract ALL ingredient percentages as numbers. (2) Find the MAXIMUM percentage value. (3) Compare: IF max_percentage > 80 THEN return true, ELSE return false. EXAMPLES: 90% → true (because 90 > 80), 85% → true (because 85 > 80), 75% → false (because 75 < 80), 50% → false. THIS MUST BE A BOOLEAN VALUE (true or false), NOT A STRING.",
                 "base_ingredient_name": "IF has_base is true: Extract the NAME of the ingredient that has percentage >80% (translate to English). EXAMPLE: If 'Chococrisp Caramel' has 90%, return 'Chococrisp Caramel'. Otherwise: null",
-                "base_recipe_number": "IF has_base is true: SEARCH FOR the recipe number (Ref.:) associated with this base ingredient. Look in the SAME ROW or NEAR the high-percentage ingredient in tables. Look for patterns like 'Base Recipe:', 'Grundrezept:', 'Ref.:', or 12-digit numbers (e.g., 000001002664). Extract ONLY the number. Otherwise: null"
+                "base_recipe_number": "IF has_base is true: SEARCH FOR the recipe number associated with the base ingredient (the one with >80% percentage) using these methods: (1) In PDF tables, check the 'Spezifikation' column (FIRST COLUMN) in the SAME ROW as the high-percentage ingredient - this contains the base recipe number (12-digit pattern like 000001002664). (2) Look for 'Ref.:' or 'Grundrezept:' near the ingredient. (3) Look for 12-digit number patterns in the same row. Extract ONLY the number. Otherwise: null"
             }},
             "nutritional_info": {{
                 "energy": "FIND energy/Energie/Brennwert in kcal per 100g. Convert kJ to kcal if needed (divide by 4.184). Extract number only",
