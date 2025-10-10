@@ -1985,6 +1985,19 @@ def analyze_recipe():
             
             if ai_response:
                 recipe_data = json.loads(ai_response)
+                
+                # CRITICAL FIX: Ensure has_base is always a Boolean
+                if 'base_recipe' in recipe_data and isinstance(recipe_data['base_recipe'], dict):
+                    has_base_value = recipe_data['base_recipe'].get('has_base')
+                    # Convert string "true"/"false" to Boolean
+                    if isinstance(has_base_value, str):
+                        recipe_data['base_recipe']['has_base'] = has_base_value.lower() == 'true'
+                    elif has_base_value is None:
+                        recipe_data['base_recipe']['has_base'] = False
+                    # Ensure it's a proper Boolean type
+                    else:
+                        recipe_data['base_recipe']['has_base'] = bool(has_base_value)
+                
                 # Validate that required fields are present
                 if 'name' not in recipe_data:
                     recipe_data['name'] = 'Unknown Product'
