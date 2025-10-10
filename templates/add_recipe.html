@@ -455,11 +455,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check if this is a Mix recipe with base recipe and load base ingredients
             console.log('Checking for base recipe...', recipeData.base_recipe);
-            if (recipeData.base_recipe && recipeData.base_recipe.has_base && recipeData.base_recipe.base_recipe_number) {
+            console.log('has_base value:', recipeData.base_recipe?.has_base, 'type:', typeof recipeData.base_recipe?.has_base);
+            
+            // ROBUST CHECK: Accept both Boolean true and String "true"
+            const hasBase = recipeData.base_recipe?.has_base === true || recipeData.base_recipe?.has_base === "true";
+            
+            if (recipeData.base_recipe && hasBase && recipeData.base_recipe.base_recipe_number) {
                 console.log('Base recipe detected! Loading base ingredients...');
                 loadBaseRecipeIngredients(recipeData.base_recipe.base_recipe_number, recipeData);
             } else {
-                console.log('No base recipe detected or missing base_recipe_number');
+                console.log('No base recipe detected. Details:', {
+                    has_base_recipe_obj: !!recipeData.base_recipe,
+                    has_base: hasBase,
+                    has_recipe_number: !!recipeData.base_recipe?.base_recipe_number
+                });
             }
         }, 100);
     }
