@@ -643,7 +643,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function generatePreviewHTML(data) {
         let ingredientIndex = 0;
-        const ingredientsHTML = data.ingredients.map((ing) => {
+        
+        // CRITICAL FIX: Filter out ingredients that match the base_recipe_number
+        // These should only appear as children, not as separate ingredients
+        const baseRecipeNum = data.base_recipe?.base_recipe_number;
+        const filteredIngredients = data.ingredients.filter(ing => {
+            // Keep ingredient if:
+            // 1. No base recipe number in the data, OR
+            // 2. Ingredient's recipe_number doesn't match the base_recipe_number
+            const keepIngredient = !baseRecipeNum || ing.recipe_number !== baseRecipeNum;
+            
+            if (!keepIngredient) {
+                console.log(`Filtering out ingredient "${ing.name}" because it matches base_recipe_number ${baseRecipeNum}`);
+            }
+            
+            return keepIngredient;
+        });
+        
+        console.log(`Generating preview HTML with ${filteredIngredients.length} ingredients (filtered from ${data.ingredients.length})`);
+        
+        const ingredientsHTML = filteredIngredients.map((ing) => {
             const currentIndex = ingredientIndex;
             ingredientIndex++;
             
