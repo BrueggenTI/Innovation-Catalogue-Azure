@@ -2165,29 +2165,10 @@ def publish_recipe():
         new_product.category = data.get('category', 'Traditional Swiss Muesli')
         new_product.description = data.get('description', '')
 
-        # Store ingredients as JSON
+        # Store ingredients as JSON - preserve nested structure with children
         ingredients = data.get('ingredients', [])
         
-        # NESTED STRUCTURE: Flatten ingredients with children structure
-        # Frontend sends ingredients with "children" array for base recipe ingredients
-        flattened_ingredients = []
-        for ing in ingredients:
-            if isinstance(ing, dict):
-                # Add the main ingredient (without children and has_children fields in final output)
-                main_ing = {k: v for k, v in ing.items() if k not in ('children', 'has_children')}
-                flattened_ingredients.append(main_ing)
-                
-                # Add children as separate ingredients (already have correct metadata from frontend)
-                if 'children' in ing and isinstance(ing['children'], list):
-                    for child in ing['children']:
-                        if isinstance(child, dict):
-                            flattened_ingredients.append(child)
-                            logging.info(f"Added child ingredient: {child.get('name')} (type: {child.get('type')}) from parent {ing.get('name')}")
-        
-        # Replace ingredients with flattened structure
-        ingredients = flattened_ingredients
-        
-        logging.info(f"Total ingredients after flattening: {len(ingredients)} ingredients")
+        logging.info(f"Storing {len(ingredients)} ingredients with nested structure preserved")
         
         new_product.ingredients = json.dumps(ingredients)
 
