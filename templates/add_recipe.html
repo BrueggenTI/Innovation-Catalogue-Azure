@@ -568,30 +568,57 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generatePreviewHTML(data) {
-        const ingredientsHTML = data.ingredients.map((ing, index) => 
-            `<tr class="draggable-ingredient" draggable="true">
+        const ingredientsHTML = data.ingredients.map((ing, index) => {
+            // Extract metadata for base recipe ingredients
+            const ingredientType = ing.type || 'mix';
+            const baseRecipeName = ing.base_recipe_name || '';
+            const baseRecipeNumber = ing.base_recipe_number || '';
+            
+            // Visual styling for base vs mix ingredients
+            const rowStyle = ingredientType === 'base' 
+                ? 'background-color: #fff3cd; border-left: 4px solid #ffc107;' 
+                : '';
+            const badge = ingredientType === 'base' 
+                ? `<span class="badge bg-warning text-dark ms-2" title="From base recipe: ${baseRecipeName}">BASE</span>` 
+                : '';
+            
+            return `<tr class="draggable-ingredient" draggable="true" 
+                        data-type="${ingredientType}" 
+                        data-base-recipe-name="${baseRecipeName}" 
+                        data-base-recipe-number="${baseRecipeNumber}"
+                        style="${rowStyle}">
                 <td>
                     <div class="input-group">
                         <span class="input-group-text drag-handle" style="cursor: move; display: inline-flex;">
                             <i class="fas fa-grip-vertical"></i>
                         </span>
                         <input type="text" class="form-control ingredient-name-input" 
-                               value="${ing.name}" data-index="${index}" 
+                               value="${ing.name}" 
+                               data-index="${index}" 
+                               data-type="${ingredientType}"
+                               data-base-recipe-name="${baseRecipeName}"
+                               data-base-recipe-number="${baseRecipeNumber}"
                                style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
+                        ${badge}
                     </div>
                 </td>
                 <td>
                     <div class="input-group">
                         <input type="number" class="form-control percentage-input text-end" 
-                               value="${ing.percentage}" data-index="${index}" min="0" max="100" step="0.1"
+                               value="${ing.percentage}" 
+                               data-index="${index}" 
+                               data-type="${ingredientType}"
+                               data-base-recipe-name="${baseRecipeName}"
+                               data-base-recipe-number="${baseRecipeNumber}"
+                               min="0" max="100" step="0.1"
                                style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem; min-width: 100px; width: 100px;">
                         <button type="button" class="btn btn-outline-danger btn-sm remove-existing-ingredient-btn" data-index="${index}" style="display: inline-block;">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </td>
-            </tr>`
-        ).join('');
+            </tr>`;
+        }).join('');
 
         const allergensHTML = data.allergens.map((allergen, index) => 
             `<div class="input-group mb-2 me-2 draggable-allergen" draggable="true" style="width: 100%; display: flex; margin-bottom: 8px;">
@@ -1116,15 +1143,39 @@ document.addEventListener('DOMContentLoaded', function() {
             // New fields: Exclusive, Department, Customer
             exclusive: document.getElementById('exclusiveCheck')?.checked ? 'ja' : 'nein',
             department: document.getElementById('department')?.value || null,
-            customer: document.getElementById('customer')?.value || null
+            customer: document.getElementById('customer')?.value || null,
+            // Preserve base_recipe metadata
+            base_recipe: window.currentRecipeData?.base_recipe || {}
         };
 
-        // Collect ingredients
+        // Collect ingredients WITH METADATA from data-* attributes
         document.querySelectorAll('.ingredient-name-input').forEach((input, index) => {
             const name = input.value;
             const percentage = parseFloat(document.querySelector(`.percentage-input[data-index="${index}"]`).value) || 0;
+            
+            // CRITICAL FIX: Extract metadata from data-* attributes
+            const ingredientType = input.getAttribute('data-type') || 'mix';
+            const baseRecipeName = input.getAttribute('data-base-recipe-name') || '';
+            const baseRecipeNumber = input.getAttribute('data-base-recipe-number') || '';
+            
             if (name.trim()) {
-                editedData.ingredients.push({ name: name.trim(), percentage: percentage });
+                const ingredient = { 
+                    name: name.trim(), 
+                    percentage: percentage 
+                };
+                
+                // Add metadata if this is a base ingredient
+                if (ingredientType) {
+                    ingredient.type = ingredientType;
+                }
+                if (baseRecipeName) {
+                    ingredient.base_recipe_name = baseRecipeName;
+                }
+                if (baseRecipeNumber) {
+                    ingredient.base_recipe_number = baseRecipeNumber;
+                }
+                
+                editedData.ingredients.push(ingredient);
             }
         });
 
@@ -1191,9 +1242,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        console.log('Publishing recipe with images:', {
+        // CRITICAL FIX: Ensure base_recipe is properly included
+        // Check if we have base ingredients and construct base_recipe object
+        const baseIngredients = recipeData.ingredients.filter(ing => ing.type === 'base');
+        if (baseIngredients.length > 0 && !recipeData.base_recipe) {
+            // Construct base_recipe from base ingredients
+            const firstBaseIngredient = baseIngredients[0];
+            recipeData.base_recipe = {
+                has_base: true,
+                base_recipe_number: firstBaseIngredient.base_recipe_number || null,
+                base_ingredient_name: firstBaseIngredient.base_recipe_name || firstBaseIngredient.name
+            };
+        }
+
+        console.log('Publishing recipe with images and base_recipe:', {
             product_image: recipeData.image_url,
-            nutri_score_image: recipeData.nutri_score_image
+            nutri_score_image: recipeData.nutri_score_image,
+            base_recipe: recipeData.base_recipe,
+            has_base_ingredients: baseIngredients.length > 0
         });
 
         // Send to backend to create new recipe
@@ -1228,15 +1294,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getCurrentRecipeData() {
-        // Extract current data from form fields
+        // Extract current data from form fields WITH METADATA
+        const ingredients = Array.from(document.querySelectorAll('.ingredient-name-input')).map((input, index) => {
+            const name = input.value;
+            const percentage = parseFloat(document.querySelector(`.percentage-input[data-index="${index}"]`)?.value) || 0;
+            
+            // Extract metadata from data-* attributes
+            const ingredientType = input.getAttribute('data-type') || '';
+            const baseRecipeName = input.getAttribute('data-base-recipe-name') || '';
+            const baseRecipeNumber = input.getAttribute('data-base-recipe-number') || '';
+            
+            const ingredient = { name, percentage };
+            
+            // Add metadata if present
+            if (ingredientType) {
+                ingredient.type = ingredientType;
+            }
+            if (baseRecipeName) {
+                ingredient.base_recipe_name = baseRecipeName;
+            }
+            if (baseRecipeNumber) {
+                ingredient.base_recipe_number = baseRecipeNumber;
+            }
+            
+            return ingredient;
+        }).filter(ing => ing.name.trim());
+        
+        // Check if we have base ingredients and construct base_recipe object
+        const baseIngredients = ingredients.filter(ing => ing.type === 'base');
+        const base_recipe = baseIngredients.length > 0 ? {
+            has_base: true,
+            base_recipe_number: baseIngredients[0].base_recipe_number || null,
+            base_ingredient_name: baseIngredients[0].base_recipe_name || baseIngredients[0].name
+        } : {};
+        
         return {
             name: document.getElementById('recipeName')?.value || '',
             description: document.getElementById('recipeDescription')?.value || '',
             category: document.getElementById('recipeCategory')?.value || 'Traditional Swiss Muesli',
-            ingredients: Array.from(document.querySelectorAll('.ingredient-name-input')).map((input, index) => ({
-                name: input.value,
-                percentage: parseFloat(document.querySelector(`.percentage-input[data-index="${index}"]`)?.value) || 0
-            })).filter(ing => ing.name.trim()),
+            ingredients: ingredients,
             nutritional_info: {
                 energy: document.getElementById('energy')?.value || 0,
                 fat: document.getElementById('fat')?.value || 0,
@@ -1253,7 +1349,8 @@ document.addEventListener('DOMContentLoaded', function() {
             recipe_number: document.getElementById('recipeNumber')?.value || null,
             exclusive: document.getElementById('exclusiveCheck')?.checked ? 'ja' : 'nein',
             department: document.getElementById('department')?.value || null,
-            customer: document.getElementById('customer')?.value || null
+            customer: document.getElementById('customer')?.value || null,
+            base_recipe: base_recipe
         };
     }
 
@@ -1474,6 +1571,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const newRow = document.createElement('tr');
         newRow.className = 'draggable-ingredient';
         newRow.setAttribute('draggable', 'true');
+        // New ingredients are always "mix" type by default
+        newRow.setAttribute('data-type', 'mix');
+        newRow.setAttribute('data-base-recipe-name', '');
+        newRow.setAttribute('data-base-recipe-number', '');
         newRow.innerHTML = `
             <td>
                 <div class="input-group">
@@ -1481,13 +1582,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-grip-vertical"></i>
                     </span>
                     <input type="text" class="form-control ingredient-name-input" 
-                           value="" data-index="${index}" placeholder="Enter ingredient name">
+                           value="" 
+                           data-index="${index}" 
+                           data-type="mix"
+                           data-base-recipe-name=""
+                           data-base-recipe-number=""
+                           placeholder="Enter ingredient name">
                 </div>
             </td>
             <td>
                 <div class="input-group">
                     <input type="number" class="form-control percentage-input text-end" 
-                           value="0" data-index="${index}" min="0" max="100" step="0.1" 
+                           value="0" 
+                           data-index="${index}" 
+                           data-type="mix"
+                           data-base-recipe-name=""
+                           data-base-recipe-number=""
+                           min="0" max="100" step="0.1" 
                            style="min-width: 100px; width: 100px;">
                     <button type="button" class="btn btn-outline-danger btn-sm remove-ingredient-btn">
                         <i class="fas fa-times"></i>

@@ -1,0 +1,56 @@
+Lassen Sie mich nun die spezifischen Code-Bereiche untersuchen, die für das Base Recipe Feature verantwortlich sind:
+
+
+Examined recipe display and submission
+Lassen Sie mich nun die Frontend-Logik untersuchen:
+
+
+Planned recipe publishing mechanism
+Lassen Sie mich nun den Rest der Funktion lesen, die das Rezept publiziert:
+
+
+Diagnosed data preservation issue (22 seconds)
+Analyse des Base Recipe Problems
+Ich habe die Codebasis gründlich analysiert und das Hauptproblem identifiziert. Lassen Sie mich Ihnen die Kernprobleme erklären:
+
+Gefundene Probleme:
+Problem 1: Fehlende Datenübertragung beim Speichern
+In der Funktion saveRecipeChanges() (Zeile 1092-1161 in add_recipe.html) werden die Zutaten nur aus den DOM-Elementen gelesen:
+
+// Zeile 1123-1129
+document.querySelectorAll('.ingredient-name-input').forEach((input, index) => {
+    const name = input.value;
+    const percentage = parseFloat(document.querySelector(`.percentage-input[data-index="${index}"]`).value) || 0;
+    if (name.trim()) {
+        editedData.ingredients.push({ name: name.trim(), percentage: percentage });
+    }
+});
+Das Problem: Diese Logik sammelt nur name und percentage, aber nicht die wichtigen Felder type, base_recipe_name, und base_recipe_number, die für Base Recipe Zutaten notwendig sind!
+
+Problem 2: Base Recipe Daten werden beim Publish nicht übertragen
+Wenn das Rezept publiziert wird (Zeile 1163-1228), wird window.currentRecipeData verwendet. ABER wenn der Benutzer vorher "Save Changes" geklickt hat, wurden die Base Recipe Metadaten bereits entfernt!
+
+Problem 3: Backend erwartet base_recipe im falschen Format
+Im Backend (routes.py, Zeile 2155) wird nach base_recipe_data = data.get('base_recipe', {}) gesucht, aber das Frontend sendet diese Daten möglicherweise nicht korrekt mit.
+
+Problem 4: Frontend lädt Base Ingredients, aber sie werden nicht im Formular persistiert
+Die Funktion loadBaseRecipeIngredients() (Zeile 463-568) fügt die Base Ingredients zu window.currentRecipeData hinzu und regeneriert die Preview-HTML. Jedoch:
+
+Die generierten Ingredient-Rows verlieren die Metadaten (type, base_recipe_name, etc.)
+Beim Sammeln der Daten werden nur Name und Percentage extrahiert
+Lösungsansatz:
+Ich würde folgendes implementieren:
+
+Metadaten-Attribute in HTML-Elementen speichern: Erweitern Sie die Ingredient-Rows um data-* Attribute für type, base_recipe_name, und base_recipe_number
+
+saveRecipeChanges() korrigieren: Die Funktion muss auch die Metadaten aus den data-* Attributen lesen
+
+publishRecipe() verbessern: Sicherstellen, dass base_recipe Objekt korrekt mitgesendet wird
+
+generatePreviewHTML() erweitern: Die Funktion muss die Metadaten in die HTML-Rows einbetten
+
+Möchten Sie, dass ich diese Fehler behebe? Ich würde einen detaillierten Plan erstellen, um:
+
+Die Metadaten korrekt durch den gesamten Flow zu transportieren
+Sicherzustellen, dass Base Recipe Ingredients im Erstellungsformular angezeigt werden
+Die korrekte Berechnung und Anzeige zu gewährleisten
