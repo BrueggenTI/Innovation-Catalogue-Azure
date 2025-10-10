@@ -438,20 +438,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showRecipePreview(recipeData) {
+        console.log('showRecipePreview called with:', recipeData);
+        
         // Generate preview HTML and show modal
         const previewContent = document.getElementById('recipePreviewContent');
         previewContent.innerHTML = generatePreviewHTML(recipeData);
 
-        const modal = new bootstrap.Modal(document.getElementById('recipePreviewModal'));
-        modal.show();
-
-        // AUTOMATICALLY START IN EDIT MODE after AI analysis
-        setTimeout(() => {
-            // The form is already in edit mode, but ensure all event listeners are attached
+        const modalElement = document.getElementById('recipePreviewModal');
+        const modal = new bootstrap.Modal(modalElement);
+        
+        // Store recipe data globally BEFORE showing modal
+        window.currentRecipeData = recipeData;
+        
+        // Use Bootstrap Modal Event 'shown.bs.modal' for reliable timing
+        // This event fires AFTER the modal is fully visible
+        modalElement.addEventListener('shown.bs.modal', function onModalShown() {
+            console.log('Modal fully shown, initializing...');
+            
+            // Remove event listener to prevent multiple calls
+            modalElement.removeEventListener('shown.bs.modal', onModalShown);
+            
+            // Attach event listeners
             attachDragAndDropEventListeners();
-
-            // Store recipe data globally for later use
-            window.currentRecipeData = recipeData;
             
             // Check if this is a Mix recipe with base recipe and load base ingredients
             console.log('Checking for base recipe...', recipeData.base_recipe);
@@ -470,7 +478,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     has_recipe_number: !!recipeData.base_recipe?.base_recipe_number
                 });
             }
-        }, 100);
+        });
+        
+        // Show modal AFTER event listener is attached
+        modal.show();
     }
     
     function loadBaseRecipeIngredients(baseRecipeNumber, currentRecipeData) {
