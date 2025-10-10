@@ -1,0 +1,34 @@
+Found 0 floating cards to animate
+main.js:21 Found 0 floating cards to animate
+main.js:103  Navbar element not found
+initializeScrollEffects @ main.js:103
+main.js:539 Brüggen Innovation Catalogue initialized successfully
+main.js:441 Page load time: -2183.9000000953674 ms
+favicon.ico:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+main.js:319  Uncaught SyntaxError: Failed to execute 'querySelector' on 'Document': '#' is not a valid selector.
+    at HTMLAnchorElement.<anonymous> (main.js:319:41)
+add-recipe:755 showRecipePreview called with: Object
+add-recipe:965 Generating preview HTML with 3 ingredients
+add-recipe:770 Modal fully shown, initializing...
+add-recipe:779 Checking for base recipe... Object
+add-recipe:780 has_base value: true type: boolean
+add-recipe:786 Base recipe detected! Loading base ingredients...
+add-recipe:802 Loading base recipe ingredients for recipe number: 000001002664
+add-recipe:803 Current recipe data: Objectallergens: (2) ['Contains milk', 'May contain gluten']base_recipe: {base_ingredient_name: 'Chococrisp Caramel', base_recipe_number: '000001002664', has_base: true}category: "Crunchy Muesli"claims: (2) ['High in fiber', 'Contains no new process/ingredients']customer: "Peter Kölln"department: "SD2"description: "Crunchy muesli with chocolate and caramel flavor, suitable for breakfast or snacking."exclusive: "ja"extracted_images: []ingredients: (3) [{…}, {…}, {…}]market: nullname: "Crunchy MS 1212 Chocolate Caramel 500g"nutritional_info: {carbohydrates: 63.94, energy: 454, fat: 16.54, fiber: 6.66, protein: 9.21, …}recipe_number: "000001003320"storage_conditions: "Store in a cool, dry place, protect from direct sunlight"[[Prototype]]: Object
+add-recipe:804 Current ingredients: Array(3)0: {name: 'Chococrisp Caramel', percentage: 90, recipe_number: '000001002664', type: 'mix', children: Array(10), …}1: {name: 'Dark chocolate trapezoid shape, 44%, RAC-MB, Peter Kölln', percentage: 6, recipe_number: '000007001270', type: 'mix'}2: {name: 'Caramel pieces, RAC-MB, Peter Kölln', percentage: 4, recipe_number: '000007001269', type: 'mix'}length: 3[[Prototype]]: Array(0)
+add-recipe:808 Already loaded check: false
+add-recipe:829 Base recipe found: Crunchy Muesli Base
+add-recipe:830 Base product data: Objectcategory: "Crunchy Muesli"description: "No description available"id: 76image: "/static/images/product-placeholder.png"ingredients: (10) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]name: "Crunchy Muesli Base"[[Prototype]]: Object
+add-recipe:837 Base ingredients (already array): Array(10)0: {name: 'Large flake G8 BB 500 kg', percentage: 55.906301}1: {name: 'Sugar, kosher, VLOG', percentage: 14.213466}2: {name: 'Palm olein, segregated, kosher', percentage: 10.991747}3: {name: 'Wheat flour type 550, kosher', percentage: 6.632951}4: {name: 'Wheat flakes W8 loose', percentage: 6.443438}5: {name: 'Glucose-fructose syrup, tank, kosher', percentage: 5.685387}6: {name: 'Extruded whole grain oat product with cocoa', percentage: 5.495874}7: {name: 'Salt, food grade, kosher', percentage: 0.322172}8: {name: 'Caramel syrup, kosher', percentage: 0.322172}9: {name: 'Natural flavor type toffee, liquid, SC', percentage: 0.318998}length: 10[[Prototype]]: Array(0)
+add-recipe:852 Total base ingredients found: 10
+add-recipe:867 Found base carrier by name match: Chococrisp Caramel at 90%
+add-recipe:965 Generating preview HTML with 3 ingredients
+add-recipe:924 Base ingredients added as children of Chococrisp Caramel (10 items)
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+Refused to connect to 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css.map' because it violates the following Content Security Policy directive: "connect-src 'self'".
+
+Refused to connect to 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js.map' because it violates the following Content Security Policy directive: "connect-src 'self'".

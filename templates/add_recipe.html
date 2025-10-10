@@ -715,6 +715,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add nested children rows (base ingredients) - INDENTED, ITALIC, SMALLER
             if (ing.children && ing.children.length > 0) {
+                console.log(`Rendering ${ing.children.length} children for ingredient: ${ing.name}`);
                 ing.children.forEach((child) => {
                     const childIndex = ingredientIndex;
                     ingredientIndex++;
