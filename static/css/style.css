@@ -803,6 +803,31 @@ a:hover {
     filter: hue-rotate(0deg) saturate(1) brightness(1);
 }
 
+/* Header Logo Container */
+.header-logos-container {
+    gap: 2rem;
+}
+
+/* Header Logos - Both same size */
+.header-logo {
+    height: 80px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.header-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Innovation Platform Logo - Blend white background with header */
+.innovation-logo {
+    background: linear-gradient(135deg, #661c31 0%, #4d1525 100%);
+    mix-blend-mode: multiply;
+    padding: 10px;
+    border-radius: 8px;
+}
+
 /* Brüggen Title */
 .bruggen-title {
     font-family: var(--brg-font-body);
