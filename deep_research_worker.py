@@ -660,21 +660,21 @@ def determine_sources(strategy: Dict, keywords: List[str]) -> List[Dict]:
 def synthesize_data_with_ai(description: str, collected_data: List[Dict], keywords: List[str], categories: List[str]) -> Dict:
     """KI-Prompt 2: Synthetisiert gesammelte Daten zu kohärentem Report mit Fließtext und Fußnoten"""
     
-    system_instruction = """Du bist ein professioneller Food-Trend-Analyst und erstellst wissenschaftliche Reports.
+    system_instruction = """Du bist ein professioneller Food-Trend-Analyst und erstellst prägnante Reports.
 
-WICHTIG: Erstelle einen ausführlichen Report in FLIEẞTEXT-Format mit Fußnoten.
+WICHTIG: Erstelle einen KURZEN, prägnanten Report mit nur den wichtigsten Facts.
 
 Der Report soll folgende Struktur haben:
 - title: Ein prägnanter Titel für den Report
-- introduction: Einleitung als Fließtext (mindestens 300 Wörter) mit Fußnoten [1], [2] etc.
-- main_content: Hauptteil als langer Fließtext (mindestens 1000 Wörter), unterteilt in thematische Abschnitte. Jeder Absatz soll Fußnoten [X] enthalten, die auf die Quellen verweisen.
-- market_analysis: Marktanalyse als Fließtext (mindestens 400 Wörter) mit Fußnoten
-- consumer_insights: Consumer Insights als Fließtext (mindestens 400 Wörter) mit Fußnoten
-- future_outlook: Zukunftsprognosen als Fließtext (mindestens 400 Wörter) mit Fußnoten
-- conclusion: Fazit als Fließtext (mindestens 200 Wörter) mit Fußnoten
+- introduction: Kurze Beschreibung in 2-3 Sätzen mit Fußnoten [1], [2] etc.
+- main_content: Hauptteil - NICHT verwenden, leeres Feld lassen
+- market_analysis: Marktanalyse in 1-2 prägnanten Sätzen mit Fußnoten
+- consumer_insights: Consumer Insights in 1-2 prägnanten Sätzen mit Fußnoten
+- future_outlook: Zukunftsprognose - NICHT verwenden, leeres Feld lassen
+- conclusion: Fazit - NICHT verwenden, leeres Feld lassen
 - footnotes: Array von Fußnoten-Objekten mit {number: 1, source_name: "Name", source_url: "URL", context: "kurze Beschreibung"}
 
-Schreibe professionell, wissenschaftlich und detailliert. Nutze Fußnoten nach JEDEM relevanten Satz/Aussage.
+Halte alles SEHR KURZ und prägnant - nur die wichtigsten Facts in jeweils 1-2 Sätzen!
 Antworte in JSON Format."""
     
     data_summary = "\n\n".join([
@@ -690,10 +690,13 @@ Kategorien: {', '.join(categories)}
 Gesammelte Daten aus folgenden Quellen:
 {data_summary}
 
-Erstelle einen umfassenden, wissenschaftlichen Trend-Report in FLIEẞTEXT mit Fußnoten. 
-Jeder Abschnitt soll mindestens 300-1000 Wörter umfassen.
-Füge nach relevanten Aussagen Fußnoten ein (z.B. "...dieser Trend zeigt sich deutlich [1]...").
-Die Fußnoten sollen auf die oben genannten Quellen verweisen."""
+Erstelle einen KURZEN, prägnanten Trend-Report mit nur den wichtigsten Facts:
+- introduction: NUR 2-3 Sätze mit den wichtigsten Erkenntnissen
+- market_analysis: NUR 1-2 Sätze mit Key Market Data
+- consumer_insights: NUR 1-2 Sätze mit Key Consumer Insights
+
+WICHTIG: Halte alles sehr kurz und prägnant! Keine langen Texte!
+Füge Fußnoten [1], [2] etc. ein, die auf die oben genannten Quellen verweisen."""
     
     try:
         response = gemini_client.models.generate_content(
@@ -720,25 +723,19 @@ Die Fußnoten sollen auf die oben genannten Quellen verweisen."""
         
     except Exception as e:
         logging.error(f"Synthesis error: {e}")
-        # Fallback report mit Fließtext und Fußnoten
+        # Fallback report - KURZ und prägnant
         sources = [{"name": d['source'], "url": d['url']} for d in collected_data]
         return {
             "title": f"Trend-Analyse: {description[:100]}",
-            "introduction": f"Dieser umfassende Report untersucht {description}. Die vorliegende Analyse basiert auf Daten aus {len(collected_data)} verschiedenen wissenschaftlichen und industriellen Quellen [1][2][3]. Im Fokus stehen dabei die Bereiche {', '.join(keywords[:3])} innerhalb der Kategorien {', '.join(categories)}. Die Untersuchung zeigt signifikante Veränderungen im Konsumentenverhalten und identifiziert wichtige Markttrends, die für strategische Entscheidungen relevant sind [4][5].",
-            "main_content": f"Die Analyse zeigt einen fundamentalen Wandel im Bereich {keywords[0] if keywords else 'Food Innovation'}. Konsumenten legen zunehmend Wert auf gesundheitliche Aspekte ihrer Ernährung [1]. Dieser Trend manifestiert sich in einer steigenden Nachfrage nach proteinreichen und funktionalen Lebensmitteln [2][3]. Besonders ausgeprägt ist diese Entwicklung bei Müsli und Riegeln, wo traditionelle Produkte zunehmend durch gesundheitsorientierte Alternativen ersetzt werden [4]. Die Marktdaten belegen ein kontinuierliches Wachstum in diesem Segment über die letzten fünf Jahre [5][6]. Parallel dazu zeigt sich ein verstärktes Interesse an natürlichen Inhaltsstoffen und Clean-Label-Produkten [7]. Diese Präferenz wird von Verbrauchern aller Altersgruppen geteilt, wobei besonders Millennials und Generation Z als Treiber dieser Entwicklung identifiziert werden können [8].",
-            "market_analysis": f"Der Markt für proteinhaltige und gesund vermarktete Produkte verzeichnet ein beeindruckendes Wachstum [1][2]. Aktuelle Statistiken zeigen eine jährliche Wachstumsrate von 7-9% in den analysierten Kategorien [3]. Besonders der deutsche Markt entwickelt sich überdurchschnittlich, getrieben durch ein steigendes Gesundheitsbewusstsein der Bevölkerung [4][5]. International zeigen sich ähnliche Trends, wobei regionale Unterschiede in der Produktpräferenz erkennbar sind [6].",
-            "consumer_insights": f"Konsumenten treffen ihre Kaufentscheidungen zunehmend auf Basis von Gesundheitsaspekten und Nachhaltigkeitskriterien [1][2]. Transparenz bezüglich Inhaltsstoffen und Herkunft wird als Schlüsselfaktor identifiziert [3]. Die Analyse zeigt, dass 80% der Verbraucher bereit sind, einen Preisaufschlag für gesündere Alternativen zu zahlen [4][5]. Convenience bleibt ein wichtiger Faktor, muss jedoch mit Qualität und Gesundheitsnutzen kombiniert werden [6][7].",
-            "future_outlook": f"Die Zukunftsprognosen deuten auf eine Fortsetzung der identifizierten Trends hin [1][2]. Experten erwarten ein weiteres Marktwachstum von 5-8% pro Jahr in den kommenden fünf Jahren [3]. Pflanzliche Proteinquellen werden voraussichtlich an Bedeutung gewinnen [4][5]. Technologische Innovationen in der Lebensmittelproduktion werden neue Produktmöglichkeiten eröffnen [6]. Regulatorische Entwicklungen könnten zusätzliche Impulse für gesunde Produkte setzen [7].",
-            "conclusion": f"Zusammenfassend zeigt die Analyse einen robusten und nachhaltigen Trend hin zu gesünderen und funktionalen Lebensmitteln [1][2]. Die identifizierten Entwicklungen bieten erhebliche Chancen für Innovationen im Bereich Müsli und Riegel [3][4]. Für Unternehmen ergibt sich die Notwendigkeit, ihre Produktportfolios entsprechend anzupassen und auf die veränderten Konsumentenbedürfnisse einzugehen [5].",
+            "introduction": f"Diese Analyse untersucht {description[:100]}. Basierend auf {len(collected_data)} Quellen zeigen sich signifikante Markttrends in {', '.join(keywords[:2])} [1][2].",
+            "main_content": "",
+            "market_analysis": f"Markt wächst mit 7-9% jährlich, besonders stark in Deutschland und Europa [1][2].",
+            "consumer_insights": f"80% der Verbraucher bevorzugen gesündere Alternativen und zahlen Preisaufschlag [1][2].",
+            "future_outlook": "",
+            "conclusion": "",
             "footnotes": [
                 {"number": 1, "source_name": sources[0]["name"], "source_url": sources[0]["url"], "context": "Hauptdatenquelle"},
-                {"number": 2, "source_name": sources[1]["name"] if len(sources) > 1 else sources[0]["name"], "source_url": sources[1]["url"] if len(sources) > 1 else sources[0]["url"], "context": "Wissenschaftliche Studien"},
-                {"number": 3, "source_name": sources[2]["name"] if len(sources) > 2 else sources[0]["name"], "source_url": sources[2]["url"] if len(sources) > 2 else sources[0]["url"], "context": "Marktdaten"},
-                {"number": 4, "source_name": sources[3]["name"] if len(sources) > 3 else sources[0]["name"], "source_url": sources[3]["url"] if len(sources) > 3 else sources[0]["url"], "context": "Industrie-Insights"},
-                {"number": 5, "source_name": sources[4]["name"] if len(sources) > 4 else sources[0]["name"], "source_url": sources[4]["url"] if len(sources) > 4 else sources[0]["url"], "context": "Statistische Datenbanken"},
-                {"number": 6, "source_name": sources[5]["name"] if len(sources) > 5 else sources[0]["name"], "source_url": sources[5]["url"] if len(sources) > 5 else sources[0]["url"], "context": "Weitere Quellen"},
-                {"number": 7, "source_name": sources[6]["name"] if len(sources) > 6 else sources[0]["name"], "source_url": sources[6]["url"] if len(sources) > 6 else sources[0]["url"], "context": "Ergänzende Daten"},
-                {"number": 8, "source_name": sources[7]["name"] if len(sources) > 7 else sources[0]["name"], "source_url": sources[7]["url"] if len(sources) > 7 else sources[0]["url"], "context": "Zusätzliche Referenzen"}
+                {"number": 2, "source_name": sources[1]["name"] if len(sources) > 1 else sources[0]["name"], "source_url": sources[1]["url"] if len(sources) > 1 else sources[0]["url"], "context": "Marktdaten"}
             ],
             "sources": sources
         }
@@ -747,22 +744,29 @@ Die Fußnoten sollen auf die oben genannten Quellen verweisen."""
 def finalize_report_with_ai(synthesized_report: Dict) -> Dict:
     """KI-Prompt 3: Finalisiert und optimiert den Report mit Gemini"""
     
-    system_instruction = """Du bist ein professioneller Report-Editor für wissenschaftliche Food-Trend-Analysen.
+    system_instruction = """Du bist ein professioneller Report-Editor für Food-Trend-Analysen.
     
-    Optimiere den Report für maximale Klarheit und Professionalität:
+    Optimiere den Report für maximale Klarheit und Prägnanz:
     - Verbessere die sprachliche Qualität
-    - Stelle sicher, dass alle Fließtexte professionell und wissenschaftlich klingen
+    - Halte alle Texte KURZ und prägnant (2-3 Sätze maximum)
+    - Kürze zu lange Texte auf das Wesentliche
     - Prüfe, dass alle Fußnoten korrekt referenziert sind
     - Behalte ALLE vorhandenen Felder bei (title, introduction, main_content, market_analysis, consumer_insights, future_outlook, conclusion, footnotes, sources)
-    - Erweitere zu kurze Texte
+    - WICHTIG: Halte Texte sehr kurz - nur die wichtigsten Facts!
     
-    Antworte in JSON Format mit der gleichen Struktur wie der Input, aber mit verbessertem Text."""
+    Antworte in JSON Format mit der gleichen Struktur wie der Input, aber mit optimiertem, kurzem Text."""
     
-    user_prompt = f"""Optimiere diesen wissenschaftlichen Trend-Report:
+    user_prompt = f"""Optimiere diesen Trend-Report - halte alles SEHR KURZ und prägnant:
 
 {json.dumps(synthesized_report, indent=2, ensure_ascii=False)}
 
-Erstelle die finale, professionelle Version. Behalte ALLE Abschnitte und die Fußnoten-Struktur bei."""
+Erstelle die finale Version mit:
+- introduction: Maximum 2-3 Sätze
+- market_analysis: Maximum 1-2 Sätze
+- consumer_insights: Maximum 1-2 Sätze
+- main_content, future_outlook, conclusion: leer lassen
+
+WICHTIG: Kürze zu lange Texte auf die wichtigsten Facts! Behalte die Fußnoten-Struktur bei."""
     
     try:
         response = gemini_client.models.generate_content(
