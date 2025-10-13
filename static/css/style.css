@@ -3664,58 +3664,7 @@ body.modal-open {
     }
 }
 
-/* Brand Toggle Button Styles */
-.btn-primary {
-    background-color: var(--brg-color-primary);
-    border-color: var(--brg-color-primary);
-    color: white;
-}
-
-.btn-primary:hover,
-.btn-primary:focus {
-    background-color: var(--brg-color-interactive-hover);
-    border-color: var(--brg-color-interactive-hover);
-    color: white;
-}
-
-.btn-outline-primary {
-    color: var(--brg-color-primary);
-    border-color: var(--brg-color-primary);
-    background-color: transparent;
-}
-
-.btn-outline-primary:hover,
-.btn-outline-primary:focus {
-    background-color: var(--brg-color-primary);
-    border-color: var(--brg-color-primary);
-    color: white;
-}
-
-.btn-secondary {
-    background-color: var(--brg-color-secondary);
-    border-color: var(--brg-color-secondary);
-    color: white;
-}
-
-.btn-secondary:hover,
-.btn-secondary:focus {
-    background-color: #e63946;
-    border-color: #e63946;
-    color: white;
-}
-
-.btn-outline-secondary {
-    color: var(--brg-color-secondary);
-    border-color: var(--brg-color-secondary);
-    background-color: transparent;
-}
-
-.btn-outline-secondary:hover,
-.btn-outline-secondary:focus {
-    background-color: var(--brg-color-secondary);
-    border-color: var(--brg-color-secondary);
-    color: white;
-}
+/* Removed duplicate Brand Toggle Button Styles - modern button styles from earlier in the file now apply */
 
 /* Toggle button group styling */
 .btn-group .btn {
