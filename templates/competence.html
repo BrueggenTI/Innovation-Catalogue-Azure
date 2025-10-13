@@ -7,20 +7,20 @@
     <div class="container-fluid px-4">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1 class="display-4 fw-bold mb-3" style="color: black !important;">Innovation Catalog</h1>
+                <h1 class="display-4 fw-bold mb-3" style="color: black !important;">{{ get_text('innovation_catalog_title', lang) }}</h1>
                 <p class="lead mb-0" style="color: black !important;">
-                    The world of innovation - explore our latest products
+                    {{ get_text('world_of_innovation', lang) }}
                 </p>
             </div>
             <div class="col-lg-4 text-end">
                 <div class="competence-stats">
                     <div class="stat-item d-inline-block mx-3">
                         <div class="h2 fw-bold" style="color: black !important;">{{ products|length }}</div>
-                        <div class="small" style="color: black !important;">Products Available</div>
+                        <div class="small" style="color: black !important;">{{ get_text('products_available', lang) }}</div>
                     </div>
                     <div class="stat-item d-inline-block mx-3">
                         <div class="h2 fw-bold" style="color: black !important;">{{ categories|length }}</div>
-                        <div class="small" style="color: black !important;">Categories</div>
+                        <div class="small" style="color: black !important;">{{ get_text('categories', lang) }}</div>
                     </div>
                 </div>
             </div>
@@ -32,10 +32,10 @@
 <div class="active-filters-section py-3 bg-white border-bottom" id="activeFiltersSection" style="display: none;">
     <div class="container-fluid px-4">
         <div class="d-flex flex-wrap align-items-center gap-2">
-            <span class="fw-semibold text-muted me-3">Active Filters:</span>
+            <span class="fw-semibold text-muted me-3">{{ get_text('active_filters', lang) }}</span>
             <div id="activeFilters" class="d-flex flex-wrap gap-2"></div>
             <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" onclick="clearAllFilters()">
-                <i class="fas fa-times me-1"></i>Clear All
+                <i class="fas fa-times me-1"></i>{{ get_text('clear_all', lang) }}
             </button>
         </div>
     </div>
@@ -52,7 +52,7 @@
                             <i class="fas fa-search text-muted"></i>
                         </span>
                         <input type="text" class="form-control border-start-0 ps-0" id="universalSearch" 
-                               placeholder="Search categories, ingredients, claims, or recipe numbers..." 
+                               placeholder="{{ get_text('search_categories_ingredients', lang) }}" 
                                autocomplete="off">
                         <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                             <i class="fas fa-times"></i>
@@ -85,30 +85,30 @@
             <div class="col-md-4">
                 <div class="filter-header" data-filter="category">
                     <h6 class="mb-2 fw-semibold text-dark">
-                        <i class="fas fa-tags me-2" style="color: #661c31;"></i>Category
+                        <i class="fas fa-tags me-2" style="color: #661c31;"></i>{{ get_text('category', lang) }}
                         <i class="fas fa-chevron-down filter-chevron ms-2"></i>
                     </h6>
-                    <div class="filter-count text-muted small">{{ categories|length }} available</div>
+                    <div class="filter-count text-muted small">{{ categories|length }} {{ get_text('available', lang) }}</div>
                 </div>
             </div>
             
             <div class="col-md-4">
                 <div class="filter-header" data-filter="ingredient">
                     <h6 class="mb-2 fw-semibold text-dark">
-                        <i class="fas fa-seedling me-2" style="color: #661c31;"></i>Key Ingredient
+                        <i class="fas fa-seedling me-2" style="color: #661c31;"></i>{{ get_text('key_ingredient', lang) }}
                         <i class="fas fa-chevron-down filter-chevron ms-2"></i>
                     </h6>
-                    <div class="filter-count text-muted small">{{ ingredients|length }} available</div>
+                    <div class="filter-count text-muted small">{{ ingredients|length }} {{ get_text('available', lang) }}</div>
                 </div>
             </div>
             
             <div class="col-md-4">
                 <div class="filter-header" data-filter="claim">
                     <h6 class="mb-2 fw-semibold text-dark">
-                        <i class="fas fa-medal me-2" style="color: #661c31;"></i>Claims
+                        <i class="fas fa-medal me-2" style="color: #661c31;"></i>{{ get_text('claims', lang) }}
                         <i class="fas fa-chevron-down filter-chevron ms-2"></i>
                     </h6>
-                    <div class="filter-count text-muted small">{{ claims|length }} available</div>
+                    <div class="filter-count text-muted small">{{ claims|length }} {{ get_text('available', lang) }}</div>
                 </div>
             </div>
         </div>
@@ -120,7 +120,7 @@
     <div class="container-fluid px-4 py-4">
         <!-- Category Options -->
         <div class="filter-options" id="categoryOptions" style="display: none;">
-            <h6 class="fw-semibold mb-3 text-dark">Select Category:</h6>
+            <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_category', lang) }}</h6>
             <div class="row g-2">
                 {% for category in categories %}
                 <div class="col-auto">
@@ -134,7 +134,7 @@
         
         <!-- Ingredient Options -->
         <div class="filter-options" id="ingredientOptions" style="display: none;">
-            <h6 class="fw-semibold mb-3 text-dark">Select Key Ingredient:</h6>
+            <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_key_ingredient', lang) }}</h6>
             <div class="row g-2">
                 {% for ingredient in ingredients %}
                 <div class="col-auto">
@@ -148,7 +148,7 @@
         
         <!-- Claim Options -->
         <div class="filter-options" id="claimOptions" style="display: none;">
-            <h6 class="fw-semibold mb-3 text-dark">Select Claims:</h6>
+            <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_claims', lang) }}</h6>
             <div class="row g-2">
                 {% for claim in claims %}
                 <div class="col-auto">
@@ -182,29 +182,29 @@
                                         {% set recipe_digits = product.recipe_number.lstrip('0') %}
                                         {% if recipe_digits and recipe_digits[0] == '4' %}
                                             <div class="recipe-status-badge bg-success text-white" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
-                                                Productive
+                                                {{ get_text('productive', lang) }}
                                             </div>
                                         {% elif recipe_digits and recipe_digits[0] == '1' %}
                                             <div class="recipe-status-badge bg-warning text-dark" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
-                                                Development
+                                                {{ get_text('development', lang) }}
                                             </div>
                                         {% endif %}
                                     {% endif %}
                                     
                                     <!-- Exclusive Badge (wraps to next line if needed) -->
                                     {% if product.is_exclusive %}
-                                        {% set tooltip_text = 'Exclusive Product' %}
+                                        {% set tooltip_text = get_text('exclusive_product', lang) %}
                                         {% if product.customer %}
-                                            {% set tooltip_text = 'Exclusive for customer: <strong>' + (product.customer|e) + '</strong>' %}
+                                            {% set tooltip_text = get_text('exclusive_for_customer', lang) + ' <strong>' + (product.customer|e) + '</strong>' %}
                                         {% elif product.market %}
-                                            {% set tooltip_text = 'Exclusive for market: <strong>' + (product.market|e) + '</strong>' %}
+                                            {% set tooltip_text = get_text('exclusive_for_market', lang) + ' <strong>' + (product.market|e) + '</strong>' %}
                                         {% endif %}
                                         <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
                                              data-bs-toggle="tooltip" 
                                              data-bs-placement="top" 
                                              data-bs-html="true"
                                              title="{{ tooltip_text|safe }}">
-                                            Exclusive
+                                            {{ get_text('exclusive', lang) }}
                                         </div>
                                     {% endif %}
                                 </div>
@@ -228,7 +228,7 @@
                                                     {% endif %}
                                                 {% endfor %}
                                                 {{ ingredient_names|join(', ') }}
-                                                {% if product.parsed_ingredients|length > 3 %} +{{ product.parsed_ingredients|length - 3 }} more{% endif %}
+                                                {% if product.parsed_ingredients|length > 3 %} +{{ product.parsed_ingredients|length - 3 }} {{ get_text('more', lang) }}{% endif %}
                                             </span>
                                         </div>
                                     {% endif %}
@@ -236,17 +236,17 @@
                                     {% if product.parsed_nutritional_claims %}
                                         <div class="highlight-item">
                                             <i class="fas fa-medal text-warning me-2"></i>
-                                            <span class="small">{{ product.parsed_nutritional_claims[:2]|join(', ') }}{% if product.parsed_nutritional_claims|length > 2 %} +{{ product.parsed_nutritional_claims|length - 2 }} more{% endif %}</span>
+                                            <span class="small">{{ product.parsed_nutritional_claims[:2]|join(', ') }}{% if product.parsed_nutritional_claims|length > 2 %} +{{ product.parsed_nutritional_claims|length - 2 }} {{ get_text('more', lang) }}{% endif %}</span>
                                         </div>
                                     {% endif %}
                                 </div>
                                 
                                 <div class="d-grid gap-2 mt-auto">
                                     <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-outline-primary rounded-pill">
-                                        <i class="fas fa-info-circle me-2"></i>View Details
+                                        <i class="fas fa-info-circle me-2"></i>{{ get_text('view_details', lang) }}
                                     </a>
                                     <a href="{{ url_for('cocreation', base_product_id=product.id) }}" class="btn btn-primary rounded-pill">
-                                        <i class="fas fa-plus me-2"></i>Use as Base Product
+                                        <i class="fas fa-plus me-2"></i>{{ get_text('use_as_base_product', lang) }}
                                     </a>
                                 </div>
                             </div>
@@ -258,10 +258,10 @@
             <div class="text-center py-5">
                 <div class="empty-state">
                     <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h3 class="text-muted mb-3">No products found</h3>
-                    <p class="text-muted mb-4">Try adjusting your filters to see more products.</p>
+                    <h3 class="text-muted mb-3">{{ get_text('no_products_found', lang) }}</h3>
+                    <p class="text-muted mb-4">{{ get_text('try_adjusting_filters', lang) }}</p>
                     <a href="{{ url_for('catalog') }}" class="btn btn-primary rounded-pill px-4">
-                        <i class="fas fa-refresh me-2"></i>Reset Filters
+                        <i class="fas fa-refresh me-2"></i>{{ get_text('reset_filters', lang) }}
                     </a>
                 </div>
             </div>
@@ -274,20 +274,20 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Product Selected</h5>
+                <h5 class="modal-title">{{ get_text('product_selected', lang) }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
                 <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
                 <h4 class="mb-3" id="selectedProductName"></h4>
-                <p class="text-muted mb-4">What would you like to do with this product?</p>
+                <p class="text-muted mb-4">{{ get_text('what_would_you_like', lang) }}</p>
                 
                 <div class="d-grid gap-3">
                     <a href="#" id="viewDetailsBtn" class="btn btn-outline-primary rounded-pill">
-                        <i class="fas fa-info-circle me-2"></i>View Full Details
+                        <i class="fas fa-info-circle me-2"></i>{{ get_text('view_full_details', lang) }}
                     </a>
                     <a href="#" id="startCoCreationBtn" class="btn btn-primary rounded-pill">
-                        <i class="fas fa-lightbulb me-2"></i>Start Co-Creation
+                        <i class="fas fa-lightbulb me-2"></i>{{ get_text('start_cocreation', lang) }}
                     </a>
                 </div>
             </div>
