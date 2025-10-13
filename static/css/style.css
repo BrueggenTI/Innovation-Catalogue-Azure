@@ -808,30 +808,24 @@ a:hover {
     gap: 2rem;
 }
 
-.header-logos-container a {
-    background: transparent !important;
-    display: inline-block;
-}
-
-/* Text-based Logos */
-.header-logo-text {
-    font-size: 48px;
-    font-weight: bold;
+/* Header Logos - Both same size */
+.header-logo {
+    height: 80px;
+    width: auto;
+    object-fit: contain;
     transition: transform 0.3s ease;
-    display: inline-block;
-    font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
 }
 
-.bruggen-text-logo {
-    color: #FF6B6B;
-}
-
-.platform-text-logo {
-    color: #FF6B6B;
-}
-
-.header-logos-container a:hover .header-logo-text {
+.header-logo:hover {
     transform: scale(1.05);
+}
+
+/* Innovation Platform Logo - Blend white background with header */
+.innovation-logo {
+    background: linear-gradient(135deg, #661c31 0%, #4d1525 100%);
+    mix-blend-mode: multiply;
+    padding: 10px;
+    border-radius: 8px;
 }
 
 /* Brüggen Title */
