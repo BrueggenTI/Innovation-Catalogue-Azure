@@ -33,7 +33,7 @@
                             <i class="fas fa-search text-muted"></i>
                         </span>
                         <input type="text" class="form-control border-start-0 ps-0" id="trendsSearch"
-                               placeholder="Search trends by title, description, or category..."
+                               placeholder="{{ get_text('search_trends_by', lang) }}"
                                autocomplete="off">
                         <button class="btn btn-outline-secondary" type="button" id="clearTrendsSearch" style="display: none;">
                             <i class="fas fa-times"></i>
@@ -49,11 +49,11 @@
             <!-- Right: Action Buttons - Aligned with Report Type Filter -->
             <div class="col-md-6">
                 <div class="d-flex w-100 gap-2" style="padding: 15px 20px;">
-                    <button class="btn btn-primary btn-lg" type="button" id="createTrendIcon" title="Create Your Own Trend" data-bs-toggle="modal" data-bs-target="#uploadTrendModal" style="flex: 1;">
-                        <i class="fas fa-plus me-2"></i>Create
+                    <button class="btn btn-primary btn-lg" type="button" id="createTrendIcon" title="{{ get_text('create_your_own_trend_title', lang) }}" data-bs-toggle="modal" data-bs-target="#uploadTrendModal" style="flex: 1;">
+                        <i class="fas fa-plus me-2"></i>{{ get_text('title_create_trend', lang) }}
                     </button>
-                    <button class="btn btn-success btn-lg" type="button" id="deepResearchBtn" title="Start Deep Research" data-bs-toggle="modal" data-bs-target="#deepResearchModal" style="flex: 1;">
-                        <i class="fas fa-search-plus me-2"></i>Deep Research
+                    <button class="btn btn-success btn-lg" type="button" id="deepResearchBtn" title="{{ get_text('start_deep_research_title', lang) }}" data-bs-toggle="modal" data-bs-target="#deepResearchModal" style="flex: 1;">
+                        <i class="fas fa-search-plus me-2"></i>{{ get_text('title_deep_research', lang) }}
                     </button>
                 </div>
             </div>
@@ -67,12 +67,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-upload me-2"></i>Create Your Own Trend
+                    <i class="fas fa-upload me-2"></i>{{ get_text('create_your_own_trend', lang) }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted mb-4">Upload documents (PDF, Word, PowerPoint, Excel, TXT) and let AI analyze them to create professional trend reports</p>
+                <p class="text-muted mb-4">{{ get_text('upload_documents_ai', lang) }}</p>
 
                 <!-- Upload Area -->
                 <div class="upload-area" id="uploadArea">
@@ -80,8 +80,8 @@
                         <div class="upload-icon mb-3">
                             <i class="fas fa-cloud-upload-alt"></i>
                         </div>
-                        <h5 class="upload-title mb-2">Drag & Drop your files here</h5>
-                        <p class="upload-subtitle mb-3">or click to browse</p>
+                        <h5 class="upload-title mb-2">{{ get_text('drag_drop_files', lang) }}</h5>
+                        <p class="upload-subtitle mb-3">{{ get_text('or_click_browse', lang) }}</p>
                         <div class="upload-formats mb-3">
                             <span class="badge bg-primary me-2">PDF</span>
                             <span class="badge bg-primary me-2">DOCX</span>
@@ -89,14 +89,14 @@
                             <span class="badge bg-primary me-2">PPTX</span>
                             <span class="badge bg-primary">XLSX</span>
                         </div>
-                        <small class="text-muted">Max file size: 10MB</small>
+                        <small class="text-muted">{{ get_text('max_file_size', lang) }}</small>
                     </div>
                     <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.pptx,.xlsx" style="display: none;">
                 </div>
 
                 <!-- File List -->
                 <div class="uploaded-files mt-4" id="uploadedFiles" style="display: none;">
-                    <h6 class="mb-3"><i class="fas fa-file-alt me-2"></i>Uploaded Files</h6>
+                    <h6 class="mb-3"><i class="fas fa-file-alt me-2"></i>{{ get_text('uploaded_files', lang) }}</h6>
                     <div class="files-list" id="filesList">
                         <!-- Uploaded files will appear here -->
                     </div>
@@ -104,13 +104,13 @@
             </div>
             <div class="modal-footer">
                 <div class="d-flex align-items-center justify-content-between w-100">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ get_text('cancel', lang) }}</button>
                     <div class="upload-actions d-flex align-items-center" id="uploadActions" style="display: none; align-self: center;">
                         <button type="button" class="btn btn-outline-secondary me-2" id="clearFilesBtn" style="vertical-align: middle;">
-                            <i class="fas fa-trash me-2"></i>Clear All
+                            <i class="fas fa-trash me-2"></i>{{ get_text('clear_all', lang) }}
                         </button>
                         <button type="button" class="btn btn-primary" id="analyzeBtn" style="vertical-align: middle;">
-                            <i class="fas fa-brain me-2"></i>Analyze with AI
+                            <i class="fas fa-brain me-2"></i>{{ get_text('analyze_with_ai', lang) }}
                         </button>
                     </div>
                 </div>
@@ -125,7 +125,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-brain me-2"></i>AI Trend Analysis
+                    <i class="fas fa-brain me-2"></i>{{ get_text('ai_trend_analysis', lang) }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -133,8 +133,8 @@
                 <!-- Analysis results will be shown here -->
                 <div class="analysis-loading text-center py-5" id="analysisLoading">
                     <div class="spinner-border text-primary mb-3" role="status"></div>
-                    <p class="text-muted">AI is analyzing your documents...</p>
-                    <small class="text-muted">This may take a few moments</small>
+                    <p class="text-muted">{{ get_text('ai_analyzing_documents', lang) }}</p>
+                    <small class="text-muted">{{ get_text('this_may_take_moments', lang) }}</small>
                 </div>
 
                 <div class="analysis-results" id="analysisResults" style="display: none;">
@@ -142,9 +142,9 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ get_text('cancel', lang) }}</button>
                 <button type="button" class="btn btn-primary" id="createTrendBtn" style="display: none;">
-                    <i class="fas fa-plus me-2"></i>Create Trend
+                    <i class="fas fa-plus me-2"></i>{{ get_text('create_trend', lang) }}
                 </button>
             </div>
         </div>
@@ -171,19 +171,19 @@
             <div class="col-md-6">
                 <div class="filter-header" data-filter="trendCategory">
                     <h6 class="mb-2 fw-semibold text-dark">
-                        <i class="fas fa-tags me-2" style="color: #661c31;"></i>Category
+                        <i class="fas fa-tags me-2" style="color: #661c31;"></i>{{ get_text('category', lang) }}
                         <i class="fas fa-chevron-down filter-chevron ms-2"></i>
                     </h6>
-                    <div class="filter-count text-muted small">3 available</div>
+                    <div class="filter-count text-muted small">{{ get_text('3_available', lang) }}</div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="filter-header" data-filter="trendType">
                     <h6 class="mb-2 fw-semibold text-dark">
-                        <i class="fas fa-chart-line me-2" style="color: #661c31;"></i>Report Type
+                        <i class="fas fa-chart-line me-2" style="color: #661c31;"></i>{{ get_text('report_type', lang) }}
                         <i class="fas fa-chevron-down filter-chevron ms-2"></i>
                     </h6>
-                    <div class="filter-count text-muted small">2 available</div>
+                    <div class="filter-count text-muted small">{{ get_text('2_available', lang) }}</div>
                 </div>
             </div>
         </div>
@@ -195,26 +195,26 @@
     <div class="container-fluid px-4 py-4">
         <!-- Category Options -->
         <div class="filter-options" id="trendCategoryOptions" style="display: none;">
-            <h6 class="fw-semibold mb-3 text-dark">Select Categories (multiple allowed):</h6>
+            <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_categories_multiple', lang) }}</h6>
             <div class="row g-2">
                 <div class="col-auto">
                     <button type="button" class="filter-option-btn category-clear-btn" data-filter="trendCategory" data-value="">
-                        <i class="fas fa-times-circle me-2"></i>Clear All
+                        <i class="fas fa-times-circle me-2"></i>{{ get_text('clear_all', lang) }}
                     </button>
                 </div>
                 <div class="col-auto">
                     <button type="button" class="filter-option-btn category-toggle-btn" data-filter="trendCategory" data-value="health">
-                        <i class="fas fa-heartbeat me-2"></i>Health & Wellness
+                        <i class="fas fa-heartbeat me-2"></i>{{ get_text('health_wellness', lang) }}
                     </button>
                 </div>
                 <div class="col-auto">
                     <button type="button" class="filter-option-btn category-toggle-btn" data-filter="trendCategory" data-value="sustainability">
-                        <i class="fas fa-leaf me-2"></i>Sustainability
+                        <i class="fas fa-leaf me-2"></i>{{ get_text('sustainability', lang) }}
                     </button>
                 </div>
                 <div class="col-auto">
                     <button type="button" class="filter-option-btn category-toggle-btn" data-filter="trendCategory" data-value="innovation">
-                        <i class="fas fa-lightbulb me-2"></i>Innovation
+                        <i class="fas fa-lightbulb me-2"></i>{{ get_text('innovation', lang) }}
                     </button>
                 </div>
             </div>
@@ -222,21 +222,21 @@
 
         <!-- Report Type Options -->
         <div class="filter-options" id="trendTypeOptions" style="display: none;">
-            <h6 class="fw-semibold mb-3 text-dark">Select Report Types (multiple allowed):</h6>
+            <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_report_types_multiple', lang) }}</h6>
             <div class="row g-2">
                 <div class="col-auto">
                     <button type="button" class="filter-option-btn report-type-clear-btn" data-filter="trendType" data-value="">
-                        <i class="fas fa-times-circle me-2"></i>Clear All
+                        <i class="fas fa-times-circle me-2"></i>{{ get_text('clear_all', lang) }}
                     </button>
                 </div>
                 <div class="col-auto">
                     <button type="button" class="filter-option-btn report-type-toggle-btn" data-filter="trendType" data-value="produktentwicklung">
-                        <i class="fas fa-flask me-2"></i>Product Development
+                        <i class="fas fa-flask me-2"></i>{{ get_text('product_development', lang) }}
                     </button>
                 </div>
                 <div class="col-auto">
                     <button type="button" class="filter-option-btn report-type-toggle-btn" data-filter="trendType" data-value="marktdaten">
-                        <i class="fas fa-chart-bar me-2"></i>Market Data
+                        <i class="fas fa-chart-bar me-2"></i>{{ get_text('market_data_type', lang) }}
                     </button>
                 </div>
             </div>
@@ -255,18 +255,18 @@
                                 <img src="{{ trend.image_url }}" alt="{{ trend.title }}" class="trend-image">
                                 <div class="trend-category-badge trend-{{ trend.category }}">
                                     {% if trend.category == 'health' %}
-                                        <i class="fas fa-heartbeat me-2"></i>Health & Wellness
+                                        <i class="fas fa-heartbeat me-2"></i>{{ get_text('health_wellness', lang) }}
                                     {% elif trend.category == 'sustainability' %}
-                                        <i class="fas fa-leaf me-2"></i>Sustainability
+                                        <i class="fas fa-leaf me-2"></i>{{ get_text('sustainability', lang) }}
                                     {% elif trend.category == 'innovation' %}
-                                        <i class="fas fa-lightbulb me-2"></i>Innovation
+                                        <i class="fas fa-lightbulb me-2"></i>{{ get_text('innovation', lang) }}
                                     {% endif %}
                                 </div>
                                 <div class="trend-report-type-badge trend-report-{{ trend.report_type }}">
                                     {% if trend.report_type == 'produktentwicklung' %}
-                                        <i class="fas fa-flask me-2"></i>Product Development
+                                        <i class="fas fa-flask me-2"></i>{{ get_text('product_development', lang) }}
                                     {% elif trend.report_type == 'marktdaten' %}
-                                        <i class="fas fa-chart-bar me-2"></i>Market Data
+                                        <i class="fas fa-chart-bar me-2"></i>{{ get_text('market_data_type', lang) }}
                                     {% endif %}
                                 </div>
                             </div>
@@ -280,7 +280,7 @@
                                         <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
                                             <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
                                                 <path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5v12h-2V2h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/>
-                                            </svg>Market Data
+                                            </svg>{{ get_text('market_data', lang) }}
                                         </div>
                                         <div class="insight-content" style="font-size: 14px; color: #4b5563;">{{ trend.market_data }}</div>
                                     </div>
@@ -289,7 +289,7 @@
                                         <div class="insight-label fw-medium mb-2" style="color: #374151; font-size: 13px;">
                                             <svg width="14" height="14" fill="currentColor" class="me-2" viewBox="0 0 16 16">
                                                 <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
-                                            </svg>Consumer Insights
+                                            </svg>{{ get_text('consumer_insights', lang) }}
                                         </div>
                                         <div class="insight-content" style="font-size: 14px; color: #4b5563;">{{ trend.consumer_insights }}</div>
                                     </div>
@@ -297,10 +297,10 @@
 
                                 <div class="trend-actions d-flex gap-2">
                                     <button class="btn btn-outline-secondary flex-fill rounded-pill expand-trend-btn" data-trend-id="{{ trend.id }}" style="border-color: #661c31; color: #661c31; font-weight: 500; padding: 8px 16px; font-size: 14px;">
-                                        <i class="fas fa-expand me-2"></i>Details
+                                        <i class="fas fa-expand me-2"></i>{{ get_text('details', lang) }}
                                     </button>
                                     <a href="{{ url_for('cocreation') }}?trend={{ trend.id }}" class="btn btn-primary flex-fill rounded-pill" style="background: #ff4143; border-color: #ff4143; font-weight: 500; padding: 8px 16px; font-size: 14px;">
-                                        <i class="fas fa-plus me-2"></i>Apply Trend
+                                        <i class="fas fa-plus me-2"></i>{{ get_text('apply_trend', lang) }}
                                     </a>
                                 </div>
                             </div>
@@ -312,10 +312,10 @@
             <div class="text-center py-5">
                 <div class="empty-state">
                     <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                    <h3 class="text-muted mb-3">No trends found</h3>
-                    <p class="text-muted mb-4">Try selecting a different category to explore trends.</p>
+                    <h3 class="text-muted mb-3">{{ get_text('no_trends_found', lang) }}</h3>
+                    <p class="text-muted mb-4">{{ get_text('try_different_category_trends', lang) }}</p>
                     <a href="{{ url_for('trends') }}" class="btn btn-success rounded-pill px-4">
-                        <i class="fas fa-refresh me-2"></i>View All Trends
+                        <i class="fas fa-refresh me-2"></i>{{ get_text('view_all_trends', lang) }}
                     </a>
                 </div>
             </div>
@@ -335,9 +335,9 @@
                 <!-- Content will be loaded dynamically -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">{{ get_text('close', lang) }}</button>
                 <a href="#" id="applyTrendBtn" class="btn btn-apply-trend rounded-pill">
-                    <i class="fas fa-plus me-2"></i>Apply This Trend
+                    <i class="fas fa-plus me-2"></i>{{ get_text('apply_this_trend', lang) }}
                 </a>
             </div>
         </div>
@@ -438,7 +438,7 @@
         <div class="modal-content">
             <div class="modal-header" style="background: linear-gradient(135deg, #661c31 0%, #ff4143 100%); color: white;">
                 <h5 class="modal-title">
-                    <i class="fas fa-search-plus me-2"></i>Deep Research - KI-gestützte Trendanalyse
+                    <i class="fas fa-search-plus me-2"></i>{{ get_text('deep_research_title', lang) }}
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -446,41 +446,40 @@
                 <!-- Initial Form View -->
                 <div id="researchFormView">
                     <p class="text-muted mb-4">
-                        Beschreiben Sie Ihre Forschungsfrage und unsere KI durchsucht automatisch relevante Datenbanken, 
-                        statistische Quellen und Fachportale für einen umfassenden, zitierfähigen Trend-Report.
+                        {{ get_text('deep_research_description', lang) }}
                     </p>
 
                     <form id="deepResearchForm">
                         <!-- Description Input (Required) -->
                         <div class="mb-4">
                             <label for="researchDescription" class="form-label fw-semibold">
-                                <i class="fas fa-align-left me-2 text-primary"></i>Forschungsbeschreibung
+                                <i class="fas fa-align-left me-2 text-primary"></i>{{ get_text('research_description', lang) }}
                                 <span class="text-danger">*</span>
                             </label>
                             <textarea class="form-control" id="researchDescription" rows="4" 
-                                      placeholder="Beschreiben Sie detailliert, welche Trends oder Erkenntnisse Sie erforschen möchten. Je präziser Ihre Beschreibung, desto gezielter die Ergebnisse.&#10;&#10;Beispiel: 'Analysiere aktuelle Verbrauchertrends im Bereich pflanzlicher Proteine für den deutschen und US-amerikanischen Markt, mit Fokus auf Frühstücksprodukte wie Müsli und Granola.'"
+                                      placeholder="{{ get_text('research_description_placeholder', lang) }}"
                                       required></textarea>
-                            <small class="form-text text-muted">Mindestens 20 Zeichen erforderlich</small>
+                            <small class="form-text text-muted">{{ get_text('min_20_chars_required', lang) }}</small>
                         </div>
 
                         <!-- Optional: Keywords -->
                         <div class="mb-4">
                             <label for="researchKeywords" class="form-label fw-semibold">
-                                <i class="fas fa-tags me-2 text-primary"></i>Keywords (Optional)
+                                <i class="fas fa-tags me-2 text-primary"></i>{{ get_text('keywords_optional', lang) }}
                             </label>
                             <input type="text" class="form-control" id="researchKeywords"
-                                   placeholder="z.B. vegan, protein, nachhaltigkeit, bio">
-                            <small class="form-text text-muted">Kommagetrennte Keywords zur Verfeinerung der Suche</small>
+                                   placeholder="{{ get_text('keywords_placeholder', lang) }}">
+                            <small class="form-text text-muted">{{ get_text('comma_separated_keywords', lang) }}</small>
                         </div>
 
                         <!-- Optional: Categories -->
                         <div class="mb-4">
                             <label for="researchCategories" class="form-label fw-semibold">
-                                <i class="fas fa-box me-2 text-primary"></i>Produktkategorien (Optional)
+                                <i class="fas fa-box me-2 text-primary"></i>{{ get_text('product_categories_optional', lang) }}
                             </label>
                             <input type="text" class="form-control" id="researchCategories"
-                                   placeholder="z.B. Müsli, Granola, Cerealien, Riegel">
-                            <small class="form-text text-muted">Spezifische Produktkategorien für gezielte Analyse</small>
+                                   placeholder="{{ get_text('product_categories_placeholder', lang) }}">
+                            <small class="form-text text-muted">{{ get_text('specific_product_categories', lang) }}</small>
                         </div>
 
                         <!-- Error Display -->
@@ -495,13 +494,13 @@
                 <div id="researchPlanView" style="display: none;">
                     <div class="alert alert-info mb-4">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Research-Plan generiert!</strong> Bitte überprüfen Sie den Plan und bestätigen Sie ihn, oder nehmen Sie Anpassungen vor.
+                        <strong>{{ get_text('research_plan_generated', lang) }}</strong> {{ get_text('please_review_plan', lang) }}
                     </div>
 
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white border-0">
                             <h6 class="mb-0 fw-semibold" style="color: #661c31;">
-                                <i class="fas fa-clipboard-list me-2"></i>Detaillierter Research-Plan
+                                <i class="fas fa-clipboard-list me-2"></i>{{ get_text('detailed_research_plan', lang) }}
                             </h6>
                         </div>
                         <div class="card-body" id="researchPlanContent">
@@ -518,7 +517,7 @@
                             <div class="card border-0 shadow-sm" style="background: #f8f9fa;">
                                 <div class="card-header bg-white border-0">
                                     <h6 class="mb-0 fw-semibold" style="color: #661c31;">
-                                        <i class="fas fa-database me-2"></i>Datenquellen-Status
+                                        <i class="fas fa-database me-2"></i>{{ get_text('data_sources_status', lang) }}
                                     </h6>
                                 </div>
                                 <div class="card-body p-3" id="sourcesStatusList" style="max-height: 500px; overflow-y: auto;">
@@ -532,7 +531,7 @@
                             <div class="card border-0 shadow-sm">
                                 <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                                     <h6 class="mb-0 fw-semibold" style="color: #661c31;">
-                                        <i class="fas fa-terminal me-2"></i>Live-Recherche-Log
+                                        <i class="fas fa-terminal me-2"></i>{{ get_text('live_research_log', lang) }}
                                     </h6>
                                     <button class="btn btn-sm btn-outline-secondary" id="toggleResearchLogs">
                                         <i class="fas fa-chevron-up"></i>
@@ -549,7 +548,7 @@
                     <!-- Overall Progress Bar -->
                     <div class="mt-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-semibold" style="color: #661c31;">Gesamtfortschritt</span>
+                            <span class="fw-semibold" style="color: #661c31;">{{ get_text('overall_progress', lang) }}</span>
                             <span id="overallProgressText" class="text-muted">0%</span>
                         </div>
                         <div class="progress" style="height: 12px; border-radius: 6px;">
@@ -563,13 +562,13 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelResearchBtn">
-                    <i class="fas fa-times me-2"></i>Abbrechen
+                    <i class="fas fa-times me-2"></i>{{ get_text('cancel', lang) }}
                 </button>
                 <button type="button" class="btn btn-success" id="startResearchBtn">
-                    <i class="fas fa-play me-2"></i>Research Starten
+                    <i class="fas fa-play me-2"></i>{{ get_text('start_research', lang) }}
                 </button>
                 <button type="button" class="btn btn-primary" id="approvePlanBtn" style="display: none;">
-                    <i class="fas fa-check me-2"></i>Plan Bestätigen & Fortfahren
+                    <i class="fas fa-check me-2"></i>{{ get_text('approve_plan_continue', lang) }}
                 </button>
             </div>
         </div>
@@ -580,7 +579,7 @@
     <div class="container-fluid px-4">
         <div class="row text-center">
             <div class="col">
-                <h3 class="fw-bold text-primary mb-4">Innovation by the Numbers</h3>
+                <h3 class="fw-bold text-primary mb-4">{{ get_text('innovation_by_numbers', lang) }}</h3>
             </div>
         </div>
         <div class="row">
@@ -590,7 +589,7 @@
                         <i class="fas fa-heartbeat"></i>
                     </div>
                     <div class="stat-number">73%</div>
-                    <div class="stat-label">Seek Functional Benefits</div>
+                    <div class="stat-label">{{ get_text('seek_functional_benefits', lang) }}</div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
@@ -599,7 +598,7 @@
                         <i class="fas fa-leaf"></i>
                     </div>
                     <div class="stat-number">€279B</div>
-                    <div class="stat-label">Functional Food Market by 2025</div>
+                    <div class="stat-label">{{ get_text('functional_food_market', lang) }}</div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
@@ -608,7 +607,7 @@
                         <i class="fas fa-globe"></i>
                     </div>
                     <div class="stat-number">78%</div>
-                    <div class="stat-label">Want International Flavors</div>
+                    <div class="stat-label">{{ get_text('want_international_flavors', lang) }}</div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
@@ -617,7 +616,7 @@
                         <i class="fas fa-recycle"></i>
                     </div>
                     <div class="stat-number">60%</div>
-                    <div class="stat-label">Pay Premium for Upcycled</div>
+                    <div class="stat-label">{{ get_text('pay_premium_upcycled', lang) }}</div>
                 </div>
             </div>
         </div>

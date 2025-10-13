@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Profile - Brüggen Innovation Catalogue{% endblock %}
+{% block title %}{{ get_text('edit_profile', lang) }} - Brüggen Innovation Catalogue{% endblock %}
 
 {% block content %}
 <div class="page-header py-5">
     <div class="container-fluid px-4">
-        <h1 class="page-title">Profile</h1>
+        <h1 class="page-title">{{ get_text('profile', lang) }}</h1>
     </div>
 </div>
 
@@ -29,17 +29,17 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="fab fa-microsoft me-2"></i>Microsoft Single Sign-On
+                        <i class="fab fa-microsoft me-2"></i>{{ get_text('microsoft_single_signon', lang) }}
                     </h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="alert alert-success mb-3" role="alert">
                         <i class="fas fa-check-circle me-2"></i>
-                        <strong>Authenticated</strong> - You are signed in with Microsoft
+                        <strong>{{ get_text('authenticated', lang) }}</strong> - {{ get_text('signed_in_microsoft', lang) }}
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold text-secondary">
-                            <i class="fas fa-user me-2"></i>Account Name:
+                            <i class="fas fa-user me-2"></i>{{ get_text('account_name', lang) }}
                         </div>
                         <div class="col-md-8">
                             {{ microsoft_account.get('name', 'N/A') }}
@@ -47,7 +47,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold text-secondary">
-                            <i class="fas fa-envelope me-2"></i>Email:
+                            <i class="fas fa-envelope me-2"></i>{{ get_text('email_label', lang) }}
                         </div>
                         <div class="col-md-8">
                             {{ microsoft_account.get('email', 'N/A') }}
@@ -55,7 +55,7 @@
                     </div>
                     <div class="mt-3">
                         <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
-                            <i class="fas fa-sign-out-alt me-2"></i>Sign Out from Microsoft
+                            <i class="fas fa-sign-out-alt me-2"></i>{{ get_text('sign_out_from_microsoft', lang) }}
                         </a>
                     </div>
                 </div>
@@ -65,19 +65,19 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-warning">
                     <h5 class="mb-0">
-                        <i class="fab fa-microsoft me-2"></i>Microsoft Single Sign-On
+                        <i class="fab fa-microsoft me-2"></i>{{ get_text('microsoft_single_signon', lang) }}
                     </h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="alert alert-warning mb-3" role="alert">
                         <i class="fas fa-info-circle me-2"></i>
-                        You are not currently authenticated with Microsoft SSO
+                        {{ get_text('not_authenticated_microsoft', lang) }}
                     </div>
                     <p class="text-muted mb-3">
-                        Sign in with your Microsoft account to access enhanced security features and seamless authentication across Microsoft services.
+                        {{ get_text('sign_in_for_security', lang) }}
                     </p>
                     <a href="{{ url_for('login') }}" class="btn btn-primary">
-                        <i class="fab fa-microsoft me-2"></i>Sign In with Microsoft
+                        <i class="fab fa-microsoft me-2"></i>{{ get_text('sign_in_microsoft', lang) }}
                     </a>
                 </div>
             </div>
@@ -86,7 +86,7 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header" style="background-color: #661c31;">
                     <h3 class="card-title mb-0 text-white">
-                        <i class="fas fa-user-cog me-2"></i>Personal Information
+                        <i class="fas fa-user-cog me-2"></i>{{ get_text('personal_information', lang) }}
                     </h3>
                 </div>
                 <div class="card-body p-4">
@@ -96,30 +96,30 @@
                             <!-- Persönliche Daten -->
                             <div class="col-12">
                                 <h5 class="text-primary mb-3">
-                                    <i class="fas fa-user me-2"></i>Personal Details
+                                    <i class="fas fa-user me-2"></i>{{ get_text('personal_details', lang) }}
                                 </h5>
                             </div>
                             
                             <div class="col-md-6">
-                                <label for="name" class="form-label fw-semibold">Name *</label>
+                                <label for="name" class="form-label fw-semibold">{{ get_text('name_asterisk', lang) }}</label>
                                 <input type="text" class="form-control" id="name" name="name" 
                                        value="{{ user.name }}" required>
                             </div>
                             
                             <div class="col-md-6">
-                                <label for="email" class="form-label fw-semibold">Email Address *</label>
+                                <label for="email" class="form-label fw-semibold">{{ get_text('email_address', lang) }}</label>
                                 <input type="email" class="form-control" id="email" name="email" 
                                        value="{{ user.email }}" required>
                             </div>
                             
                             <div class="col-md-6">
-                                <label for="position" class="form-label fw-semibold">Position</label>
+                                <label for="position" class="form-label fw-semibold">{{ get_text('position_label', lang) }}</label>
                                 <input type="text" class="form-control" id="position" name="position" 
                                        value="{{ user.position }}">
                             </div>
                             
                             <div class="col-md-6">
-                                <label for="department" class="form-label fw-semibold">Department</label>
+                                <label for="department" class="form-label fw-semibold">{{ get_text('department_label', lang) }}</label>
                                 <input type="text" class="form-control" id="department" name="department" 
                                        value="{{ user.department }}">
                             </div>
@@ -129,10 +129,10 @@
                                 <hr>
                                 <div class="d-flex gap-3">
                                     <button type="submit" class="btn btn-primary px-4">
-                                        <i class="fas fa-save me-2"></i>Save Changes
+                                        <i class="fas fa-save me-2"></i>{{ get_text('save_changes', lang) }}
                                     </button>
                                     <a href="{{ url_for('index') }}" class="btn btn-outline-secondary px-4">
-                                        <i class="fas fa-times me-2"></i>Cancel
+                                        <i class="fas fa-times me-2"></i>{{ get_text('cancel', lang) }}
                                     </a>
                                 </div>
                             </div>

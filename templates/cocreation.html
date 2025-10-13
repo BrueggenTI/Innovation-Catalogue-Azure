@@ -7,9 +7,9 @@
     <div class="container-fluid px-4">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1 class="display-4 fw-bold mb-3">Co-Creation Lab</h1>
+                <h1 class="display-4 fw-bold mb-3">{{ get_text('cocreation_lab', lang) }}</h1>
                 <p class="lead mb-0">
-                    Build custom products together with your clients
+                    {{ get_text('build_custom_with_clients', lang) }}
                 </p>
             </div>
             <div class="col-lg-4 text-end">
@@ -28,35 +28,35 @@
                 <div class="step-circle">
                     <i class="fas fa-cogs"></i>
                 </div>
-                <div class="step-label">Choose Base</div>
+                <div class="step-label">{{ get_text('choose_base', lang) }}</div>
             </div>
             <div class="progress-line"></div>
             <div class="progress-step {% if base_product %}active{% endif %}" data-step="2">
                 <div class="step-circle">
                     <i class="fas fa-plus"></i>
                 </div>
-                <div class="step-label">Add Ingredients</div>
+                <div class="step-label">{{ get_text('add_ingredients', lang) }}</div>
             </div>
             <div class="progress-line"></div>
             <div class="progress-step" data-step="3">
                 <div class="step-circle">
                     <i class="fas fa-percentage"></i>
                 </div>
-                <div class="step-label">Ingredient Ratios</div>
+                <div class="step-label">{{ get_text('ingredient_ratios', lang) }}</div>
             </div>
             <div class="progress-line"></div>
             <div class="progress-step" data-step="4">
                 <div class="step-circle">
                     <i class="fas fa-award"></i>
                 </div>
-                <div class="step-label">Select Claims</div>
+                <div class="step-label">{{ get_text('select_claims_step', lang) }}</div>
             </div>
             <div class="progress-line"></div>
             <div class="progress-step" data-step="5">
                 <div class="step-circle">
                     <i class="fas fa-check"></i>
                 </div>
-                <div class="step-label">Review & Send</div>
+                <div class="step-label">{{ get_text('review_send', lang) }}</div>
             </div>
         </div>
     </div>
@@ -71,13 +71,13 @@
                     <!-- Step 1: Choose Base Product -->
                     <div class="creation-step {% if base_product %}{% else %}active{% endif %}" id="step-1">
                         <h3 class="step-title mb-4">
-                            <i class="fas fa-cogs text-primary me-3"></i>Choose Your Base Product
+                            <i class="fas fa-cogs text-primary me-3"></i>{{ get_text('choose_your_base_product', lang) }}
                         </h3>
 
                         {% if base_product %}
                         <div class="alert alert-info mb-4">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Currently selected:</strong> {{ base_product.name }}. You can change your selection below.
+                            <strong>{{ get_text('currently_selected', lang) }}</strong> {{ base_product.name }}. {{ get_text('you_can_change', lang) }}
                         </div>
                         {% endif %}
 
@@ -109,7 +109,7 @@
 
                         <div class="step-actions mt-4">
                             <button class="btn btn-primary rounded-pill px-4" id="step1-next" {% if not base_product %}disabled{% endif %}>
-                                Continue to Ingredients <i class="fas fa-arrow-right ms-2"></i>
+                                {{ get_text('continue_to_ingredients', lang) }} <i class="fas fa-arrow-right ms-2"></i>
                             </button>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                     <!-- Step 2: Add Custom Ingredients -->
                     <div class="creation-step {% if base_product %}active{% endif %}" id="step-2">
                         <h3 class="step-title mb-4">
-                            <i class="fas fa-plus text-success me-3"></i>Add Custom Ingredients
+                            <i class="fas fa-plus text-success me-3"></i>{{ get_text('add_custom_ingredients', lang) }}
                         </h3>
 
                         <div class="ingredient-categories mb-4">
@@ -125,25 +125,25 @@
                                 <div class="col-md-3">
                                     <div class="ingredient-category" data-category="fruits">
                                         <div class="category-icon">🍓</div>
-                                        <div class="category-name">Fruits & Berries</div>
+                                        <div class="category-name">{{ get_text('fruits_berries', lang) }}</div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="ingredient-category" data-category="nuts">
                                         <div class="category-icon">🥜</div>
-                                        <div class="category-name">Nuts & Seeds</div>
+                                        <div class="category-name">{{ get_text('nuts_seeds', lang) }}</div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="ingredient-category" data-category="grains">
                                         <div class="category-icon">🌾</div>
-                                        <div class="category-name">Ancient Grains</div>
+                                        <div class="category-name">{{ get_text('ancient_grains', lang) }}</div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="ingredient-category" data-category="extras">
                                         <div class="category-icon">✨</div>
-                                        <div class="category-name">Superfoods</div>
+                                        <div class="category-name">{{ get_text('superfoods', lang) }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -157,10 +157,10 @@
 
                         <div class="step-actions">
                             <button class="btn btn-outline-secondary rounded-pill px-4 me-3" id="step2-back">
-                                <i class="fas fa-arrow-left me-2"></i>Back
+                                <i class="fas fa-arrow-left me-2"></i>{{ get_text('back', lang) }}
                             </button>
                             <button class="btn btn-primary rounded-pill px-4" id="step2-next">
-                                Continue to Ratios <i class="fas fa-arrow-right ms-2"></i>
+                                {{ get_text('continue_to_ratios', lang) }} <i class="fas fa-arrow-right ms-2"></i>
                             </button>
                         </div>
                     </div>
@@ -168,13 +168,13 @@
                     <!-- Step 3: Set Ingredient Ratios -->
                     <div class="creation-step" id="step-3">
                         <h3 class="step-title mb-4">
-                            <i class="fas fa-balance-scale text-warning me-3"></i>Set Ingredient Ratios
+                            <i class="fas fa-balance-scale text-warning me-3"></i>{{ get_text('set_ingredient_ratios', lang) }}
                         </h3>
 
                         <div class="ratio-instructions mb-4">
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Define the ratios</strong> of your selected ingredients. Choose the unit for each ingredient individually.
+                                <strong>{{ get_text('define_the_ratios', lang) }}</strong> {{ get_text('of_your_selected_ingredients', lang) }}
                             </div>
                         </div>
 
@@ -182,10 +182,10 @@
                             <!-- This will be populated by JavaScript based on selected ingredients -->
                             <div class="no-ingredients-message text-center py-5" id="no-ingredients-message">
                                 <i class="fas fa-exclamation-triangle fa-3x text-muted mb-3"></i>
-                                <h5 class="text-muted">No ingredients selected</h5>
-                                <p class="text-muted">Please go back to Step 2 and select some ingredients first.</p>
+                                <h5 class="text-muted">{{ get_text('no_ingredients_selected', lang) }}</h5>
+                                <p class="text-muted">{{ get_text('go_back_step_2', lang) }}</p>
                                 <button class="btn btn-outline-secondary rounded-pill px-4" id="back-to-ingredients">
-                                    <i class="fas fa-arrow-left me-2"></i>Back to Add Ingredients
+                                    <i class="fas fa-arrow-left me-2"></i>{{ get_text('back_to_add_ingredients', lang) }}
                                 </button>
                             </div>
                         </div>
@@ -193,18 +193,18 @@
                         <div class="ratio-summary" id="ratio-summary" style="display: none;">
                             <div class="summary-card p-3 bg-light rounded">
                                 <h6 class="fw-bold mb-2">
-                                    <i class="fas fa-list me-2"></i>Selected Ingredients
+                                    <i class="fas fa-list me-2"></i>{{ get_text('selected_ingredients', lang) }}
                                 </h6>
-                                <span class="text-muted" id="ingredient-count">0 ingredients</span>
+                                <span class="text-muted" id="ingredient-count">{{ get_text('0_ingredients', lang) }}</span>
                             </div>
                         </div>
 
                         <div class="step-actions">
                             <button class="btn btn-outline-secondary rounded-pill px-4 me-3" id="step3-back">
-                                <i class="fas fa-arrow-left me-2"></i>Back
+                                <i class="fas fa-arrow-left me-2"></i>{{ get_text('back', lang) }}
                             </button>
                             <button class="btn btn-primary rounded-pill px-4" id="step3-next">
-                                Continue to Claims <i class="fas fa-arrow-right ms-2"></i>
+                                {{ get_text('continue_to_claims', lang) }} <i class="fas fa-arrow-right ms-2"></i>
                             </button>
                         </div>
                     </div>
@@ -212,76 +212,76 @@
                     <!-- Step 4: Select Claims & Certifications -->
                     <div class="creation-step" id="step-4">
                         <h3 class="step-title mb-4">
-                            <i class="fas fa-award text-warning me-3"></i>Select Claims & Certifications
+                            <i class="fas fa-award text-warning me-3"></i>{{ get_text('select_claims_certifications', lang) }}
                         </h3>
 
                         <div class="claims-grid mb-4">
-                            <h5 class="mb-3">Nutritional Claims:</h5>
+                            <h5 class="mb-3">{{ get_text('nutritional_claims', lang) }}</h5>
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <div class="claim-option" data-claim="High Protein">
                                         <i class="fas fa-dumbbell"></i>
-                                        <span>High Protein</span>
+                                        <span>{{ get_text('high_protein', lang) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="claim-option" data-claim="High Fiber">
                                         <i class="fas fa-leaf"></i>
-                                        <span>High Fiber</span>
+                                        <span>{{ get_text('high_fiber', lang) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="claim-option" data-claim="Low Sugar">
                                         <i class="fas fa-heart"></i>
-                                        <span>Low Sugar</span>
+                                        <span>{{ get_text('low_sugar', lang) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="claim-option" data-claim="Gluten Free">
                                         <i class="fas fa-shield-alt"></i>
-                                        <span>Gluten Free</span>
+                                        <span>{{ get_text('gluten_free', lang) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="claim-option" data-claim="Vegan">
                                         <i class="fas fa-seedling"></i>
-                                        <span>Vegan</span>
+                                        <span>{{ get_text('vegan', lang) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="claim-option" data-claim="No Added Sugar">
                                         <i class="fas fa-times-circle"></i>
-                                        <span>No Added Sugar</span>
+                                        <span>{{ get_text('no_added_sugar', lang) }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="certifications-grid mb-4">
-                            <h5 class="mb-3">Certifications:</h5>
+                            <h5 class="mb-3">{{ get_text('certifications', lang) }}</h5>
                             <div class="row g-3">
                                 <div class="col-md-3">
                                     <div class="certification-option" data-cert="Organic">
                                         <i class="fas fa-leaf"></i>
-                                        <span>Organic</span>
+                                        <span>{{ get_text('organic', lang) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="certification-option" data-cert="Fair Trade">
                                         <i class="fas fa-handshake"></i>
-                                        <span>Fair Trade</span>
+                                        <span>{{ get_text('fair_trade', lang) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="certification-option" data-cert="Non-GMO">
                                         <i class="fas fa-dna"></i>
-                                        <span>Non-GMO</span>
+                                        <span>{{ get_text('non_gmo', lang) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="certification-option" data-cert="Rainforest Alliance">
                                         <i class="fas fa-tree"></i>
-                                        <span>Rainforest Alliance</span>
+                                        <span>{{ get_text('rainforest_alliance', lang) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -289,10 +289,10 @@
 
                         <div class="step-actions">
                             <button class="btn btn-outline-secondary rounded-pill px-4 me-3" id="step4-back">
-                                <i class="fas fa-arrow-left me-2"></i>Back
+                                <i class="fas fa-arrow-left me-2"></i>{{ get_text('back', lang) }}
                             </button>
                             <button class="btn btn-primary rounded-pill px-4" id="step4-next">
-                                Review & Finalize <i class="fas fa-arrow-right ms-2"></i>
+                                {{ get_text('review_finalize', lang) }} <i class="fas fa-arrow-right ms-2"></i>
                             </button>
                         </div>
                     </div>
@@ -300,28 +300,28 @@
                     <!-- Step 5: Review & Send -->
                     <div class="creation-step" id="step-5">
                         <h3 class="step-title mb-4">
-                            <i class="fas fa-check text-success me-3"></i>Review Your Concept
+                            <i class="fas fa-check text-success me-3"></i>{{ get_text('review_your_concept', lang) }}
                         </h3>
 
                         <div class="concept-review">
                             <div class="review-section mb-4">
                                 <div class="client-information-card">
                                     <h5 class="section-title mb-4">
-                                        <i class="fas fa-user-tie me-2"></i>Client Information
+                                        <i class="fas fa-user-tie me-2"></i>{{ get_text('client_information', lang) }}
                                     </h5>
 
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label for="client-name" class="form-label">Client Name *</label>
-                                            <input type="text" class="form-control" id="client-name" placeholder="Enter client name" required>
+                                            <label for="client-name" class="form-label">{{ get_text('client_name', lang) }} *</label>
+                                            <input type="text" class="form-control" id="client-name" placeholder="{{ get_text('enter_client_name', lang) }}" required>
                                         </div>
                                         <div class="col-md-6">
-                                            <label for="client-email" class="form-label">Client Email *</label>
-                                            <input type="email" class="form-control" id="client-email" placeholder="Enter client email" required>
+                                            <label for="client-email" class="form-label">{{ get_text('client_email', lang) }} *</label>
+                                            <input type="email" class="form-control" id="client-email" placeholder="{{ get_text('enter_client_email', lang) }}" required>
                                         </div>
                                         <div class="col-12">
-                                            <label for="special-notes" class="form-label">Special Notes & Requirements</label>
-                                            <textarea class="form-control" id="special-notes" rows="3" placeholder="Any specific requirements or notes for this concept..."></textarea>
+                                            <label for="special-notes" class="form-label">{{ get_text('special_notes_requirements', lang) }}</label>
+                                            <textarea class="form-control" id="special-notes" rows="3" placeholder="{{ get_text('special_notes_placeholder', lang) }}"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -330,10 +330,10 @@
 
                         <div class="step-actions">
                             <button class="btn btn-outline-secondary rounded-pill px-4 me-3" id="step5-back">
-                                <i class="fas fa-arrow-left me-2"></i>Back
+                                <i class="fas fa-arrow-left me-2"></i>{{ get_text('back', lang) }}
                             </button>
                             <button class="btn btn-success rounded-pill px-4" id="generate-concept" onclick="window.coCreationLab?.generateConcept()">
-                                <i class="fas fa-file-pdf me-2"></i>Generate PDF
+                                <i class="fas fa-file-pdf me-2"></i>{{ get_text('generate_pdf', lang) }}
                             </button>
                         </div>
                     </div>
@@ -345,41 +345,41 @@
                 <div class="preview-panel sticky-top">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="preview-title mb-0">
-                            <i class="fas fa-eye me-2"></i>Live Preview
+                            <i class="fas fa-eye me-2"></i>{{ get_text('live_preview', lang) }}
                         </h4>
-                        <button class="btn btn-outline-danger btn-sm" id="reset-configuration" title="Reset Configuration">
-                            <i class="fas fa-redo-alt me-1"></i>Reset
+                        <button class="btn btn-outline-danger btn-sm" id="reset-configuration" title="{{ get_text('reset_configuration', lang) }}">
+                            <i class="fas fa-redo-alt me-1"></i>{{ get_text('reset', lang) }}
                         </button>
                     </div>
 
                     <div class="product-preview" id="live-preview">
                         <div class="preview-placeholder">
                             <i class="fas fa-image fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Select a base product to see your creation come to life</p>
+                            <p class="text-muted">{{ get_text('select_base_to_preview', lang) }}</p>
                         </div>
                     </div>
 
                     <div class="configuration-summary mt-4" id="config-summary" style="display: none;">
-                        <h6 class="fw-bold mb-3">Current Configuration:</h6>
+                        <h6 class="fw-bold mb-3">{{ get_text('current_configuration_label', lang) }}</h6>
                         <div class="summary-item" id="summary-base" style="display: none;">
-                            <strong>Base Product:</strong>
+                            <strong>{{ get_text('base_product_label', lang) }}</strong>
                             <span id="summary-base-name"></span>
                         </div>
 
                         <div class="summary-item" id="summary-ingredients" style="display: none;">
-                            <strong>Added Ingredients:</strong>
+                            <strong>{{ get_text('added_ingredients_label', lang) }}</strong>
                             <div id="summary-ingredients-list"></div>
                         </div>
                         <div class="summary-item" id="summary-claims" style="display: none;">
-                            <strong>Nutritional Claims:</strong>
+                            <strong>{{ get_text('nutritional_claims_label', lang) }}</strong>
                             <div id="summary-claims-list"></div>
                         </div>
                         <div class="summary-item" id="summary-certifications" style="display: none;">
-                            <strong>Certifications:</strong>
+                            <strong>{{ get_text('certifications_label', lang) }}</strong>
                             <div id="summary-certifications-list"></div>
                         </div>
                         <div class="summary-item" id="summary-packaging" style="display: none;">
-                            <strong>Packaging Format:</strong>
+                            <strong>{{ get_text('packaging_format_label', lang) }}</strong>
                             <span id="summary-packaging-name"></span>
                         </div>
                     </div>
@@ -398,14 +398,14 @@
             </div>
             <div class="modal-body text-center py-5">
                 <i class="fas fa-check-circle fa-4x text-success mb-4"></i>
-                <h4 class="mb-3">Concept Created Successfully!</h4>
+                <h4 class="mb-3">{{ get_text('concept_created_success', lang) }}</h4>
                 <p class="text-muted mb-4" id="success-message"></p>
                 <div class="d-grid gap-2">
                     <a href="#" id="download-pdf-btn" class="btn btn-outline-primary rounded-pill">
-                        <i class="fas fa-download me-2"></i>Download PDF
+                        <i class="fas fa-download me-2"></i>{{ get_text('download', lang) }}
                     </a>
                     <button type="button" class="btn btn-primary rounded-pill" onclick="location.reload()">
-                        <i class="fas fa-plus me-2"></i>Create Another Concept
+                        <i class="fas fa-plus me-2"></i>{{ get_text('create_another_concept', lang) }}
                     </button>
                 </div>
             </div>
@@ -419,7 +419,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
-                    <i class="fas fa-clipboard-list me-2"></i>Complete Product Configuration
+                    <i class="fas fa-clipboard-list me-2"></i>{{ get_text('complete_product_configuration', lang) }}
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -430,10 +430,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Close
+                    <i class="fas fa-times me-2"></i>{{ get_text('close', lang) }}
                 </button>
                 <button type="button" class="btn btn-primary" id="print-summary">
-                    <i class="fas fa-print me-2"></i>Print Summary
+                    <i class="fas fa-print me-2"></i>{{ get_text('print_summary', lang) }}
                 </button>
             </div>
         </div>

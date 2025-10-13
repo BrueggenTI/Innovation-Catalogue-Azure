@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - Brüggen Innovation Platform</title>
+    <title>{{ get_text('sign_in_title', lang) }} - {{ get_text('bruggen_innovation_platform', lang) }}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -213,8 +213,8 @@
     <div class="login-container">
         <!-- Logo Section -->
         <div class="logo-section">
-            <div class="bruggen-title">Brüggen Forward</div>
-            <div class="bruggen-subtitle">Innovation Platform</div>
+            <div class="bruggen-title">{{ get_text('bruggen_forward', lang) }}</div>
+            <div class="bruggen-subtitle">{{ get_text('innovation_platform', lang) }}</div>
         </div>
 
         <!-- Flash Messages -->
@@ -230,57 +230,57 @@
 
         <!-- Welcome Text -->
         <div class="welcome-text">
-            <h1>Welcome Back</h1>
-            <p>Sign in with your Microsoft account to access the Brüggen Innovation Platform</p>
+            <h1>{{ get_text('welcome_back', lang) }}</h1>
+            <p>{{ get_text('sign_in_with_microsoft_to_access', lang) }}</p>
         </div>
 
         {% if config_valid %}
             <!-- Microsoft SSO Button -->
             <a href="{{ auth_url }}" class="microsoft-btn">
                 <i class="fab fa-microsoft"></i>
-                Sign in with Microsoft
+                {{ get_text('sign_in_microsoft', lang) }}
             </a>
 
             <div class="divider">
-                <span>Secure Enterprise Authentication</span>
+                <span>{{ get_text('secure_enterprise_auth', lang) }}</span>
             </div>
 
             <div style="text-align: left; padding: 16px; background: #f9fafb; border-radius: 8px; margin-top: 24px;">
                 <p style="font-size: 13px; color: #666; margin: 0;">
                     <i class="fas fa-shield-alt text-success me-2"></i>
-                    <strong>Protected by Microsoft Azure AD</strong>
+                    <strong>{{ get_text('protected_by_azure', lang) }}</strong>
                 </p>
                 <p style="font-size: 12px; color: #999; margin: 8px 0 0 0;">
-                    Your credentials are handled securely by Microsoft. We never see or store your password.
+                    {{ get_text('credentials_secure', lang) }}
                 </p>
             </div>
         {% else %}
             <!-- Configuration Error Message -->
             <div class="error-message">
-                <h3><i class="fas fa-exclamation-circle me-2"></i>Configuration Required</h3>
-                <p>Microsoft Single Sign-On is not configured yet. Please set up Azure AD authentication to enable login.</p>
+                <h3><i class="fas fa-exclamation-circle me-2"></i>{{ get_text('configuration_required', lang) }}</h3>
+                <p>{{ get_text('sso_not_configured', lang) }}</p>
                 
                 <div class="setup-steps">
-                    <p style="font-weight: 600; margin-bottom: 8px; color: #991b1b;">Required Environment Variables:</p>
+                    <p style="font-weight: 600; margin-bottom: 8px; color: #991b1b;">{{ get_text('required_env_variables', lang) }}</p>
                     <ol>
-                        <li><code>AZURE_CLIENT_ID</code> - Application (client) ID</li>
-                        <li><code>AZURE_CLIENT_SECRET</code> - Client secret value</li>
-                        <li><code>AZURE_TENANT_ID</code> - Directory (tenant) ID</li>
-                        <li><code>AZURE_REDIRECT_URI</code> - OAuth callback URL</li>
+                        <li><code>AZURE_CLIENT_ID</code> - {{ get_text('application_client_id', lang) }}</li>
+                        <li><code>AZURE_CLIENT_SECRET</code> - {{ get_text('client_secret_value', lang) }}</li>
+                        <li><code>AZURE_TENANT_ID</code> - {{ get_text('directory_tenant_id', lang) }}</li>
+                        <li><code>AZURE_REDIRECT_URI</code> - {{ get_text('oauth_callback_url', lang) }}</li>
                     </ol>
                 </div>
 
                 <p style="margin-top: 16px; margin-bottom: 0; font-size: 13px;">
                     <i class="fas fa-book me-2"></i>
-                    See <strong>AZURE_SSO_SETUP.md</strong> for detailed setup instructions.
+                    {{ get_text('see_setup_instructions', lang) }} <strong>AZURE_SSO_SETUP.md</strong> {{ get_text('for_detailed_setup', lang) }}
                 </p>
             </div>
         {% endif %}
 
         <!-- Footer -->
         <div class="footer-text">
-            <p>&copy; 2024 H. & J. Brüggen KG. All rights reserved.</p>
-            <p style="margin-top: 8px;">The World of Cereals</p>
+            <p>{{ get_text('copyright_2024', lang) }}</p>
+            <p style="margin-top: 8px;">{{ get_text('world_of_cereals', lang) }}</p>
         </div>
     </div>
 

@@ -256,6 +256,9 @@ def login():
     if session.get('authenticated'):
         return redirect(url_for('index'))
     
+    # Get language preference
+    lang = session.get('language', 'en')
+    
     # Validate Azure configuration
     is_valid, message = validate_config()
     
@@ -264,7 +267,9 @@ def login():
         logging.warning(f"Azure config invalid: {message}")
         return render_template('login.html', 
                              config_valid=False, 
-                             error_message=message)
+                             error_message=message,
+                             get_text=get_text,
+                             lang=lang)
     
     # Azure is configured - prepare Microsoft SSO
     # Get MSAL app instance
@@ -283,7 +288,9 @@ def login():
     # Show login page with Microsoft SSO button
     return render_template('login.html', 
                          config_valid=True, 
-                         auth_url=auth_url)
+                         auth_url=auth_url,
+                         get_text=get_text,
+                         lang=lang)
 
 @app.route('/auth/callback')
 def auth_callback():

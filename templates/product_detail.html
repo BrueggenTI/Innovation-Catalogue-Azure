@@ -18,10 +18,10 @@
                             <div class="d-flex align-items-center justify-content-between">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="fas fa-crown text-primary me-1"></i>
-                                    <h6 class="mb-0 fw-semibold">Exclusive Information</h6>
+                                    <h6 class="mb-0 fw-semibold">{{ get_text('exclusive_information', lang) }}</h6>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleExclusiveEdit()">
-                                    <i class="fas fa-edit me-1"></i><span id="editButtonText">Edit</span>
+                                    <i class="fas fa-edit me-1"></i><span id="editButtonText">{{ get_text('edit', lang) }}</span>
                                 </button>
                             </div>
                         </div>
@@ -31,24 +31,24 @@
                             <div id="exclusiveInfoView">
                                 <div class="row g-3">
                                     <div class="col-md-12">
-                                        <label class="form-label small fw-medium text-muted mb-1">Exclusive Status</label>
+                                        <label class="form-label small fw-medium text-muted mb-1">{{ get_text('exclusive_status', lang) }}</label>
                                         <div class="text-dark">
                                             {% if product.is_exclusive %}
-                                                <span class="badge bg-warning text-dark">Ja</span>
+                                                <span class="badge bg-warning text-dark">{{ get_text('yes', lang) }}</span>
                                             {% else %}
-                                                <span class="badge bg-secondary">Nein</span>
+                                                <span class="badge bg-secondary">{{ get_text('no', lang) }}</span>
                                             {% endif %}
                                         </div>
                                     </div>
                                     {% if product.is_exclusive %}
                                         {% if product.customer %}
                                             <div class="col-md-12">
-                                                <label class="form-label small fw-medium text-muted mb-1">Exclusive for Customer</label>
+                                                <label class="form-label small fw-medium text-muted mb-1">{{ get_text('exclusive_for_customer_label', lang) }}</label>
                                                 <div class="text-dark fw-medium">{{ product.customer }}</div>
                                             </div>
                                         {% elif product.market %}
                                             <div class="col-md-12">
-                                                <label class="form-label small fw-medium text-muted mb-1">Exclusive for Market</label>
+                                                <label class="form-label small fw-medium text-muted mb-1">{{ get_text('exclusive_for_market_label', lang) }}</label>
                                                 <div class="text-dark fw-medium">{{ product.market }}</div>
                                             </div>
                                         {% else %}
@@ -65,23 +65,23 @@
                                 <form id="exclusiveInfoForm">
                                     <div class="row g-3">
                                         <div class="col-md-12">
-                                            <label for="exclusiveStatus" class="form-label small fw-medium text-muted mb-2">Exclusive Status</label>
+                                            <label for="exclusiveStatus" class="form-label small fw-medium text-muted mb-2">{{ get_text('exclusive_status', lang) }}</label>
                                             <select class="form-select" id="exclusiveStatus" name="is_exclusive" onchange="toggleExclusiveFields()">
-                                                <option value="true" {% if product.is_exclusive %}selected{% endif %}>Ja</option>
-                                                <option value="false" {% if not product.is_exclusive %}selected{% endif %}>Nein</option>
+                                                <option value="true" {% if product.is_exclusive %}selected{% endif %}>{{ get_text('yes', lang) }}</option>
+                                                <option value="false" {% if not product.is_exclusive %}selected{% endif %}>{{ get_text('no', lang) }}</option>
                                             </select>
                                         </div>
                                         
                                         <!-- Exclusive Type Selection (only shown when exclusive is enabled) -->
                                         <div id="exclusiveTypeContainer" class="col-md-12" style="display: {% if product.is_exclusive %}block{% else %}none{% endif %};">
-                                            <label class="form-label small fw-medium text-muted mb-2">Exclusive Type</label>
+                                            <label class="form-label small fw-medium text-muted mb-2">{{ get_text('exclusive_type', lang) }}</label>
                                             <div class="mb-3">
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="radio" name="exclusive_type" id="exclusiveTypeMarket" 
                                                            value="market" onchange="updateExclusiveInputField()" 
                                                            {% if product.market and not product.customer %}checked{% endif %}>
                                                     <label class="form-check-label" for="exclusiveTypeMarket">
-                                                        Exclusive for Market
+                                                        {{ get_text('exclusive_for_market_label', lang) }}
                                                     </label>
                                                 </div>
                                                 <div class="form-check">
@@ -89,32 +89,32 @@
                                                            value="customer" onchange="updateExclusiveInputField()"
                                                            {% if product.customer %}checked{% elif not product.market %}checked{% endif %}>
                                                     <label class="form-check-label" for="exclusiveTypeCustomer">
-                                                        Exclusive for Customer
+                                                        {{ get_text('exclusive_for_customer_label', lang) }}
                                                     </label>
                                                 </div>
                                             </div>
                                             
                                             <!-- Market Input (conditionally shown) -->
                                             <div id="marketInputContainer" style="display: {% if product.market and not product.customer %}block{% else %}none{% endif %};">
-                                                <label for="market" class="form-label small fw-medium text-muted mb-2">Market Name</label>
+                                                <label for="market" class="form-label small fw-medium text-muted mb-2">{{ get_text('market_name', lang) }}</label>
                                                 <input type="text" class="form-control" id="market" name="market" 
-                                                       value="{{ product.market or '' }}" placeholder="z.B. Deutschland, Europe">
+                                                       value="{{ product.market or '' }}" placeholder="{{ get_text('eg_germany_europe', lang) }}">
                                             </div>
                                             
                                             <!-- Customer Input (conditionally shown) -->
                                             <div id="customerInputContainer" style="display: {% if product.customer or (not product.market and not product.customer) %}block{% else %}none{% endif %};">
-                                                <label for="customer" class="form-label small fw-medium text-muted mb-2">Customer Name</label>
+                                                <label for="customer" class="form-label small fw-medium text-muted mb-2">{{ get_text('customer_name', lang) }}</label>
                                                 <input type="text" class="form-control" id="customer" name="customer" 
-                                                       value="{{ product.customer or '' }}" placeholder="z.B. REWE, EDEKA">
+                                                       value="{{ product.customer or '' }}" placeholder="{{ get_text('eg_rewe_edeka', lang) }}">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="d-flex gap-2 mt-3">
                                         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelExclusiveEdit()">
-                                            <i class="fas fa-times me-1"></i>Cancel
+                                            <i class="fas fa-times me-1"></i>{{ get_text('cancel', lang) }}
                                         </button>
                                         <button type="button" class="btn btn-primary btn-sm" onclick="saveExclusiveInfo()">
-                                            <i class="fas fa-save me-1"></i>Save
+                                            <i class="fas fa-save me-1"></i>{{ get_text('save', lang) }}
                                         </button>
                                     </div>
                                 </form>
@@ -133,18 +133,18 @@
                             {% set recipe_digits = product.recipe_number.lstrip('0') %}
                             {% if recipe_digits and recipe_digits[0] == '4' %}
                                 <span class="badge bg-success px-3 py-2">
-                                    Productive
+                                    {{ get_text('productive', lang) }}
                                 </span>
                             {% elif recipe_digits and recipe_digits[0] == '1' %}
                                 <span class="badge bg-warning text-dark px-3 py-2">
-                                    Development
+                                    {{ get_text('development', lang) }}
                                 </span>
                             {% endif %}
                         {% endif %}
                         
                         {% if product.is_exclusive %}
                             <span class="badge exclusive-badge px-3 py-2">
-                                Exclusive
+                                {{ get_text('exclusive_badge', lang) }}
                             </span>
                         {% endif %}
                     </div>
@@ -161,7 +161,7 @@
                     <!-- Department Under Recipe Number -->
                     {% if product.department %}
                     <div class="department-display text-center mb-4">
-                        <span class="text-muted"><strong>Department:</strong> {{ product.department }}</span>
+                        <span class="text-muted"><strong>{{ get_text('department_label', lang) }}:</strong> {{ product.department }}</span>
                     </div>
                     {% elif product.recipe_number %}
                     <div class="mb-4"></div>
@@ -171,10 +171,10 @@
                     
                     <div class="product-actions d-flex flex-column align-items-center gap-3">
                         <a href="{{ url_for('cocreation') }}?base_product={{ product.id }}" class="btn btn-primary btn-lg rounded-pill px-5">
-                            <i class="fas fa-lightbulb me-2"></i>Use as Base Product
+                            <i class="fas fa-lightbulb me-2"></i>{{ get_text('use_as_base_product', lang) }}
                         </a>
                         <button class="btn btn-outline-primary btn-lg rounded-pill px-5" onclick="window.history.back()">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Products
+                            <i class="fas fa-arrow-left me-2"></i>{{ get_text('back_to_products', lang) }}
                         </button>
                     </div>
                 </div>
@@ -191,7 +191,7 @@
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-header" style="background-color: #661c31;">
                         <h4 class="card-title mb-0 text-white">
-                            <i class="fas fa-list-ul me-2"></i>Ingredients
+                            <i class="fas fa-list-ul me-2"></i>{{ get_text('ingredients', lang) }}
                         </h4>
                     </div>
                     <div class="card-body p-0">
@@ -200,8 +200,8 @@
                                 <table class="table table-striped mb-0">
                                     <thead style="background-color: #f8f9fa;">
                                         <tr>
-                                            <th class="fw-semibold">Ingredient</th>
-                                            <th class="fw-semibold text-end">Percentage</th>
+                                            <th class="fw-semibold">{{ get_text('ingredient', lang) }}</th>
+                                            <th class="fw-semibold text-end">{{ get_text('percentage', lang) }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -210,7 +210,7 @@
                                                 <td class="{% if ingredient.type == 'mix' %}fw-bold{% else %}fw-medium{% endif %}">
                                                     {{ ingredient.name }}
                                                     {% if ingredient.base_recipe_name %}
-                                                        <span class="badge bg-primary ms-2" style="font-size: 0.7rem;">BASE RECIPE</span>
+                                                        <span class="badge bg-primary ms-2" style="font-size: 0.7rem;">{{ get_text('base_recipe', lang) }}</span>
                                                     {% endif %}
                                                 </td>
                                                 <td class="text-end {% if ingredient.type == 'mix' %}fw-bold{% endif %}">{{ ingredient.percentage }}%</td>
@@ -232,7 +232,7 @@
                             </div>
                         {% else %}
                             <div class="p-4 text-center text-muted">
-                                <i class="fas fa-info-circle me-2"></i>No ingredients information available.
+                                <i class="fas fa-info-circle me-2"></i>{{ get_text('no_ingredients_available', lang) }}
                             </div>
                         {% endif %}
                     </div>
@@ -244,9 +244,9 @@
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-header" style="background-color: #661c31;">
                         <h4 class="card-title mb-0 text-white">
-                            <i class="fas fa-chart-bar me-2"></i>Nutritional Information
+                            <i class="fas fa-chart-bar me-2"></i>{{ get_text('nutritional_information', lang) }}
                         </h4>
-                        <small class="text-white-50">Per 100g</small>
+                        <small class="text-white-50">{{ get_text('per_100g', lang) }}</small>
                     </div>
                     <div class="card-body p-0">
                         {% if nutritional_info %}
@@ -254,35 +254,35 @@
                                 <table class="table table-striped mb-0">
                                     <tbody>
                                         <tr>
-                                            <td class="fw-medium">Energy</td>
+                                            <td class="fw-medium">{{ get_text('energy', lang) }}</td>
                                             <td class="text-end fw-bold">{{ nutritional_info.energy }} kcal</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-medium">Fat</td>
+                                            <td class="fw-medium">{{ get_text('fat', lang) }}</td>
                                             <td class="text-end">{{ nutritional_info.fat }} g</td>
                                         </tr>
                                         <tr class="table-light">
-                                            <td class="ps-4">- of which saturated</td>
+                                            <td class="ps-4">{{ get_text('of_which_saturated', lang) }}</td>
                                             <td class="text-end">{{ nutritional_info.saturated_fat }} g</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-medium">Carbohydrates</td>
+                                            <td class="fw-medium">{{ get_text('carbohydrates', lang) }}</td>
                                             <td class="text-end">{{ nutritional_info.carbohydrates }} g</td>
                                         </tr>
                                         <tr class="table-light">
-                                            <td class="ps-4">- of which sugars</td>
+                                            <td class="ps-4">{{ get_text('of_which_sugars', lang) }}</td>
                                             <td class="text-end">{{ nutritional_info.sugars }} g</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-medium">Fiber</td>
+                                            <td class="fw-medium">{{ get_text('fiber', lang) }}</td>
                                             <td class="text-end">{{ nutritional_info.fiber }} g</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-medium">Protein</td>
+                                            <td class="fw-medium">{{ get_text('protein', lang) }}</td>
                                             <td class="text-end">{{ nutritional_info.protein }} g</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-medium">Salt</td>
+                                            <td class="fw-medium">{{ get_text('salt', lang) }}</td>
                                             <td class="text-end">{{ nutritional_info.salt }} g</td>
                                         </tr>
                                     </tbody>
@@ -290,7 +290,7 @@
                             </div>
                         {% else %}
                             <div class="p-4 text-center text-muted">
-                                <i class="fas fa-info-circle me-2"></i>No nutritional information available.
+                                <i class="fas fa-info-circle me-2"></i>{{ get_text('no_nutritional_info', lang) }}
                             </div>
                         {% endif %}
                     </div>
@@ -302,7 +302,7 @@
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-header" style="background-color: #661c31;">
                         <h4 class="card-title mb-0 text-white">
-                            <i class="fas fa-exclamation-triangle me-2"></i>Allergen Information
+                            <i class="fas fa-exclamation-triangle me-2"></i>{{ get_text('allergen_information', lang) }}
                         </h4>
                     </div>
                     <div class="card-body">
@@ -317,7 +317,7 @@
                             </div>
                         {% else %}
                             <div class="text-center text-muted">
-                                <i class="fas fa-check-circle text-success me-2"></i>No known allergens
+                                <i class="fas fa-check-circle text-success me-2"></i>{{ get_text('no_known_allergens', lang) }}
                             </div>
                         {% endif %}
                     </div>
@@ -329,7 +329,7 @@
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-header" style="background-color: #661c31;">
                         <h4 class="card-title mb-0 text-white">
-                            <i class="fas fa-medal me-2"></i>Product Claims
+                            <i class="fas fa-medal me-2"></i>{{ get_text('product_claims', lang) }}
                         </h4>
                     </div>
                     <div class="card-body">
@@ -345,7 +345,7 @@
                             </div>
                         {% else %}
                             <div class="text-center text-muted">
-                                <i class="fas fa-info-circle me-2"></i>No specific claims available.
+                                <i class="fas fa-info-circle me-2"></i>{{ get_text('no_specific_claims', lang) }}
                             </div>
                         {% endif %}
                     </div>
