@@ -1,0 +1,12 @@
+trends:1516  The specified value "50-100 Datenpunkte, darunter: Liste innovativer SÃ¼Ãungsmittel (z.B. Stevia, Monk Fruit, Allulose), VerbraucherprÃ¤ferenzen fÃ¼r natÃ¼rliche Aromen vs. kÃ¼nstliche, Marktanteile von Riegeln/MÃ¼sli mit 'gesunden' Claims, wissenschaftliche Studien zu SÃ¼Ãungsmitteln und deren Auswirkungen auf die Gesundheit, Suchvolumen fÃ¼r Keywords wie 'gesunde Snacks' oder 'Zuckeralternativen', Fallstudien erfolgreicher Produktlaunches, regulatorische Rahmenbedingungen fÃ¼r Health Claims, NÃ¤hrwertprofile vergleichbarer Produkte, Lifestyle-Trends von Fitness-Zielgruppen." cannot be parsed, or is out of range.
+showResearchPlan @ trends:1516
+handleResearchUpdate @ trends:1400
+eventSource.onmessage @ trends:1385
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+trends:1389  SSE Error: Event {isTrusted: true, type: 'error', target: EventSource, currentTarget: EventSource, eventPhase: 2, …}isTrusted: truebubbles: falsecancelBubble: falsecancelable: falsecomposed: falsecurrentTarget: EventSource {url: 'https://61b49d5b-8da4-4f2f-a736-16e2f41c9c18-00-2s…earch/stream/7cd63362-7ca5-43e0-87e3-e2018bfcc63f', withCredentials: false, readyState: 2, onopen: null, onmessage: ƒ, …}defaultPrevented: falseeventPhase: 0returnValue: truesrcElement: EventSource {url: 'https://61b49d5b-8da4-4f2f-a736-16e2f41c9c18-00-2s…earch/stream/7cd63362-7ca5-43e0-87e3-e2018bfcc63f', withCredentials: false, readyState: 2, onopen: null, onmessage: ƒ, …}target: EventSource {url: 'https://61b49d5b-8da4-4f2f-a736-16e2f41c9c18-00-2s…earch/stream/7cd63362-7ca5-43e0-87e3-e2018bfcc63f', withCredentials: false, readyState: 2, onopen: null, onmessage: ƒ, …}timeStamp: 676115.8000001907type: "error"[[Prototype]]: Event
+eventSource.onerror @ trends:1389
+Refused to connect to 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css.map' because it violates the following Content Security Policy directive: "connect-src 'self'".
