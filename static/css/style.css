@@ -1,60 +1,89 @@
-/* Brüggen Innovation Catalogue - Official Digital Design System */
+/* Brüggen Innovation Catalogue - Moderne 2025 Design System */
 
-/* Import Montserrat font */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+/* Import moderne Schriften: Playfair Display für Überschriften (Serifen), Montserrat für Body */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 :root {
-    /* Official Brüggen Color Tokens - Based on Website Analysis */
-    --brg-color-primary: #661c31;               /* Brüggen burgundy header */
-    --brg-color-secondary: #ff4143;             /* Brüggen coral/orange for logo */
+    /* Official Brüggen Color Tokens - Brandfarben */
+    --brg-color-primary: #661c31;               /* Dunkles Rot/Burgundy */
+    --brg-color-secondary: #ff4143;             /* Helles Rot/Coral */
     --brg-color-interactive-primary: #661c31;   /* Primary burgundy for CTAs */
     --brg-color-text-primary: #1A1A1A;         /* Main text color */
     --brg-color-text-secondary: #525252;        /* Secondary text */
     --brg-color-background-primary: #FFFFFF;    /* Primary background */
-    --brg-color-background-secondary: #F4F4F4;  /* Secondary background */
+    --brg-color-background-secondary: #F8F9FA;  /* Secondary background */
     --brg-color-border-subtle: #E0E0E0;         /* Subtle borders */
 
     /* Interactive states */
     --brg-color-interactive-hover: #4d1525;     /* Darker burgundy for hover */
     --brg-color-interactive-active: #330e18;    /* Even darker for active */
 
-    /* Spacing Tokens (8px grid) */
-    --brg-spacing-01: 4px;     /* 0.25rem */
-    --brg-spacing-02: 8px;     /* 0.5rem */
-    --brg-spacing-03: 16px;    /* 1.0rem */
-    --brg-spacing-04: 24px;    /* 1.5rem */
-    --brg-spacing-05: 32px;    /* 2.0rem */
-    --brg-spacing-06: 48px;    /* 3.0rem */
-    --brg-spacing-07: 64px;    /* 4.0rem */
-    --brg-spacing-08: 80px;    /* 5.0rem */
+    /* Aurora UI - Leuchtende Farbverläufe mit Brandfarben */
+    --aurora-gradient-1: linear-gradient(135deg, rgba(255, 65, 67, 0.15) 0%, rgba(102, 28, 49, 0.1) 100%);
+    --aurora-gradient-2: linear-gradient(135deg, rgba(102, 28, 49, 0.1) 0%, rgba(255, 65, 67, 0.08) 100%);
+    --aurora-glow: radial-gradient(circle at 50% 0%, rgba(255, 65, 67, 0.2), transparent 70%);
 
-    /* Typography Scale */
-    --brg-font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Spacing Tokens - Mehr Weißraum (modernisiert mit größeren Werten) */
+    --brg-spacing-01: 6px;     /* 0.375rem */
+    --brg-spacing-02: 12px;    /* 0.75rem */
+    --brg-spacing-03: 20px;    /* 1.25rem */
+    --brg-spacing-04: 32px;    /* 2.0rem */
+    --brg-spacing-05: 48px;    /* 3.0rem */
+    --brg-spacing-06: 64px;    /* 4.0rem */
+    --brg-spacing-07: 80px;    /* 5.0rem */
+    --brg-spacing-08: 100px;   /* 6.25rem */
 
-    /* Border and effects */
-    --brg-border-radius: 4px;
-    --brg-focus-shadow: 0 0 0 3px rgba(255, 65, 67, 0.4);
-    --brg-card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --brg-card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.15);
-    --brg-transition: all 0.2s ease;
+    /* Typography Scale - Moderne Schriften */
+    --brg-font-heading: 'Playfair Display', Georgia, serif;  /* Serifenschrift für Überschriften */
+    --brg-font-body: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    /* Border and effects - Moderne Schatten und Tiefeneffekte */
+    --brg-border-radius: 16px;  /* Größere Rundungen */
+    --brg-border-radius-sm: 8px;
+    --brg-focus-shadow: 0 0 0 4px rgba(255, 65, 67, 0.25);
+    --brg-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --brg-card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --brg-card-shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --brg-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* Smooth cubic-bezier */
+    --brg-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Glasmorphismus */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-blur: blur(20px);
 
     /* Layout */
-    --brg-max-width: 1280px;
+    --brg-max-width: 1400px;
     --brg-grid-columns: 12;
 }
 
-/* Global Styles - Brüggen Design System */
+/* Global Styles - Moderne 2025 Design System */
 body {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     background-color: var(--brg-color-background-primary);
     color: var(--brg-color-text-primary);
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: 17px;  /* Größer für bessere Lesbarkeit */
+    line-height: 1.7;  /* Mehr Zeilenhöhe */
     font-weight: 400;
-    letter-spacing: 0.15px;
+    letter-spacing: 0.01em;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    position: relative;
+}
+
+/* Aurora UI Hintergrund-Effekt */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background: var(--aurora-glow);
+    opacity: 0.5;
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* Ensure animations are enabled */
@@ -80,7 +109,7 @@ body {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     border-left: 4px solid var(--brg-color-secondary) !important;
     transition: var(--brg-transition);
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
 }
 
 .exclusive-card:hover {
@@ -90,7 +119,7 @@ body {
 
 .exclusive-title {
     color: var(--brg-color-primary);
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-weight: 600;
     letter-spacing: 0.25px;
 }
@@ -154,7 +183,7 @@ body {
 
 /* Segmented Button Group */
 .exclusive-card .btn-group .btn {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-weight: 500;
     font-size: 0.9rem;
     padding: var(--brg-spacing-02) var(--brg-spacing-03);
@@ -184,7 +213,7 @@ body {
 
 .exclusive-card .form-control {
     border-color: #dee2e6;
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     transition: all 0.2s ease;
 }
 
@@ -202,7 +231,7 @@ body {
 /* Form Labels and Text */
 .exclusive-card .form-label {
     color: var(--brg-color-text-secondary);
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-weight: 500;
     letter-spacing: 0.25px;
 }
@@ -210,7 +239,7 @@ body {
 .exclusive-card .form-text {
     color: var(--brg-color-text-secondary);
     font-size: 0.8rem;
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
 }
 
 /* Autosave Indicator */
@@ -268,18 +297,18 @@ body {
 
 .exclusive-info .text-primary {
     color: var(--brg-color-primary) !important;
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
 }
 
 .exclusive-details {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     line-height: 1.4;
 }
 
 .exclusive-target-name {
     color: #ff4143 !important;
     font-weight: 600 !important;
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     border: 1px solid rgba(255, 65, 67, 0.3);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
@@ -299,7 +328,7 @@ body {
 
 .exclusive-empty-state {
     color: var(--brg-color-text-secondary);
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
 }
 
 .exclusive-empty-state .opacity-50 {
@@ -372,31 +401,41 @@ body {
     }
 }
 
-/* Typography - Brüggen Design System */
-h1, .h1 {
-    font-family: var(--brg-font-family);
-    font-size: 42px;
-    line-height: 52px;
-    font-weight: 600;
-    letter-spacing: 0;
+/* Typography - Moderne 2025 Design mit Serifenschrift */
+h1, .h1, .display-1, .display-2, .display-3, .display-4 {
+    font-family: var(--brg-font-heading);  /* Playfair Display Serifenschrift */
+    font-size: 58px;  /* Größer und ausdrucksstärker */
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;  /* Negative spacing für moderne Optik */
     color: var(--brg-color-text-primary);
-    margin-bottom: var(--brg-spacing-04);
+    margin-bottom: var(--brg-spacing-05);  /* Mehr Weißraum */
 }
 
 h2, .h2 {
-    font-family: var(--brg-font-family);
-    font-size: 32px;
-    line-height: 40px;
-    font-weight: 600;
-    letter-spacing: 0;
+    font-family: var(--brg-font-heading);  /* Playfair Display Serifenschrift */
+    font-size: 42px;  /* Größer */
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     color: var(--brg-color-text-primary);
     margin-bottom: var(--brg-spacing-04);
 }
 
 h3, .h3 {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-heading);  /* Playfair Display Serifenschrift */
+    font-size: 32px;  /* Größer */
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--brg-color-text-primary);
+    margin-bottom: var(--brg-spacing-04);
+}
+
+h4, .h4 {
+    font-family: var(--brg-font-heading);
     font-size: 24px;
-    line-height: 32px;
+    line-height: 1.4;
     font-weight: 600;
     letter-spacing: 0;
     color: var(--brg-color-text-primary);
@@ -404,26 +443,27 @@ h3, .h3 {
 }
 
 .lead {
-    font-size: 18px;
-    line-height: 28px;
+    font-size: 20px;  /* Größer */
+    line-height: 1.7;
     font-weight: 400;
-    letter-spacing: 0.1px;
+    letter-spacing: 0.01em;
+    margin-bottom: var(--brg-spacing-04);
 }
 
 .small, small {
-    font-size: 14px;
-    line-height: 20px;
-    letter-spacing: 0.2px;
+    font-size: 15px;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
 }
 
-/* Button Styles - Brüggen Design System */
+/* Button Styles - Moderne 2025 Design mit Mikrointeraktionen */
 .btn {
-    font-family: var(--brg-font-family);
-    font-size: 16px;
+    font-family: var(--brg-font-body);
+    font-size: 17px;  /* Größer */
     font-weight: 600;
-    line-height: 24px;
-    letter-spacing: 0.15px;
-    padding: var(--brg-spacing-03) var(--brg-spacing-05);
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    padding: 16px 32px;  /* Mehr Padding für bessere Touch-Ziele */
     border-radius: var(--brg-border-radius);
     border: none;
     transition: var(--brg-transition);
@@ -431,25 +471,48 @@ h3, .h3 {
     display: inline-flex;
     align-items: center;
     gap: var(--brg-spacing-02);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Mikrointeraktion: Button drückt sich beim Klick ein */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn-primary {
-    background-color: var(--brg-color-interactive-primary);
+    background: linear-gradient(135deg, var(--brg-color-interactive-primary) 0%, var(--brg-color-interactive-hover) 100%);
     color: var(--brg-color-background-primary);
+    box-shadow: 0 4px 15px rgba(102, 28, 49, 0.3);
 }
 
 .btn-primary:hover {
-    background-color: var(--brg-color-interactive-hover);
-    transform: scale(1.02);
+    background: linear-gradient(135deg, var(--brg-color-interactive-hover) 0%, var(--brg-color-interactive-active) 100%);
+    transform: translateY(-3px) scale(1.02);  /* Hebt sich beim Hover */
+    box-shadow: 0 8px 25px rgba(102, 28, 49, 0.4);
 }
 
 .btn-primary:active {
-    background-color: var(--brg-color-interactive-active);
-    transform: scale(0.98);
+    transform: translateY(-1px) scale(0.98);  /* Drückt sich ein */
+    box-shadow: 0 2px 10px rgba(102, 28, 49, 0.3);
 }
 
 .btn-primary:focus {
-    box-shadow: var(--brg-focus-shadow);
+    box-shadow: var(--brg-focus-shadow), 0 4px 15px rgba(102, 28, 49, 0.3);
     outline: none;
 }
 
@@ -661,24 +724,56 @@ h3, .h3 {
     background-color: var(--brg-color-background-primary) !important;
 }
 
-/* Links */
+/* Links - Moderne Mikrointeraktionen */
 a {
     color: var(--brg-color-interactive-primary);
     text-decoration: none;
     transition: var(--brg-transition);
+    position: relative;
+}
+
+/* Subtile Unterstreichung beim Hover */
+a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--brg-color-secondary), var(--brg-color-primary));
+    transition: width 0.3s ease;
+}
+
+a:hover::after {
+    width: 100%;
 }
 
 a:hover {
-    color: var(--brg-color-interactive-hover);
-    text-decoration: underline;
+    color: var(--brg-color-secondary);
+    transform: translateY(-1px);
 }
 
-/* Navigation - Brüggen Design System */
+/* Navigation - Moderne 2025 Design mit Glasmorphismus */
 .bruggen-header {
-    background-color: var(--brg-color-primary) !important;
+    background: linear-gradient(135deg, var(--brg-color-primary) 0%, var(--brg-color-interactive-hover) 100%) !important;
     border-bottom: none;
     padding: var(--brg-spacing-03) 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+}
+
+/* Subtiler Glow-Effekt am unteren Rand */
+.bruggen-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--brg-color-secondary), transparent);
+    opacity: 0.6;
 }
 
 /* Main content */
@@ -691,7 +786,7 @@ a:hover {
 }
 
 .navbar-brand {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-size: 20px;
     font-weight: 600;
     color: var(--brg-color-background-primary);
@@ -710,7 +805,7 @@ a:hover {
 
 /* Brüggen Title */
 .bruggen-title {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-size: 18px;
     font-weight: 700;
     color: var(--brg-color-background-primary);
@@ -718,7 +813,7 @@ a:hover {
 }
 
 .bruggen-subtitle {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-size: 14px;
     font-weight: 400;
     color: rgba(255, 255, 255, 0.8);
@@ -731,7 +826,7 @@ a:hover {
 }
 
 .user-name {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-size: 16px;
     font-weight: 600;
     color: var(--brg-color-background-primary);
@@ -739,7 +834,7 @@ a:hover {
 }
 
 .user-title {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-size: 14px;
     font-weight: 400;
     color: rgba(255, 255, 255, 0.7);
@@ -747,7 +842,7 @@ a:hover {
 }
 
 .nav-link {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-size: 16px;
     font-weight: 400;
     color: var(--brg-color-text-primary);
@@ -764,7 +859,7 @@ a:hover {
     font-weight: 600;
 }
 
-/* Hero Section - Brüggen Design System */
+/* Hero Section - Moderne 2025 Design mit Aurora UI */
 .hero-section {
     background-color: var(--brg-color-background-primary);
     padding: var(--brg-spacing-08) 0;
@@ -773,6 +868,40 @@ a:hover {
     align-items: center;
     position: relative;
     overflow: hidden;
+}
+
+/* Aurora Hintergrund im Hero */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -25%;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(255, 65, 67, 0.12) 0%,
+        rgba(102, 28, 49, 0.08) 40%,
+        transparent 70%
+    );
+    animation: aurora-float 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes aurora-float {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.6;
+    }
+    33% {
+        transform: translate(30px, -30px) scale(1.1);
+        opacity: 0.8;
+    }
+    66% {
+        transform: translate(-20px, 20px) scale(0.95);
+        opacity: 0.7;
+    }
 }
 
 .hero-content {
@@ -785,9 +914,9 @@ a:hover {
     z-index: 1;
 }
 
-/* Search Section */
+/* Search Section - Moderne 2025 Design */
 .search-section {
-    max-width: 800px;
+    max-width: 900px;  /* Etwas breiter */
     margin: 0 auto;
 }
 
@@ -799,27 +928,46 @@ a:hover {
 }
 
 .search-container .input-group {
-    box-shadow: var(--brg-card-shadow);
+    box-shadow: var(--brg-card-shadow-hover);  /* Stärkerer Schatten */
     border-radius: var(--brg-border-radius);
     overflow: hidden;
+    background: var(--glass-bg);  /* Glasmorphismus */
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
 }
 
 .search-container .input-group-text {
-    background-color: var(--brg-color-background-primary);
-    border: 1px solid var(--brg-color-border-subtle);
-    padding: var(--brg-spacing-03);
+    background-color: transparent;
+    border: none;
+    padding: var(--brg-spacing-04);  /* Mehr Padding */
+    font-size: 20px;
+    color: var(--brg-color-secondary);
 }
 
 .search-container .form-control {
-    border: 1px solid var(--brg-color-border-subtle);
-    padding: var(--brg-spacing-03);
-    font-size: 16px;
-    background-color: var(--brg-color-background-primary);
+    border: none;
+    padding: var(--brg-spacing-04);
+    font-size: 18px;  /* Größer */
+    background-color: transparent;
+    color: var(--brg-color-text-primary);
+}
+
+.search-container .form-control::placeholder {
+    color: var(--brg-color-text-secondary);
+    opacity: 0.6;
 }
 
 .search-container .form-control:focus {
-    border-color: var(--brg-color-interactive-primary);
+    outline: none;
+    box-shadow: none;
+}
+
+.search-container .input-group:focus-within {
+    border-color: var(--brg-color-secondary);
     box-shadow: var(--brg-focus-shadow);
+    transform: translateY(-2px);
+    transition: var(--brg-transition);
 }
 
 .search-actions {
@@ -1029,7 +1177,7 @@ span.search-result-badge,
 }
 
 .breadcrumb-text {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     font-weight: 500;
 }
 
@@ -1117,10 +1265,12 @@ span.search-result-badge,
     transform: scale(1.05);
 }
 
-/* Navigation Cards */
+/* Navigation Cards - Glasmorphismus & Aurora UI */
 .nav-card {
-    background-color: var(--brg-color-background-primary);
-    border: 1px solid var(--brg-color-border-subtle);
+    background: var(--glass-bg);  /* Glasmorphismus */
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
     border-radius: var(--brg-border-radius);
     box-shadow: var(--brg-card-shadow);
     transition: var(--brg-transition);
@@ -1129,13 +1279,39 @@ span.search-result-badge,
     height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Aurora-Effekt beim Hover */
+.nav-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--aurora-gradient-1);
+    opacity: 0;
+    transition: var(--brg-transition);
+    z-index: 0;
+}
+
+.nav-card:hover::before {
+    opacity: 1;
 }
 
 .nav-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px);  /* Stärkere Bewegung */
     box-shadow: var(--brg-card-shadow-hover);
     text-decoration: none;
     color: inherit;
+    border-color: rgba(255, 65, 67, 0.3);
+}
+
+.nav-card .card-body {
+    position: relative;
+    z-index: 1;
 }
 
 .nav-card .card-body {
@@ -1278,20 +1454,45 @@ span.search-result-badge,
     color: black !important;
 }
 
-/* Card Component - Brüggen Design System */
+/* Card Component - Moderne 2025 Design mit Glasmorphismus */
 .product-card {
-    background-color: var(--brg-color-background-primary);
+    background: var(--glass-bg);  /* Glasmorphismus */
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border-radius: var(--brg-border-radius);
     box-shadow: var(--brg-card-shadow);
     overflow: hidden;
     transition: var(--brg-transition);
     position: relative;
-    border: 1px solid var(--brg-color-border-subtle);
+    border: 1px solid var(--glass-border);
+}
+
+.product-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--aurora-gradient-2);
+    opacity: 0;
+    transition: var(--brg-transition);
+    z-index: 0;
+}
+
+.product-card:hover::before {
+    opacity: 0.8;
 }
 
 .product-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px) scale(1.02);  /* Stärkere Transformation */
     box-shadow: var(--brg-card-shadow-hover);
+    border-color: rgba(255, 65, 67, 0.4);
+}
+
+.product-card > * {
+    position: relative;
+    z-index: 1;
 }
 
 .floating-card {
@@ -1460,28 +1661,33 @@ span.search-result-badge,
     margin-bottom: 8px;
 }
 
-/* Form Controls - Brüggen Design System */
+/* Form Controls - Moderne 2025 Design mit Glasmorphismus */
 .filters-section {
-    background-color: var(--brg-color-background-secondary);
-    padding: var(--brg-spacing-04) 0;
+    background: var(--aurora-gradient-2);
+    padding: var(--brg-spacing-05) 0;
 }
 
 .form-select, .form-control {
-    font-family: var(--brg-font-family);
+    font-family: var(--brg-font-body);
     border-radius: var(--brg-border-radius);
-    border: 1px solid var(--brg-color-border-subtle);
-    background-color: var(--brg-color-background-secondary);
-    padding: var(--brg-spacing-02) var(--brg-spacing-03);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 14px 20px;  /* Mehr Padding */
     font-weight: 400;
-    font-size: 16px;
+    font-size: 17px;  /* Größer */
     transition: var(--brg-transition);
+    color: var(--brg-color-text-primary);
 }
 
 .form-select:focus, .form-control:focus {
     border-width: 2px;
-    border-color: var(--brg-color-interactive-primary);
-    box-shadow: none;
+    border-color: var(--brg-color-secondary);
+    box-shadow: var(--brg-focus-shadow);
     outline: none;
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.9);
 }
 
 /* Trends - Brüggen Design System */
@@ -1491,11 +1697,43 @@ span.search-result-badge,
 }
 
 .trend-card {
-    background-color: var(--brg-color-background-primary);
-    border-radius: 12px;
+    background: var(--glass-bg);  /* Glasmorphismus */
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: var(--brg-border-radius);
     overflow: hidden;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--brg-card-shadow);
+    transition: var(--brg-transition);
+    position: relative;
+}
+
+.trend-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--aurora-gradient-1);
+    opacity: 0;
+    transition: var(--brg-transition);
+    z-index: 0;
+}
+
+.trend-card:hover::before {
+    opacity: 0.7;
+}
+
+.trend-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--brg-card-shadow-hover);
+    border-color: rgba(255, 65, 67, 0.4);
+}
+
+.trend-card > * {
+    position: relative;
+    z-index: 1;
 }
 
 .trend-image-container {
@@ -2544,23 +2782,53 @@ span.search-result-badge,
     }
 }
 
-/* Responsive adjustments */
+/* Responsive Design - Moderne 2025 Mobile Optimierung */
 @media (max-width: 768px) {
     .main-content {
         margin-top: 70px;
+        padding-left: var(--brg-spacing-03);
+        padding-right: var(--brg-spacing-03);
     }
 
     .hero-section {
         min-height: 70vh;
         text-align: center;
+        padding: var(--brg-spacing-06) 0;
     }
 
-    .display-3 {
-        font-size: 2.5rem;
+    /* Kleinere aber lesbare Typografie auf Mobile */
+    h1, .h1, .display-1, .display-2, .display-3, .display-4 {
+        font-size: 36px;
+        line-height: 1.3;
+        margin-bottom: var(--brg-spacing-04);
     }
 
-    .display-4 {
-        font-size: 2rem;
+    h2, .h2 {
+        font-size: 28px;
+    }
+
+    h3, .h3 {
+        font-size: 24px;
+    }
+
+    .lead {
+        font-size: 18px;
+    }
+
+    /* Touch-freundliche Buttons */
+    .btn {
+        padding: 14px 24px;
+        font-size: 16px;
+        min-height: 48px;  /* Mindestgröße für Touch */
+    }
+
+    /* Cards für Mobile optimiert */
+    .nav-card, .product-card, .trend-card {
+        margin-bottom: var(--brg-spacing-04);
+    }
+
+    .nav-card:hover, .product-card:hover, .trend-card:hover {
+        transform: translateY(-4px);  /* Weniger Bewegung auf Mobile */
     }
 
     .module-card {
@@ -2583,6 +2851,16 @@ span.search-result-badge,
     .preview-panel {
         margin-top: 30px;
         position: static !important;
+    }
+
+    /* Search Bar auf Mobile */
+    .search-container .input-group {
+        flex-direction: column;
+    }
+
+    .search-container .form-control {
+        font-size: 16px;  /* Verhindert Zoom auf iOS */
+        padding: var(--brg-spacing-03);
     }
 }
 
