@@ -466,7 +466,7 @@ h4, .h4 {
     padding: 14px 28px;
     border-radius: 50px;  /* Pill-Form - stark abgerundete Ecken */
     border: none;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* Sanfte, befriedigende Kurve */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* Sanfte Kurve */
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -476,7 +476,7 @@ h4, .h4 {
     min-height: 44px;  /* Mindestgröße für Touch-Geräte */
 }
 
-/* Mikrointeraktion: Sanftes Aufleuchten beim Klick */
+/* Mikrointeraktion: Button drückt sich beim Klick ein */
 .btn::before {
     content: '';
     position: absolute;
@@ -485,70 +485,52 @@ h4, .h4 {
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.3);
     transform: translate(-50%, -50%);
-    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1), height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.6s, height 0.6s;
 }
 
 .btn:active::before {
-    width: 320px;
-    height: 320px;
+    width: 300px;
+    height: 300px;
 }
 
 .btn-primary {
     background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);  /* Subtiler Verlauf */
     color: var(--brg-color-background-primary);
-    box-shadow: 0 10px 30px rgba(102, 28, 49, 0.2), 0 6px 16px rgba(102, 28, 49, 0.12), 0 2px 6px rgba(102, 28, 49, 0.08);  /* Weicher, diffuser 3-Schicht-Schatten */
+    box-shadow: 0 8px 24px rgba(102, 28, 49, 0.25), 0 4px 8px rgba(102, 28, 49, 0.15);  /* Weicher, diffuser Schatten */
 }
 
 .btn-primary:hover {
     background: linear-gradient(135deg, #7a2139 0%, #8d2642 100%);
-    transform: translateY(-3px);  /* Sanftes Anheben mit leichter Schwebewirkung */
-    box-shadow: 0 16px 40px rgba(102, 28, 49, 0.25), 0 8px 20px rgba(102, 28, 49, 0.18), 0 4px 8px rgba(102, 28, 49, 0.12);  /* Stärkerer diffuser Schatten */
+    transform: translateY(-2px);  /* Sanftes Anheben */
+    box-shadow: 0 12px 32px rgba(102, 28, 49, 0.3), 0 6px 12px rgba(102, 28, 49, 0.2);  /* Stärkerer Schatten beim Hover */
 }
 
 .btn-primary:active {
-    transform: translateY(-1px) scale(0.98);  /* Sanftes Eindrücken */
-    box-shadow: 0 6px 18px rgba(102, 28, 49, 0.18), 0 3px 8px rgba(102, 28, 49, 0.12);
+    transform: translateY(0px) scale(0.98);  /* Sanftes Eindrücken */
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.2);
 }
 
 .btn-primary:focus {
-    box-shadow: var(--brg-focus-shadow), 0 10px 30px rgba(102, 28, 49, 0.2), 0 6px 16px rgba(102, 28, 49, 0.12);
+    box-shadow: var(--brg-focus-shadow), 0 4px 15px rgba(102, 28, 49, 0.3);
     outline: none;
 }
 
 .btn-primary:disabled {
-    background: linear-gradient(135deg, #d1d1d1 0%, #b8b8b8 100%);
+    background-color: var(--brg-color-border-subtle);
     color: var(--brg-color-text-secondary);
     cursor: not-allowed;
-    opacity: 0.6;
-    box-shadow: none;
-    transform: none;
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);  /* Subtiler Verlauf */
+    background-color: var(--brg-color-background-secondary);
     color: var(--brg-color-text-primary);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06), 0 3px 10px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.02);  /* Weiche Schatten */
 }
 
 .btn-secondary:hover {
-    background: linear-gradient(135deg, #E9ECEF 0%, #DEE2E6 100%);
-    transform: translateY(-2px) scale(1.01);  /* Sanftes Anheben + minimale Skalierung */
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08), 0 5px 14px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.btn-secondary:active {
-    transform: translateY(0px) scale(0.99);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.btn-secondary:disabled {
-    background: linear-gradient(135deg, #e8e8e8 0%, #d5d5d5 100%);
-    color: var(--brg-color-text-secondary);
-    cursor: not-allowed;
-    opacity: 0.5;
-    box-shadow: none;
+    background-color: var(--brg-color-border-subtle);
+    transform: scale(1.02);
 }
 
 .btn-link {
@@ -564,220 +546,123 @@ h4, .h4 {
 }
 
 .btn-apply-trend {
-    background: linear-gradient(135deg, #ff4143 0%, #ff5456 100%);  /* Subtiler Verlauf */
+    background-color: #ff4143;
     color: white;
     border: none;
-    padding: 10px 24px;
+    padding: 8px 20px;
     font-weight: 600;
-    border-radius: 50px;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 22px rgba(255, 65, 67, 0.25), 0 4px 12px rgba(255, 65, 67, 0.15), 0 2px 6px rgba(255, 65, 67, 0.08);
+    transition: all 0.3s ease;
 }
 
 .btn-apply-trend:hover {
-    background: linear-gradient(135deg, #ff5456 0%, #ff6769 100%);
+    background-color: #e6393b;
     color: white;
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: 0 12px 32px rgba(255, 65, 67, 0.3), 0 6px 16px rgba(255, 65, 67, 0.2), 0 3px 8px rgba(255, 65, 67, 0.12);
+    transform: scale(1.02);
 }
 
 .btn-apply-trend:active {
-    background: linear-gradient(135deg, #e6393b 0%, #f04446 100%);
-    transform: translateY(-1px) scale(0.98);
-    box-shadow: 0 6px 18px rgba(255, 65, 67, 0.22), 0 3px 9px rgba(255, 65, 67, 0.14);
-}
-
-.btn-apply-trend:disabled {
-    background: linear-gradient(135deg, #ffb3b5 0%, #ffc5c6 100%);
-    color: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.6;
-    box-shadow: none;
-    transform: none;
+    background-color: #cc3133;
+    transform: scale(0.98);
 }
 
 .btn-success {
     background: linear-gradient(135deg, #28a745 0%, #2fb84f 100%);
     color: white;
-    box-shadow: 0 10px 28px rgba(40, 167, 69, 0.22), 0 5px 14px rgba(40, 167, 69, 0.14), 0 2px 6px rgba(40, 167, 69, 0.08);
+    box-shadow: 0 8px 24px rgba(40, 167, 69, 0.25), 0 4px 8px rgba(40, 167, 69, 0.15);
 }
 
 .btn-success:hover {
     background: linear-gradient(135deg, #2fb84f 0%, #36c659 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 14px 38px rgba(40, 167, 69, 0.28), 0 7px 18px rgba(40, 167, 69, 0.18), 0 3px 8px rgba(40, 167, 69, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(40, 167, 69, 0.3), 0 6px 12px rgba(40, 167, 69, 0.2);
     color: white;
 }
 
 .btn-success:active {
-    transform: translateY(-1px) scale(0.98);
-    box-shadow: 0 6px 18px rgba(40, 167, 69, 0.18), 0 3px 9px rgba(40, 167, 69, 0.12);
-}
-
-.btn-success:disabled {
-    background: linear-gradient(135deg, #a8d5b3 0%, #b8e0c0 100%);
-    color: #6c757d;
-    cursor: not-allowed;
-    opacity: 0.6;
-    box-shadow: none;
-    transform: none;
+    transform: translateY(0px) scale(0.98);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
 }
 
 .btn-outline-primary {
     background-color: transparent;
     color: var(--brg-color-interactive-primary);
     border: 2px solid var(--brg-color-interactive-primary);
-    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.08);
-    position: relative;
-    z-index: 1;
-}
-
-.btn-outline-primary::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);
-    border-radius: 50px;
-    opacity: 0;
-    z-index: -1;
-    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.1);
 }
 
 .btn-outline-primary:hover {
+    background-color: var(--brg-color-interactive-primary);
     color: var(--brg-color-background-primary);
-    border-color: var(--brg-color-interactive-primary);
     transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(102, 28, 49, 0.22), 0 5px 14px rgba(102, 28, 49, 0.14);
+    box-shadow: 0 8px 20px rgba(102, 28, 49, 0.25);
 }
 
-.btn-outline-primary:hover::after {
-    opacity: 1;  /* Sanfter Füll-Effekt */
-}
-
+.btn-outline-primary:focus,
 .btn-outline-primary:active {
-    transform: translateY(0px) scale(0.98);
-    box-shadow: 0 5px 16px rgba(102, 28, 49, 0.18);
-}
-
-.btn-outline-primary:focus {
+    background-color: var(--brg-color-interactive-primary);
     color: var(--brg-color-background-primary);
     border-color: var(--brg-color-interactive-primary);
-    box-shadow: var(--brg-focus-shadow), 0 8px 20px rgba(102, 28, 49, 0.2);
-    outline: none;
-}
-
-.btn-outline-primary:focus::after,
-.btn-outline-primary:active::after {
-    opacity: 1;
-}
-
-.btn-outline-primary:disabled {
-    color: var(--brg-color-text-secondary);
-    border-color: var(--brg-color-border-subtle);
-    cursor: not-allowed;
-    opacity: 0.5;
-    box-shadow: none;
-    transform: none;
-}
-
-.btn-outline-primary:disabled::after {
-    display: none;
+    box-shadow: var(--brg-focus-shadow);
 }
 
 /* Minimalist Trend Action Buttons */
 .btn-trends-action {
     background: rgba(255, 255, 255, 0.95);
     color: #333;
-    border: 2px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     padding: 10px 24px;
     font-size: 14px;
     font-weight: 500;
     border-radius: 50px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08), 0 3px 9px rgba(0, 0, 0, 0.05);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* Vereinheitlicht */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-trends-action:hover {
     background: white;
     color: #000;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12), 0 5px 12px rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    border-color: rgba(0, 0, 0, 0.15);
 }
 
 .btn-trends-action:active {
     transform: translateY(0px) scale(0.98);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Removed legacy Bootstrap overrides - modern button focus/active styles now apply */
+/* Override Bootstrap's default blue button styles */
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary.focus {
+    background-color: var(--brg-color-interactive-hover);
+    border-color: var(--brg-color-interactive-hover);
+    box-shadow: var(--brg-focus-shadow);
+}
+
+.btn-secondary:focus,
+.btn-secondary:active,
+.btn-secondary.active,
+.btn-secondary.focus {
+    background-color: var(--brg-color-border-subtle);
+    border-color: var(--brg-color-secondary);
+    box-shadow: var(--brg-focus-shadow);
+}
 
 /* Override Bootstrap's outline button styles */
 .btn-outline-secondary {
-    background-color: transparent;
     color: var(--brg-color-secondary);
-    border: 2px solid var(--brg-color-secondary);
-    box-shadow: 0 4px 12px rgba(255, 65, 67, 0.08);
-    position: relative;
-    z-index: 1;
-}
-
-.btn-outline-secondary::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #ff4143 0%, #ff5456 100%);
-    border-radius: 50px;
-    opacity: 0;
-    z-index: -1;
-    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-outline-secondary:hover {
-    color: var(--brg-color-background-primary);
     border-color: var(--brg-color-secondary);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(255, 65, 67, 0.22), 0 5px 14px rgba(255, 65, 67, 0.14);
 }
 
-.btn-outline-secondary:hover::after {
-    opacity: 1;
-}
-
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
 .btn-outline-secondary:active {
-    transform: translateY(0px) scale(0.98);
-    box-shadow: 0 5px 16px rgba(255, 65, 67, 0.18);
-}
-
-.btn-outline-secondary:active::after,
-.btn-outline-secondary:focus::after {
-    opacity: 1;
-}
-
-.btn-outline-secondary:focus {
-    color: var(--brg-color-background-primary);
+    background-color: var(--brg-color-secondary);
     border-color: var(--brg-color-secondary);
-    box-shadow: var(--brg-focus-shadow), 0 8px 20px rgba(255, 65, 67, 0.2);
-    outline: none;
-}
-
-.btn-outline-secondary:disabled {
-    color: var(--brg-color-text-secondary);
-    border-color: var(--brg-color-border-subtle);
-    cursor: not-allowed;
-    opacity: 0.5;
-    box-shadow: none;
-    transform: none;
-}
-
-.btn-outline-secondary:disabled::after {
-    display: none;
+    color: var(--brg-color-background-primary);
+    box-shadow: var(--brg-focus-shadow);
 }
 
 /* General button focus override */
@@ -789,7 +674,77 @@ h4, .h4 {
     box-shadow: var(--brg-focus-shadow);
 }
 
-/* Removed all old !important overrides - modern button styles now take precedence */
+/* Ensure all button borders use coral color */
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-outline-info,
+.btn-outline-success,
+.btn-outline-dark,
+.btn-outline-light {
+    border-color: var(--brg-color-secondary) !important;
+    color: var(--brg-color-secondary) !important;
+}
+
+/* Custom styling for success buttons - use Brüggen burgundy */
+.btn-success {
+    background-color: #661c31 !important;
+    border-color: #661c31 !important;
+    color: white !important;
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active {
+    background-color: #4d1525 !important;
+    border-color: #4d1525 !important;
+    color: white !important;
+}
+
+/* Override any Bootstrap defaults for btn-success */
+.btn-success:not(:disabled):not(.disabled):active,
+.btn-success:not(:disabled):not(.disabled).active,
+.show > .btn-success.dropdown-toggle {
+    background-color: #4d1525 !important;
+    border-color: #4d1525 !important;
+    color: white !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-secondary:hover,
+.btn-outline-danger:hover,
+.btn-outline-warning:hover,
+.btn-outline-info:hover,
+.btn-outline-success:hover,
+.btn-outline-dark:hover,
+.btn-outline-light:hover {
+    background-color: var(--brg-color-secondary) !important;
+    border-color: var(--brg-color-secondary) !important;
+    color: var(--brg-color-background-primary) !important;
+}
+
+.btn-outline-primary:focus,
+.btn-outline-secondary:focus,
+.btn-outline-danger:focus,
+.btn-outline-warning:focus,
+.btn-outline-info:focus,
+.btn-outline-success:focus,
+.btn-outline-dark:focus,
+.btn-outline-light:focus,
+.btn-outline-primary:active,
+.btn-outline-secondary:active,
+.btn-outline-danger:active,
+.btn-outline-warning:active,
+.btn-outline-info:active,
+.btn-outline-success:active,
+.btn-outline-dark:active,
+.btn-outline-light:active {
+    background-color: var(--brg-color-secondary) !important;
+    border-color: var(--brg-color-secondary) !important;
+    color: var(--brg-color-background-primary) !important;
+    box-shadow: var(--brg-focus-shadow) !important;
+}
 
 /* Text color utilities */
 .text-primary {
@@ -3509,14 +3464,14 @@ body.modal-open {
     background: white;
     border: 2px solid #e9ecef;
     border-radius: var(--brg-border-radius);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* Vereinheitlicht */
+    transition: all 0.3s ease;
     user-select: none;
 }
 
 .filter-header:hover {
     border-color: #661c31;
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(102, 28, 49, 0.12), 0 3px 9px rgba(102, 28, 49, 0.08);
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.1);
 }
 
 .filter-header.active {
@@ -3525,7 +3480,7 @@ body.modal-open {
 }
 
 .filter-chevron {
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* Vereinheitlicht */
+    transition: transform 0.3s ease;
     color: #661c31;
 }
 
@@ -3535,172 +3490,102 @@ body.modal-open {
 
 .filter-options-section {
     box-shadow: inset 0 4px 8px rgba(0,0,0,0.05);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* Vereinheitlicht */
+    transition: all 0.3s ease;
 }
 
 .filter-option-btn {
     background: white;
-    border: 2px solid #661c31;
+    border: 1px solid #661c31;
     color: #661c31;
-    padding: 8px 18px;
-    border-radius: 25px;  /* Stärker abgerundet */
+    padding: 8px 16px;
+    border-radius: 20px;
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
     cursor: pointer;
     white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.08), 0 2px 6px rgba(102, 28, 49, 0.04);  /* Weiche Schatten */
-    position: relative;
-    z-index: 1;
-}
-
-.filter-option-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);
-    border-radius: 25px;
-    opacity: 0;
-    z-index: -1;
-    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .filter-option-btn:hover {
-    color: white;
-    border-color: #661c31;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 28, 49, 0.18), 0 4px 10px rgba(102, 28, 49, 0.12);
-}
-
-.filter-option-btn:hover::after {
-    opacity: 1;  /* Sanfter Füll-Effekt */
+    background: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 28, 49, 0.15);
 }
 
 .filter-option-btn:active {
-    transform: translateY(0px) scale(0.97);
-    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.12);
+    transform: translateY(0);
 }
 
 /* Multi-select category toggle buttons */
 .category-toggle-btn.selected {
-    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%) !important;
+    background: #661c31 !important;
     border-color: #661c31 !important;
     color: white !important;
-    box-shadow: 0 6px 18px rgba(102, 28, 49, 0.22), 0 3px 9px rgba(102, 28, 49, 0.14), 0 1px 4px rgba(102, 28, 49, 0.08);
+    box-shadow: 0 2px 8px rgba(102, 28, 49, 0.25);
 }
 
 .category-toggle-btn.selected:hover {
-    background: linear-gradient(135deg, #7a2139 0%, #8d2642 100%) !important;
-    border-color: #7a2139 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(102, 28, 49, 0.28), 0 5px 12px rgba(102, 28, 49, 0.18);
+    background: #7d2242 !important;
+    border-color: #7d2242 !important;
+    transform: translateY(-1px);
 }
 
 .category-clear-btn {
     background: #f8f9fa !important;
-    border: 2px solid #dc3545 !important;
+    border-color: #dc3545 !important;
     color: #dc3545 !important;
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.12) !important;
-    position: relative;
-    z-index: 1;
-}
-
-.category-clear-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #dc3545 0%, #e6495a 100%);
-    border-radius: 25px;
-    opacity: 0;
-    z-index: -1;
-    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .category-clear-btn:hover {
+    background: #dc3545 !important;
     color: white !important;
-    border-color: #dc3545 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.22), 0 4px 10px rgba(220, 53, 69, 0.14) !important;
-}
-
-.category-clear-btn:hover::after {
-    opacity: 1 !important;
+    transform: translateY(-1px);
 }
 
 /* Multi-select report type toggle buttons */
 .report-type-toggle-btn.selected {
-    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%) !important;
+    background: #661c31 !important;
     border-color: #661c31 !important;
     color: white !important;
-    box-shadow: 0 6px 18px rgba(102, 28, 49, 0.22), 0 3px 9px rgba(102, 28, 49, 0.14), 0 1px 4px rgba(102, 28, 49, 0.08);
+    box-shadow: 0 2px 8px rgba(102, 28, 49, 0.25);
 }
 
 .report-type-toggle-btn.selected:hover {
-    background: linear-gradient(135deg, #7a2139 0%, #8d2642 100%) !important;
-    border-color: #7a2139 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(102, 28, 49, 0.28), 0 5px 12px rgba(102, 28, 49, 0.18);
+    background: #7d2242 !important;
+    border-color: #7d2242 !important;
+    transform: translateY(-1px);
 }
 
 .report-type-clear-btn {
     background: #f8f9fa !important;
-    border: 2px solid #dc3545 !important;
+    border-color: #dc3545 !important;
     color: #dc3545 !important;
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.12) !important;
-    position: relative;
-    z-index: 1;
-}
-
-.report-type-clear-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #dc3545 0%, #e6495a 100%);
-    border-radius: 25px;
-    opacity: 0;
-    z-index: -1;
-    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .report-type-clear-btn:hover {
+    background: #dc3545 !important;
     color: white !important;
-    border-color: #dc3545 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.22), 0 4px 10px rgba(220, 53, 69, 0.14) !important;
-}
-
-.report-type-clear-btn:hover::after {
-    opacity: 1 !important;
+    transform: translateY(-1px);
 }
 
 .active-filter-btn {
-    background: linear-gradient(135deg, #ff4143 0%, #ff5456 100%) !important;
-    border: 2px solid #ff4143 !important;
+    background: #ff4143 !important;
+    border: 1px solid #ff4143 !important;
     color: white !important;
-    padding: 8px 18px;
-    border-radius: 25px;
+    padding: 8px 16px;
+    border-radius: 20px;
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
     cursor: pointer;
     white-space: nowrap;
     position: relative;
-    box-shadow: 0 6px 18px rgba(255, 65, 67, 0.22), 0 3px 9px rgba(255, 65, 67, 0.14), 0 1px 4px rgba(255, 65, 67, 0.08);
 }
 
 .active-filter-btn:hover {
-    background: linear-gradient(135deg, #ff5456 0%, #ff6769 100%) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(255, 65, 67, 0.28), 0 4px 12px rgba(255, 65, 67, 0.18), 0 2px 6px rgba(255, 65, 67, 0.1);
+    background: #e63946 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 65, 67, 0.25);
 }
 
 .active-filter-btn .remove-filter {
