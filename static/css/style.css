@@ -819,6 +819,7 @@ a:hover {
     object-fit: contain;
     transition: transform 0.3s ease;
     background: transparent !important;
+    mix-blend-mode: multiply;
 }
 
 .header-logo:hover {
