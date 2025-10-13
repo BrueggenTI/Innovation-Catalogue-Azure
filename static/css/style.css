@@ -808,12 +808,17 @@ a:hover {
     gap: 1.5rem;
 }
 
+.header-logos-container a {
+    background: transparent !important;
+}
+
 /* Header Logos - Both same size */
 .header-logo {
     height: 100px;
     width: auto;
     object-fit: contain;
     transition: transform 0.3s ease;
+    background: transparent !important;
 }
 
 .header-logo:hover {
