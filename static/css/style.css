@@ -805,12 +805,12 @@ a:hover {
 
 /* Header Logo Container */
 .header-logos-container {
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 /* Header Logos - Both same size */
 .header-logo {
-    height: 80px;
+    height: 70px;
     width: auto;
     object-fit: contain;
     transition: transform 0.3s ease;
@@ -818,14 +818,6 @@ a:hover {
 
 .header-logo:hover {
     transform: scale(1.05);
-}
-
-/* Innovation Platform Logo - Blend white background with header */
-.innovation-logo {
-    background: linear-gradient(135deg, #661c31 0%, #4d1525 100%);
-    mix-blend-mode: multiply;
-    padding: 10px;
-    border-radius: 8px;
 }
 
 /* Brüggen Title */
