@@ -13,6 +13,15 @@ TRANSLATIONS = {
         'dashboard': 'Dashboard',
         'back_to_dashboard': 'Back to Dashboard',
         'language': 'Language',
+        'language_english': 'English',
+        'language_german': 'Deutsch',
+        'language_polish': 'Polski',
+        'microsoft_sso_active': 'Microsoft SSO Active',
+        'add_recipe': 'Add Recipe',
+        'manage_reports': 'Manage Reports',
+        'sign_out_microsoft': 'Sign Out (Microsoft)',
+        'sign_in_microsoft': 'Sign In with Microsoft',
+        'sales_representative': 'Sales Representative',
         
         # Dashboard
         'welcome_message': 'The World of Cereals',
@@ -187,6 +196,15 @@ TRANSLATIONS = {
         'dashboard': 'Dashboard',
         'back_to_dashboard': 'Zurück zum Dashboard',
         'language': 'Sprache',
+        'language_english': 'English',
+        'language_german': 'Deutsch',
+        'language_polish': 'Polski',
+        'microsoft_sso_active': 'Microsoft SSO Aktiv',
+        'add_recipe': 'Rezept Hinzufügen',
+        'manage_reports': 'Berichte Verwalten',
+        'sign_out_microsoft': 'Abmelden (Microsoft)',
+        'sign_in_microsoft': 'Mit Microsoft Anmelden',
+        'sales_representative': 'Vertriebsmitarbeiter',
         
         # Dashboard
         'welcome_message': 'Die Welt der Cerealien',
@@ -361,6 +379,15 @@ TRANSLATIONS = {
         'dashboard': 'Panel',
         'back_to_dashboard': 'Powrót do Panelu',
         'language': 'Język',
+        'language_english': 'English',
+        'language_german': 'Deutsch',
+        'language_polish': 'Polski',
+        'microsoft_sso_active': 'Microsoft SSO Aktywny',
+        'add_recipe': 'Dodaj Przepis',
+        'manage_reports': 'Zarządzaj Raportami',
+        'sign_out_microsoft': 'Wyloguj (Microsoft)',
+        'sign_in_microsoft': 'Zaloguj się przez Microsoft',
+        'sales_representative': 'Przedstawiciel Handlowy',
         
         # Dashboard
         'welcome_message': 'Świat Płatków',

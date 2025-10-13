@@ -40,13 +40,13 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item{% if lang == 'en' %} active{% endif %}" href="{{ url_for('set_language', language='en') }}">
-                                <i class="fas fa-flag-usa me-2"></i>English
+                                <i class="fas fa-flag-usa me-2"></i>{{ get_text('language_english', lang) }}
                             </a></li>
                             <li><a class="dropdown-item{% if lang == 'de' %} active{% endif %}" href="{{ url_for('set_language', language='de') }}">
-                                <i class="fas fa-flag me-2"></i>Deutsch
+                                <i class="fas fa-flag me-2"></i>{{ get_text('language_german', lang) }}
                             </a></li>
                             <li><a class="dropdown-item{% if lang == 'pl' %} active{% endif %}" href="{{ url_for('set_language', language='pl') }}">
-                                <i class="fas fa-flag me-2"></i>Polski
+                                <i class="fas fa-flag me-2"></i>{{ get_text('language_polish', lang) }}
                             </a></li>
                         </ul>
                     </div>
@@ -58,23 +58,23 @@
                                 <i class="fas fa-user-circle me-2 fs-4"></i>
                                 <div class="text-start">
                                     <div class="user-name">{{ session.get('user_name', 'Sarah Mitchell') }}</div>
-                                    <div class="user-title">{{ session.get('user_position', 'Sales Representative') }}</div>
+                                    <div class="user-title">{{ session.get('user_position', get_text('sales_representative', lang)) }}</div>
                                 </div>
                             </div>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if session.get('authenticated') %}
                             <li class="dropdown-header">
-                                <i class="fab fa-microsoft me-2 text-success"></i>Microsoft SSO Active
+                                <i class="fab fa-microsoft me-2 text-success"></i>{{ get_text('microsoft_sso_active', lang) }}
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             {% endif %}
                             {% if session.get('is_master_user') %}
                             <li><a class="dropdown-item" href="{{ url_for('add_recipe') }}">
-                                <i class="fas fa-plus-circle me-2"></i>Add Recipe
+                                <i class="fas fa-plus-circle me-2"></i>{{ get_text('add_recipe', lang) }}
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('manage_reports') }}">
-                                <i class="fas fa-file-alt me-2"></i>Manage Reports
+                                <i class="fas fa-file-alt me-2"></i>{{ get_text('manage_reports', lang) }}
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             {% endif %}
@@ -84,11 +84,11 @@
                             <li><hr class="dropdown-divider"></li>
                             {% if session.get('authenticated') %}
                             <li><a class="dropdown-item" href="{{ url_for('logout') }}">
-                                <i class="fas fa-sign-out-alt me-2"></i>Sign Out (Microsoft)
+                                <i class="fas fa-sign-out-alt me-2"></i>{{ get_text('sign_out_microsoft', lang) }}
                             </a></li>
                             {% else %}
                             <li><a class="dropdown-item" href="{{ url_for('login') }}">
-                                <i class="fab fa-microsoft me-2"></i>Sign In with Microsoft
+                                <i class="fab fa-microsoft me-2"></i>{{ get_text('sign_in_microsoft', lang) }}
                             </a></li>
                             {% endif %}
                         </ul>
