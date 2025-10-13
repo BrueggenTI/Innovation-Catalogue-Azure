@@ -803,6 +803,13 @@ a:hover {
     filter: hue-rotate(0deg) saturate(1) brightness(1);
 }
 
+/* Innovation Platform Logo - Centered */
+.innovation-platform-logo {
+    height: 50px;
+    width: auto;
+    opacity: 0.95;
+}
+
 /* Brüggen Title */
 .bruggen-title {
     font-family: var(--brg-font-body);
