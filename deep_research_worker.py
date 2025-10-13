@@ -467,10 +467,10 @@ Erstelle einen fokussierten Plan mit:
    - Format: {{"general": [...], "ai_deep_research": [...], "statistical_dbs": {{"COUNTRY_CODE": "Name", ...}}, "industry_websites": [...]}}
    - Wähle strategisch: z.B. 2-3 general, 1-2 AI, 5-8 statistical DBs, 2-3 industry
 3. recommended_sources: ZUSÄTZLICHE Quellen, die du empfiehlst (optional, nach Typ gruppiert)
-4. expected_data_points: 50-100 Datenpunkte (realistisch für 10-15 Quellen)
+4. expected_data_points: NUR INTEGER-ZAHL zwischen 50-100 (z.B. 75) - KEIN TEXT, NUR ZAHL!
 5. analysis_approach: Wie die Daten analysiert werden
 6. report_structure: Abschnitte des Reports (Array von Strings)
-7. estimated_duration: 5-10 Minuten
+7. estimated_duration: INTEGER-ZAHL 5-10 (Minuten) - NUR ZAHL!
 
 Sei strategisch, fokussiert und effizient. Antworte in JSON Format."""
     
