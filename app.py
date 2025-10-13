@@ -62,18 +62,25 @@ def add_security_headers(response):
     return response
 
 # Security enhancements
-csp = {
-    'default-src': "'self'",
-    'script-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
-    'style-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
-    'font-src': "'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
-    'img-src': "'self' data: https://images.unsplash.com https://plus.unsplash.com",
-    'connect-src': "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
-}
-
-Talisman(app, 
-         force_https=False,  # Set to True in production
-         content_security_policy=csp)
+# In development: Disable CSP to avoid issues with CDN source maps and debugging
+# In production: Enable strict CSP
+if os.environ.get('FLASK_ENV') == 'production':
+    csp = {
+        'default-src': "'self'",
+        'script-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+        'style-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
+        'font-src': "'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+        'img-src': "'self' data: https://images.unsplash.com https://plus.unsplash.com",
+        'connect-src': "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
+    }
+    Talisman(app, 
+             force_https=True,
+             content_security_policy=csp)
+else:
+    # Development: Minimal CSP to allow debugging tools and source maps
+    Talisman(app, 
+             force_https=False,
+             content_security_policy=False)  # Disable CSP in development
 
 # Add custom Jinja2 filters
 import json
