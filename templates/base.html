@@ -21,20 +21,22 @@
     <!-- Navigation -->
     <nav class="bruggen-header shadow-sm fixed-top">
         <div class="container-fluid px-4 py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="flex-fill"></div>
+            <div class="header-layout-grid">
+                <!-- Left spacer -->
+                <div class="header-left-spacer"></div>
                 
-                <!-- Centered Logos -->
-                <div class="d-flex align-items-center justify-content-center header-logos-container">
-                    <a href="{{ url_for('index') }}" class="d-flex align-items-center text-decoration-none me-4">
-                        <img src="{{ url_for('static', filename='images/bruggen-forward-logo.png') }}" alt="Brüggen Forward" class="header-logo">
-                    </a>
-                    <a href="{{ url_for('index') }}" class="d-flex align-items-center text-decoration-none ms-4">
-                        <img src="{{ url_for('static', filename='images/innovation-platform-logo.png') }}" alt="The Innovation Platform" class="header-logo innovation-logo">
+                <!-- Centered Brand Section -->
+                <div class="header-brand-container">
+                    <a href="{{ url_for('index') }}" class="d-flex align-items-center text-decoration-none">
+                        <img src="{{ url_for('static', filename='images/brueggen-logo.png') }}" alt="Brüggen" class="header-bruggen-logo me-3">
+                        <div class="innovation-platform-text">
+                            <div class="platform-line-1">the <span class="font-weight-bold">innovation</span></div>
+                            <div class="platform-line-2">platform</div>
+                        </div>
                     </a>
                 </div>
                 
-                <div class="user-info text-end d-flex align-items-center flex-fill justify-content-end">
+                <div class="user-info text-end d-flex align-items-center justify-content-end">
                     <!-- Language Switcher -->
                     <div class="dropdown me-3">
                         <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -96,11 +98,6 @@
                             {% endif %}
                         </ul>
                     </div>
-                    
-                    <!-- Brüggen Logo in top right corner -->
-                    <a href="{{ url_for('index') }}">
-                        <img src="{{ url_for('static', filename='images/brueggen-logo.png') }}" alt="Brüggen" height="60" class="bruggen-logo">
-                    </a>
                 </div>
             </div>
         </div>
