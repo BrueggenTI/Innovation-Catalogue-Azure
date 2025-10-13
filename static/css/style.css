@@ -862,7 +862,7 @@ a:hover {
 /* Hero Section - Moderne 2025 Design mit Aurora UI */
 .hero-section {
     background-color: var(--brg-color-background-primary);
-    padding: var(--brg-spacing-05) 0;
+    padding: 0 0 var(--brg-spacing-05) 0;  /* Kein Top-Padding */
     min-height: 90vh;
     display: flex;
     align-items: center;
