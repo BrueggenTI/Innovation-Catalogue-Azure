@@ -68,7 +68,7 @@ csp = {
     'style-src': "'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
     'font-src': "'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
     'img-src': "'self' data: https://images.unsplash.com https://plus.unsplash.com",
-    'connect-src': "'self'"
+    'connect-src': "'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
 }
 
 Talisman(app, 
