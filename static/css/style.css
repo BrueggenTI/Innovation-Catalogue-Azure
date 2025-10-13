@@ -805,24 +805,32 @@ a:hover {
 
 /* Header Logo Container */
 .header-logos-container {
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 .header-logos-container a {
     background: transparent !important;
+    display: inline-block;
 }
 
-/* Header Logos - Both same size */
-.header-logo {
-    height: 100px;
-    width: auto;
-    object-fit: contain;
+/* Text-based Logos */
+.header-logo-text {
+    font-size: 48px;
+    font-weight: bold;
     transition: transform 0.3s ease;
-    background: transparent !important;
-    mix-blend-mode: multiply;
+    display: inline-block;
+    font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
 }
 
-.header-logo:hover {
+.bruggen-text-logo {
+    color: #FF6B6B;
+}
+
+.platform-text-logo {
+    color: #FF6B6B;
+}
+
+.header-logos-container a:hover .header-logo-text {
     transform: scale(1.05);
 }
 
