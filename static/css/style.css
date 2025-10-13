@@ -466,7 +466,7 @@ h4, .h4 {
     padding: 14px 28px;
     border-radius: 50px;  /* Pill-Form - stark abgerundete Ecken */
     border: none;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* Modern 2025: 0.35s befriedigende Kurve */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* Sanfte Kurve */
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -524,28 +524,13 @@ h4, .h4 {
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+    background-color: var(--brg-color-background-secondary);
     color: var(--brg-color-text-primary);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06), 0 3px 10px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.02);
 }
 
 .btn-secondary:hover {
-    background: linear-gradient(135deg, #E9ECEF 0%, #DEE2E6 100%);
-    transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08), 0 5px 14px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.btn-secondary:active {
-    transform: translateY(0px) scale(0.99);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.btn-secondary:disabled {
-    background: linear-gradient(135deg, #e8e8e8 0%, #d5d5d5 100%);
-    color: var(--brg-color-text-secondary);
-    cursor: not-allowed;
-    opacity: 0.5;
-    box-shadow: none;
+    background-color: var(--brg-color-border-subtle);
+    transform: scale(1.02);
 }
 
 .btn-link {
@@ -646,113 +631,120 @@ h4, .h4 {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Bootstrap Button State Overrides */
-.btn:focus-visible {
+/* Override Bootstrap's default blue button styles */
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary.focus {
+    background-color: var(--brg-color-interactive-hover);
+    border-color: var(--brg-color-interactive-hover);
+    box-shadow: var(--brg-focus-shadow);
+}
+
+.btn-secondary:focus,
+.btn-secondary:active,
+.btn-secondary.active,
+.btn-secondary.focus {
+    background-color: var(--brg-color-border-subtle);
+    border-color: var(--brg-color-secondary);
+    box-shadow: var(--brg-focus-shadow);
+}
+
+/* Override Bootstrap's outline button styles */
+.btn-outline-secondary {
+    color: var(--brg-color-secondary);
+    border-color: var(--brg-color-secondary);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
+.btn-outline-secondary:active {
+    background-color: var(--brg-color-secondary);
+    border-color: var(--brg-color-secondary);
+    color: var(--brg-color-background-primary);
+    box-shadow: var(--brg-focus-shadow);
+}
+
+/* General button focus override */
+.btn:focus,
+.btn:active,
+.btn.active,
+.btn.focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(102, 28, 49, 0.2);
+    box-shadow: var(--brg-focus-shadow);
 }
 
-.btn:disabled,
-.btn.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
+/* Ensure all button borders use coral color */
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-outline-info,
+.btn-outline-success,
+.btn-outline-dark,
+.btn-outline-light {
+    border-color: var(--brg-color-secondary) !important;
+    color: var(--brg-color-secondary) !important;
 }
 
-/* Ensure consistent button styling across all variants */
-.btn-warning {
-    background: linear-gradient(135deg, #ffc107 0%, #ffca28 100%);
-    color: #000;
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2), 0 2px 4px rgba(255, 193, 7, 0.1);
+/* Custom styling for success buttons - use Brüggen burgundy */
+.btn-success {
+    background-color: #661c31 !important;
+    border-color: #661c31 !important;
+    color: white !important;
 }
 
-.btn-warning:hover {
-    background: linear-gradient(135deg, #ffca28 0%, #ffd54f 100%);
-    color: #000;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.25), 0 3px 6px rgba(255, 193, 7, 0.15);
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active {
+    background-color: #4d1525 !important;
+    border-color: #4d1525 !important;
+    color: white !important;
 }
 
-.btn-info {
-    background: linear-gradient(135deg, #17a2b8 0%, #1ab1c9 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.2), 0 2px 4px rgba(23, 162, 184, 0.1);
+/* Override any Bootstrap defaults for btn-success */
+.btn-success:not(:disabled):not(.disabled):active,
+.btn-success:not(:disabled):not(.disabled).active,
+.show > .btn-success.dropdown-toggle {
+    background-color: #4d1525 !important;
+    border-color: #4d1525 !important;
+    color: white !important;
 }
 
-.btn-info:hover {
-    background: linear-gradient(135deg, #1ab1c9 0%, #1fc1db 100%);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(23, 162, 184, 0.25), 0 3px 6px rgba(23, 162, 184, 0.15);
+.btn-outline-primary:hover,
+.btn-outline-secondary:hover,
+.btn-outline-danger:hover,
+.btn-outline-warning:hover,
+.btn-outline-info:hover,
+.btn-outline-success:hover,
+.btn-outline-dark:hover,
+.btn-outline-light:hover {
+    background-color: var(--brg-color-secondary) !important;
+    border-color: var(--brg-color-secondary) !important;
+    color: var(--brg-color-background-primary) !important;
 }
 
-.btn-light {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-    color: #212529;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+.btn-outline-primary:focus,
+.btn-outline-secondary:focus,
+.btn-outline-danger:focus,
+.btn-outline-warning:focus,
+.btn-outline-info:focus,
+.btn-outline-success:focus,
+.btn-outline-dark:focus,
+.btn-outline-light:focus,
+.btn-outline-primary:active,
+.btn-outline-secondary:active,
+.btn-outline-danger:active,
+.btn-outline-warning:active,
+.btn-outline-info:active,
+.btn-outline-success:active,
+.btn-outline-dark:active,
+.btn-outline-light:active {
+    background-color: var(--brg-color-secondary) !important;
+    border-color: var(--brg-color-secondary) !important;
+    color: var(--brg-color-background-primary) !important;
+    box-shadow: var(--brg-focus-shadow) !important;
 }
-
-.btn-light:hover {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    color: #212529;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
-}
-
-.btn-dark {
-    background: linear-gradient(135deg, #343a40 0%, #23272b 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(52, 58, 64, 0.2), 0 2px 4px rgba(52, 58, 64, 0.1);
-}
-
-.btn-dark:hover {
-    background: linear-gradient(135deg, #23272b 0%, #1d2124 100%);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(52, 58, 64, 0.25), 0 3px 6px rgba(52, 58, 64, 0.15);
-}
-
-/* Filter Option Buttons - Minimalist Design */
-.filter-option-btn {
-    background: rgba(255, 255, 255, 0.98);
-    color: #495057;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 8px 18px;
-    font-size: 14px;
-    font-weight: 500;
-    border-radius: 50px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-}
-
-.filter-option-btn:hover {
-    background: white;
-    color: #212529;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.12);
-}
-
-.filter-option-btn.selected {
-    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);
-    color: white;
-    border-color: #661c31;
-    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.25);
-}
-
-.filter-option-btn.selected:hover {
-    background: linear-gradient(135deg, #7a2139 0%, #8d2642 100%);
-    box-shadow: 0 6px 16px rgba(102, 28, 49, 0.3);
-}
-
-.filter-option-btn:active {
-    transform: translateY(0) scale(0.98);
-}
-
-/* Removed ALL legacy !important button overrides - modern 2025 button styles now fully apply */
 
 /* Text color utilities */
 .text-primary {
@@ -891,29 +883,29 @@ a:hover {
         grid-template-columns: auto 1fr;
         gap: 0.5rem;
     }
-
+    
     .header-left-spacer {
         display: none;
     }
-
+    
     .header-brand-container {
         grid-column: 1;
         justify-content: flex-start;
     }
-
+    
     .user-info {
         grid-column: 2;
         justify-content: flex-end;
     }
-
+    
     .header-bruggen-logo {
         height: 50px;
     }
-
+    
     .platform-line-1 {
         font-size: 16px;
     }
-
+    
     .platform-line-2 {
         font-size: 20px;
     }
@@ -925,41 +917,41 @@ a:hover {
         padding-left: 0.75rem;
         padding-right: 0.75rem;
     }
-
+    
     .header-layout-grid {
         gap: 0.25rem;
     }
-
+    
     .header-bruggen-logo {
         height: 40px;
         margin-right: 0.5rem !important;
     }
-
+    
     .platform-line-1 {
         font-size: 11px;
     }
-
+    
     .platform-line-2 {
         font-size: 14px;
     }
-
+    
     .user-info .dropdown {
         margin-right: 0.25rem !important;
     }
-
+    
     .user-info .dropdown:last-child {
         margin-right: 0 !important;
     }
-
+    
     .user-info .btn {
         padding: 0.25rem 0.4rem;
         font-size: 11px;
     }
-
+    
     .user-name {
         font-size: 11px;
     }
-
+    
     .user-title {
         display: none;
     }
@@ -972,28 +964,28 @@ a:hover {
         grid-template-rows: auto auto;
         gap: 0.5rem;
     }
-
+    
     .header-brand-container {
         grid-column: 1;
         grid-row: 1;
         justify-content: center;
     }
-
+    
     .user-info {
         grid-column: 1;
         grid-row: 2;
         justify-content: center;
         text-align: center;
     }
-
+    
     .header-bruggen-logo {
         height: 35px;
     }
-
+    
     .platform-line-1 {
         font-size: 10px;
     }
-
+    
     .platform-line-2 {
         font-size: 12px;
     }
@@ -1735,19 +1727,19 @@ span.search-result-badge,
 }
 
 @keyframes float {
-    0%, 100% {
+    0%, 100% { 
         transform: translateY(0px) scale(1);
         opacity: 1;
     }
-    25% {
+    25% { 
         transform: translateY(-8px) scale(1.01);
         opacity: 0.98;
     }
-    50% {
+    50% { 
         transform: translateY(-20px) scale(1.03);
         opacity: 0.92;
     }
-    75% {
+    75% { 
         transform: translateY(-12px) scale(1.01);
         opacity: 0.96;
     }
@@ -1865,14 +1857,13 @@ span.search-result-badge,
 
 .product-category-badge {
     position: absolute;
-    bottom: var(--brg-spacing-03);
-    left: var(--brg-spacing-03);
+    top: var(--brg-spacing-03);
     right: var(--brg-spacing-03);
     background-color: var(--brg-color-interactive-primary);
     color: var(--brg-color-background-primary);
-    padding: var(--brg-spacing-02) var(--brg-spacing-03);
+    padding: var(--brg-spacing-01) var(--brg-spacing-02);
     border-radius: var(--brg-border-radius);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
     max-width: none;
@@ -2651,10 +2642,14 @@ span.search-result-badge,
     margin-bottom: 15px;
 }
 
+.recipe-section:last-child {
+    margin-bottom: 0;
+}
+
 .recipe-label {
     font-size: 12px;
     font-weight: 600;
-    color: #495057;
+    color: var(--dark-color);
     margin-bottom: 5px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -3378,37 +3373,6 @@ body.modal-open {
     padding-right: 0 !important;
 }
 
-/* Touch-friendly improvements for tablets */
-@media (max-width: 1024px) {
-    .btn {
-        padding: 15px 30px;
-        font-size: 16px;
-    }
-
-    .base-product-card,
-    .ingredient-category,
-    .claim-option,
-    .certification-option,
-    .packaging-option {
-        padding: 25px;
-        min-height: 120px;
-    }
-
-    .step-circle {
-        width: 60px;
-        height: 60px;
-        font-size: 20px;
-    }
-
-    .product-card {
-        margin-bottom: 20px;
-    }
-
-    .trend-card {
-        margin-bottom: 20px;
-    }
-}
-
 /* Force layout stability during modal transitions */
 .modal-backdrop {
     transition: none !important;
@@ -3530,40 +3494,26 @@ body.modal-open {
 }
 
 .filter-option-btn {
-    background: rgba(255, 255, 255, 0.98);
-    color: #495057;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 8px 18px;
+    background: white;
+    border: 1px solid #661c31;
+    color: #661c31;
+    padding: 8px 16px;
+    border-radius: 20px;
     font-size: 14px;
     font-weight: 500;
-    border-radius: 50px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .filter-option-btn:hover {
-    background: white;
-    color: #212529;
+    background: #f8f9fa;
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.12);
-}
-
-.filter-option-btn.selected {
-    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);
-    color: white;
-    border-color: #661c31;
-    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.25);
-}
-
-.filter-option-btn.selected:hover {
-    background: linear-gradient(135deg, #7a2139 0%, #8d2642 100%);
-    box-shadow: 0 6px 16px rgba(102, 28, 49, 0.3);
+    box-shadow: 0 2px 8px rgba(102, 28, 49, 0.15);
 }
 
 .filter-option-btn:active {
-    transform: translateY(0) scale(0.98);
+    transform: translateY(0);
 }
 
 /* Multi-select category toggle buttons */
