@@ -907,7 +907,7 @@ a:hover {
     }
     
     .platform-line-2 {
-        font-size: 18px;
+        font-size: 16px;
     }
 }
 
@@ -932,7 +932,7 @@ a:hover {
     }
     
     .platform-line-2 {
-        font-size: 13px;
+        font-size: 11px;
     }
     
     .user-info .dropdown {
@@ -1022,11 +1022,10 @@ a:hover {
 }
 
 .platform-line-2 {
-    font-family: 'Dancing Script', 'Brush Script MT', cursive !important;
-    font-size: 28px;
+    font-family: var(--brg-font-body);
+    font-size: 20px;
     font-weight: 700;
-    color: #ff4143;
-    text-transform: lowercase;
+    color: white;
 }
 
 /* Brüggen Title */
