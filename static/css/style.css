@@ -101,7 +101,7 @@ body::before {
 }
 
 .main-content {
-    margin-top: var(--brg-spacing-08);
+    margin-top: var(--brg-spacing-03);
 }
 
 /* Exclusive Recipe Card - Modern Professional Design */
@@ -862,7 +862,7 @@ a:hover {
 /* Hero Section - Moderne 2025 Design mit Aurora UI */
 .hero-section {
     background-color: var(--brg-color-background-primary);
-    padding: var(--brg-spacing-08) 0;
+    padding: var(--brg-spacing-04) 0;
     min-height: 90vh;
     display: flex;
     align-items: center;
