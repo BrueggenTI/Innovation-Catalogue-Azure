@@ -466,7 +466,7 @@ h4, .h4 {
     padding: 14px 28px;
     border-radius: 50px;  /* Pill-Form - stark abgerundete Ecken */
     border: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* Sanfte Kurve */
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* Modern 2025: 0.35s befriedigende Kurve */
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -524,13 +524,28 @@ h4, .h4 {
 }
 
 .btn-secondary {
-    background-color: var(--brg-color-background-secondary);
+    background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
     color: var(--brg-color-text-primary);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06), 0 3px 10px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.02);
 }
 
 .btn-secondary:hover {
-    background-color: var(--brg-color-border-subtle);
-    transform: scale(1.02);
+    background: linear-gradient(135deg, #E9ECEF 0%, #DEE2E6 100%);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08), 0 5px 14px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.btn-secondary:active {
+    transform: translateY(0px) scale(0.99);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.btn-secondary:disabled {
+    background: linear-gradient(135deg, #e8e8e8 0%, #d5d5d5 100%);
+    color: var(--brg-color-text-secondary);
+    cursor: not-allowed;
+    opacity: 0.5;
+    box-shadow: none;
 }
 
 .btn-link {
