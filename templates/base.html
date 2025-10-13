@@ -36,7 +36,7 @@
                     <div class="dropdown me-3">
                         <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-globe me-1"></i>
-                            {{ 'EN' if lang == 'en' else 'DE' }}
+                            {{ 'EN' if lang == 'en' else ('DE' if lang == 'de' else 'PL') }}
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item{% if lang == 'en' %} active{% endif %}" href="{{ url_for('set_language', language='en') }}">
@@ -44,6 +44,9 @@
                             </a></li>
                             <li><a class="dropdown-item{% if lang == 'de' %} active{% endif %}" href="{{ url_for('set_language', language='de') }}">
                                 <i class="fas fa-flag me-2"></i>Deutsch
+                            </a></li>
+                            <li><a class="dropdown-item{% if lang == 'pl' %} active{% endif %}" href="{{ url_for('set_language', language='pl') }}">
+                                <i class="fas fa-flag me-2"></i>Polski
                             </a></li>
                         </ul>
                     </div>
