@@ -192,8 +192,8 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 })
                 
                 # ECHTE API-CALLS - keine Mock-Daten mehr!
+                start_time = time.time()
                 try:
-                    start_time = time.time()
                     logging.info(f"  🌐 Starte API-Call für {source_name}...")
                     
                     # Hole echte Daten über die API-Clients (reduziertes Limit für Performance)
