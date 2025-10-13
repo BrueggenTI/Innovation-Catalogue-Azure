@@ -803,11 +803,31 @@ a:hover {
     filter: hue-rotate(0deg) saturate(1) brightness(1);
 }
 
+/* Innovation Platform Logo Wrapper */
+.innovation-logo-wrapper {
+    position: relative;
+    z-index: 100;
+}
+
 /* Innovation Platform Logo - Centered */
 .innovation-platform-logo {
-    height: 50px;
+    height: 120px;
     width: auto;
     opacity: 0.95;
+    display: block;
+}
+
+/* Half-circle under logo */
+.innovation-logo-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 35px;
+    background-color: #661c31;
+    border-radius: 0 0 110px 110px;
 }
 
 /* Brüggen Title */
