@@ -138,31 +138,21 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             
             logging.info("✓ Plan wurde bestätigt, starte Research-Prozess")
             
-            # Phase 1: Strategie-Erstellung (10% Progress)
-            logging.info("📋 Phase 1: Erstelle detaillierte Recherche-Strategie...")
-            yield json.dumps({
-                "type": "info",
-                "message": "📋 Phase 1: Erstelle Recherche-Strategie mit KI...",
-                "progress": 10
-            })
-            
-            job.status = 'processing_strategy'
-            db.session.commit()
-            
-            strategy = create_research_strategy(description, keywords, categories)
-            logging.info(f"✓ Strategie erstellt: {len(strategy.get('sources', []))} Quellen")
+            # Lade den genehmigten Research-Plan
+            approved_plan = json.loads(job.research_plan) if job.research_plan else {}
+            logging.info(f"📋 Verwende genehmigten Research-Plan mit {len(approved_plan.get('automated_sources', {}))} Quellentypen")
             
             yield json.dumps({
                 "type": "info",
-                "message": f"✓ Strategie erstellt: {len(strategy.get('sources', []))} Quellen identifiziert",
+                "message": "📋 Phase 1: Verwende genehmigten Research-Plan...",
                 "progress": 15
             })
             
-            # Phase 2: Datensammlung (15% - 65% Progress) - ERWEITERT auf 250+ Datenpunkte
-            logging.info("🔍 Phase 2: Starte erweiterte Datensammlung (Ziel: 250+ Datenpunkte)...")
+            # Phase 2: Datensammlung (15% - 65% Progress) - Optimiert auf 50-100 Datenpunkte
+            logging.info("🔍 Phase 2: Starte fokussierte Datensammlung (Ziel: 50-100 Datenpunkte)...")
             yield json.dumps({
                 "type": "info",
-                "message": "🔍 Phase 2: Sammle Daten aus identifizierten Quellen (Ziel: 250+ Datenpunkte)...",
+                "message": "🔍 Phase 2: Sammle Daten aus 10-15 relevanten Quellen (Ziel: 50-100 Datenpunkte)...",
                 "progress": 15
             })
             
@@ -170,8 +160,8 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
             db.session.commit()
             
             collected_data = []
-            sources_to_check = determine_sources(strategy, keywords)
-            logging.info(f"📊 Identifizierte {len(sources_to_check)} Quellen für Datensammlung")
+            sources_to_check = determine_sources_from_plan(approved_plan, keywords)
+            logging.info(f"📊 Identifizierte {len(sources_to_check)} Quellen aus Plan für Datensammlung")
             
             progress_per_source = 50 / len(sources_to_check) if sources_to_check else 0
             current_progress = 15
@@ -195,7 +185,7 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 
                 yield json.dumps({
                     "type": "info",
-                    "message": f"[{idx}/{len(sources_to_check)}] Durchsuche {source_name}...",
+                    "message": f"🔍 Durchsuche: {source_name} [{idx}/{len(sources_to_check)}]",
                     "source": source_name,
                     "status": "processing",
                     "progress": int(current_progress)
@@ -254,7 +244,7 @@ def process_research_job(job_id: str, description: str, keywords: List[str], cat
                 
                 yield json.dumps({
                     "type": "success",
-                    "message": f"✓ {source_name}: {found_items} Datenpunkte gefunden (Gesamt: {total_items_found})",
+                    "message": f"✅ {source_name}: {found_items} Datenpunkte | Gesamt: {total_items_found}",
                     "source": source_name,
                     "status": "success",
                     "foundItems": found_items,
@@ -464,30 +454,34 @@ TOTAL: 43 automatisierte Datenquellen verfügbar!
 {source_catalog}
 
 AUFGABE:
-Analysiere die Forschungsanfrage und wähle die RELEVANTESTEN Datenquellen aus den 43 verfügbaren aus.
-Du kannst ZUSÄTZLICH eigene Quellen empfehlen (z.B. Social Media, Marktforschungsberichte).
+Analysiere die Forschungsanfrage und wähle GENAU 10-15 RELEVANTESTE Datenquellen aus den 43 verfügbaren aus.
 
-Erstelle einen umfassenden Plan mit:
-1. research_objectives: Die Hauptziele der Research (Array von Strings, 3-5 Ziele)
-2. automated_sources: Die RELEVANTEN Quellen aus den 43 verfügbaren (nach Typ gruppiert)
-   - Wähle nur die Quellen, die für diese spezifische Anfrage sinnvoll sind!
+WICHTIG: 
+- Wähle NUR die Quellen, die für die spezifische Anfrage am wertvollsten sind
+- Ziel: 10-15 Quellen für optimale Balance zwischen Qualität und Geschwindigkeit
+- Priorisiere: AI Deep Research APIs, relevante statistische DBs, passende Industry Websites
+
+Erstelle einen fokussierten Plan mit:
+1. research_objectives: Die Hauptziele der Research (Array von Strings, 3-4 Ziele)
+2. automated_sources: GENAU 10-15 RELEVANTE Quellen aus den 43 verfügbaren (nach Typ gruppiert)
    - Format: {{"general": [...], "ai_deep_research": [...], "statistical_dbs": {{"COUNTRY_CODE": "Name", ...}}, "industry_websites": [...]}}
+   - Wähle strategisch: z.B. 2-3 general, 1-2 AI, 5-8 statistical DBs, 2-3 industry
 3. recommended_sources: ZUSÄTZLICHE Quellen, die du empfiehlst (optional, nach Typ gruppiert)
-   - z.B. Social Media, Marktforschung, Consumer Reviews, etc.
-4. expected_data_points: Geschätzte Anzahl Datenpunkte
+4. expected_data_points: 50-100 Datenpunkte (realistisch für 10-15 Quellen)
 5. analysis_approach: Wie die Daten analysiert werden
 6. report_structure: Abschnitte des Reports (Array von Strings)
-7. estimated_duration: Geschätzte Dauer in Minuten
+7. estimated_duration: 5-10 Minuten
 
-Sei strategisch und zielgerichtet. Antworte in JSON Format."""
+Sei strategisch, fokussiert und effizient. Antworte in JSON Format."""
     
-    user_prompt = f"""Erstelle einen optimalen Research-Plan für:
+    user_prompt = f"""Erstelle einen fokussierten Research-Plan für:
 
 Beschreibung: {description}
 Keywords: {', '.join(keywords) if keywords else 'keine'}
 Kategorien: {', '.join(categories) if categories else 'keine'}
 
-Wähle die relevantesten Datenquellen aus den 43 verfügbaren und füge eigene Empfehlungen hinzu."""
+Wähle GENAU 10-15 relevanteste Datenquellen aus den 43 verfügbaren für diese spezifische Anfrage.
+Ziel: Maximale Relevanz bei 5-10 Minuten Laufzeit."""
     
     try:
         logging.info(f"📋 Generiere intelligenten Research-Plan mit {GEMINI_MODEL}...")
@@ -516,69 +510,72 @@ Wähle die relevantesten Datenquellen aus den 43 verfügbaren und füge eigene E
             elif isinstance(sources, dict):
                 auto_count += len(sources)
         
-        # Wenn Plan leer oder zu wenig Quellen: Verwende DEFAULT mit ALLEN Quellen
-        if auto_count < 5:
-            logging.warning(f"⚠️ Gemini-Plan hat nur {auto_count} Quellen - verwende DEFAULT mit ALLEN 43 Quellen")
+        # Wenn Plan zu wenig oder zu viele Quellen: Verwende optimierten DEFAULT
+        if auto_count < 8 or auto_count > 20:
+            logging.warning(f"⚠️ Gemini-Plan hat {auto_count} Quellen (Ziel: 10-15) - verwende optimierten DEFAULT")
             return get_default_research_plan(description, keywords, categories)
         
-        logging.info(f"✓ Research-Plan erstellt: {auto_count} relevante Quellen aus 43 verfügbaren ausgewählt")
+        logging.info(f"✓ Research-Plan erstellt: {auto_count} relevante Quellen ausgewählt (Ziel: 10-15)")
         logging.info(f"  💡 {len(recommended)} zusätzliche Quellentypen empfohlen")
         
         return plan
         
     except Exception as e:
         logging.error(f"Plan generation error: {e}")
-        logging.info("→ Verwende DEFAULT-Plan mit allen 43 Quellen")
+        logging.info("→ Verwende optimierten DEFAULT-Plan mit 10-15 Quellen")
         return get_default_research_plan(description, keywords, categories)
 
 
 def get_default_research_plan(description: str, keywords: List[str], categories: List[str]) -> Dict:
-    """Erstellt einen Standard-Plan mit ALLEN 43 verfügbaren Quellen"""
+    """Erstellt einen optimierten Standard-Plan mit 10-15 relevanten Quellen"""
     
-    # Alle verfügbaren Quellen einsammeln
-    all_general = [s['name'] for s in DATA_SOURCES['general']]
-    all_ai = [s['name'] for s in DATA_SOURCES['ai_deep_research']]
-    all_statistical = {code: DATA_SOURCES['statistical_dbs'][code]['name'] 
-                      for code in DATA_SOURCES['statistical_dbs'].keys()}
-    all_industry = [s['name'] for s in DATA_SOURCES['industry_websites']]
+    # Optimierte Auswahl: Nur die wichtigsten Quellen
+    selected_general = [s['name'] for s in DATA_SOURCES['general'][:2]]  # Top 2: Open Food Facts, PubMed
+    selected_ai = [s['name'] for s in DATA_SOURCES['ai_deep_research']]  # Beide AI APIs
     
-    total_count = len(all_general) + len(all_ai) + len(all_statistical) + len(all_industry)
+    # Top 6-8 statistische Datenbanken (EU, DE, USA, UK, FR, CH, IT, ES)
+    selected_statistical = {
+        "EU": DATA_SOURCES['statistical_dbs']['EU']['name'],
+        "DE": DATA_SOURCES['statistical_dbs']['DE']['name'],
+        "USA": DATA_SOURCES['statistical_dbs']['USA']['name'],
+        "UK": DATA_SOURCES['statistical_dbs']['UK']['name'],
+        "FR": DATA_SOURCES['statistical_dbs']['FR']['name'],
+        "CH": DATA_SOURCES['statistical_dbs']['CH']['name']
+    }
     
-    logging.info(f"📋 DEFAULT-Plan: {total_count} Quellen (alle verfügbaren)")
+    # Top 2-3 Industry Websites
+    selected_industry = [s['name'] for s in DATA_SOURCES['industry_websites'][:3]]
+    
+    total_count = len(selected_general) + len(selected_ai) + len(selected_statistical) + len(selected_industry)
+    
+    logging.info(f"📋 DEFAULT-Plan: {total_count} optimierte Quellen (Ziel: 10-15)")
     
     return {
         "research_objectives": [
-            f"Umfassende Analyse: {description}",
-            "Wissenschaftliche Erkenntnisse aus PubMed-Studien",
-            "Produktdaten und Markttrends aus Open Food Facts",
-            "Statistische Daten aus 33 internationalen Datenbanken",
-            "Industry Insights von führenden Fachportalen",
-            "KI-gestützte Deep Research für Zukunftsprognosen"
+            f"Fokussierte Analyse: {description}",
+            "Wissenschaftliche Erkenntnisse und Produktdaten",
+            "Statistische Marktdaten aus Top 6 Ländern",
+            "Industry Insights und KI-gestützte Deep Research"
         ],
         "automated_sources": {
-            "general": all_general,
-            "ai_deep_research": all_ai,
-            "statistical_dbs": all_statistical,
-            "industry_websites": all_industry
+            "general": selected_general,
+            "ai_deep_research": selected_ai,
+            "statistical_dbs": selected_statistical,
+            "industry_websites": selected_industry
         },
         "recommended_sources": {
-            "social_media_analysis": ["Instagram Food Trends", "TikTok Health Hashtags", "YouTube Nutrition Channels"],
-            "market_research_reports": ["Mintel Food & Drink", "Euromonitor Health & Wellness", "NielsenIQ Consumer Insights"],
-            "consumer_reviews": ["Amazon Product Reviews", "Trustpilot Food Brands", "Reddit r/nutrition", "MyFitnessPal Community"]
+            "social_media_analysis": ["Instagram Food Trends", "TikTok Health Hashtags"],
+            "market_research_reports": ["Mintel Food & Drink", "Euromonitor Health & Wellness"]
         },
-        "expected_data_points": total_count * 10,
-        "analysis_approach": f"Multi-Source Deep Research: Automatisierte Analyse von {total_count} APIs & Datenbanken kombiniert mit KI-Synthese für umfassende Trendanalyse",
+        "expected_data_points": 75,  # Realistisch für 10-15 Quellen
+        "analysis_approach": f"Fokussierte Deep Research: {total_count} relevante Quellen kombiniert mit KI-Synthese für prägnante Trendanalyse",
         "report_structure": [
             "Executive Summary",
-            "Einleitung & Forschungsfrage",
-            "Wissenschaftliche Grundlagen",
-            "Marktdaten & Statistiken",
-            "Consumer Insights & Verbraucherverhalten",
-            "Industry Trends & Innovationen",
-            "Zukunftsausblick & Prognosen",
-            "Fazit & Handlungsempfehlungen"
+            "Market Data",
+            "Consumer Insights",
+            "Key Findings"
         ],
-        "estimated_duration": 5
+        "estimated_duration": 7  # 5-10 Minuten Ziel
     }
 
 
@@ -625,34 +622,44 @@ Erstelle eine optimale Recherche-Strategie."""
         }
 
 
-def determine_sources(strategy: Dict, keywords: List[str]) -> List[Dict]:
-    """Bestimmt die zu durchsuchenden Quellen basierend auf der Strategie"""
+def determine_sources_from_plan(research_plan: Dict, keywords: List[str]) -> List[Dict]:
+    """Bestimmt die zu durchsuchenden Quellen basierend auf dem genehmigten Research-Plan"""
     sources = []
+    automated = research_plan.get('automated_sources', {})
     
-    logging.info("🔍 Bestimme Quellen für Datensammlung...")
+    logging.info("🔍 Bestimme Quellen aus Research-Plan...")
     
-    # Immer: Allgemeine Quellen
-    sources.extend(DATA_SOURCES["general"])
-    logging.info(f"  ✓ Allgemeine Quellen: {len(DATA_SOURCES['general'])} hinzugefügt")
+    # General Quellen aus Plan
+    general_names = automated.get('general', [])
+    for source in DATA_SOURCES["general"]:
+        if source['name'] in general_names:
+            sources.append(source)
+    logging.info(f"  ✓ General Quellen: {len([s for s in sources if s in DATA_SOURCES['general']])} aus Plan")
     
-    # Immer: AI Deep Research APIs
-    sources.extend(DATA_SOURCES["ai_deep_research"])
-    logging.info(f"  ✓ AI Deep Research APIs: {len(DATA_SOURCES['ai_deep_research'])} hinzugefügt")
+    # AI Deep Research APIs aus Plan
+    ai_names = automated.get('ai_deep_research', [])
+    for source in DATA_SOURCES["ai_deep_research"]:
+        if source['name'] in ai_names:
+            sources.append(source)
+    logging.info(f"  ✓ AI Deep Research: {len([s for s in sources if s in DATA_SOURCES['ai_deep_research']])} aus Plan")
     
-    # Basierend auf Strategie: Länder-spezifische DBs
-    priority_markets = strategy.get("priority_markets", ["DE", "USA", "UK", "EU", "FR"])
-    statistical_sources = []
-    for market in priority_markets:
-        if market in DATA_SOURCES["statistical_dbs"]:
-            statistical_sources.append(DATA_SOURCES["statistical_dbs"][market])
-    sources.extend(statistical_sources)
-    logging.info(f"  ✓ Statistische DBs: {len(statistical_sources)} hinzugefügt für Märkte {priority_markets}")
+    # Statistische Datenbanken aus Plan
+    statistical_dbs = automated.get('statistical_dbs', {})
+    stat_count = 0
+    for country_code, db_name in statistical_dbs.items():
+        if country_code in DATA_SOURCES["statistical_dbs"]:
+            sources.append(DATA_SOURCES["statistical_dbs"][country_code])
+            stat_count += 1
+    logging.info(f"  ✓ Statistische DBs: {stat_count} aus Plan ({', '.join(statistical_dbs.keys())})")
     
-    # Immer: ALLE Industry Websites (nicht nur Top 3)
-    sources.extend(DATA_SOURCES["industry_websites"])
-    logging.info(f"  ✓ Industry Websites: {len(DATA_SOURCES['industry_websites'])} hinzugefügt")
+    # Industry Websites aus Plan
+    industry_names = automated.get('industry_websites', [])
+    for source in DATA_SOURCES["industry_websites"]:
+        if source['name'] in industry_names:
+            sources.append(source)
+    logging.info(f"  ✓ Industry Websites: {len([s for s in sources if s in DATA_SOURCES['industry_websites']])} aus Plan")
     
-    logging.info(f"📊 Gesamt: {len(sources)} Quellen werden durchsucht")
+    logging.info(f"📊 Gesamt: {len(sources)} Quellen aus Research-Plan werden durchsucht")
     
     return sources
 
