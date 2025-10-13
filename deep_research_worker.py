@@ -498,6 +498,14 @@ Ziel: Maximale Relevanz bei 5-10 Minuten Laufzeit."""
         plan = json.loads(response.text)
         logging.info(f"🔍 DEBUG: Gemini Response: {json.dumps(plan, indent=2, ensure_ascii=False)[:500]}...")
         
+        # Validiere und korrigiere expected_data_points & estimated_duration (müssen INTEGER sein!)
+        if not isinstance(plan.get('expected_data_points'), int):
+            logging.warning(f"⚠️ expected_data_points ist keine Zahl: {plan.get('expected_data_points')} - setze auf 75")
+            plan['expected_data_points'] = 75
+        if not isinstance(plan.get('estimated_duration'), int):
+            logging.warning(f"⚠️ estimated_duration ist keine Zahl: {plan.get('estimated_duration')} - setze auf 7")
+            plan['estimated_duration'] = 7
+        
         # Validiere Plan - wenn leer oder ungültig, verwende ALLE Quellen
         automated = plan.get('automated_sources', {})
         recommended = plan.get('recommended_sources', {})
