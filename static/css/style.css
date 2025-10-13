@@ -459,20 +459,21 @@ h4, .h4 {
 /* Button Styles - Moderne 2025 Design mit Mikrointeraktionen */
 .btn {
     font-family: var(--brg-font-body);
-    font-size: 17px;  /* Größer */
+    font-size: 16px;
     font-weight: 600;
     line-height: 1.5;
     letter-spacing: 0.02em;
-    padding: 16px 32px;  /* Mehr Padding für bessere Touch-Ziele */
-    border-radius: var(--brg-border-radius);
+    padding: 14px 28px;
+    border-radius: 50px;  /* Pill-Form - stark abgerundete Ecken */
     border: none;
-    transition: var(--brg-transition);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* Sanfte Kurve */
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: var(--brg-spacing-02);
     position: relative;
     overflow: hidden;
+    min-height: 44px;  /* Mindestgröße für Touch-Geräte */
 }
 
 /* Mikrointeraktion: Button drückt sich beim Klick ein */
@@ -495,20 +496,20 @@ h4, .h4 {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--brg-color-interactive-primary) 0%, var(--brg-color-interactive-hover) 100%);
+    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);  /* Subtiler Verlauf */
     color: var(--brg-color-background-primary);
-    box-shadow: 0 4px 15px rgba(102, 28, 49, 0.3);
+    box-shadow: 0 8px 24px rgba(102, 28, 49, 0.25), 0 4px 8px rgba(102, 28, 49, 0.15);  /* Weicher, diffuser Schatten */
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--brg-color-interactive-hover) 0%, var(--brg-color-interactive-active) 100%);
-    transform: translateY(-3px) scale(1.02);  /* Hebt sich beim Hover */
-    box-shadow: 0 8px 25px rgba(102, 28, 49, 0.4);
+    background: linear-gradient(135deg, #7a2139 0%, #8d2642 100%);
+    transform: translateY(-2px);  /* Sanftes Anheben */
+    box-shadow: 0 12px 32px rgba(102, 28, 49, 0.3), 0 6px 12px rgba(102, 28, 49, 0.2);  /* Stärkerer Schatten beim Hover */
 }
 
 .btn-primary:active {
-    transform: translateY(-1px) scale(0.98);  /* Drückt sich ein */
-    box-shadow: 0 2px 10px rgba(102, 28, 49, 0.3);
+    transform: translateY(0px) scale(0.98);  /* Sanftes Eindrücken */
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.2);
 }
 
 .btn-primary:focus {
@@ -564,15 +565,36 @@ h4, .h4 {
     transform: scale(0.98);
 }
 
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #2fb84f 100%);
+    color: white;
+    box-shadow: 0 8px 24px rgba(40, 167, 69, 0.25), 0 4px 8px rgba(40, 167, 69, 0.15);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #2fb84f 0%, #36c659 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(40, 167, 69, 0.3), 0 6px 12px rgba(40, 167, 69, 0.2);
+    color: white;
+}
+
+.btn-success:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+}
+
 .btn-outline-primary {
     background-color: transparent;
     color: var(--brg-color-interactive-primary);
     border: 2px solid var(--brg-color-interactive-primary);
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.1);
 }
 
 .btn-outline-primary:hover {
     background-color: var(--brg-color-interactive-primary);
     color: var(--brg-color-background-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 28, 49, 0.25);
 }
 
 .btn-outline-primary:focus,
@@ -581,6 +603,32 @@ h4, .h4 {
     color: var(--brg-color-background-primary);
     border-color: var(--brg-color-interactive-primary);
     box-shadow: var(--brg-focus-shadow);
+}
+
+/* Minimalist Trend Action Buttons */
+.btn-trends-action {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-trends-action:hover {
+    background: white;
+    color: #000;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.btn-trends-action:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Override Bootstrap's default blue button styles */
@@ -974,8 +1022,8 @@ a:hover {
 }
 
 .platform-line-2 {
-    font-family: var(--brg-font-body);
-    font-size: 24px;
+    font-family: 'Dancing Script', 'Brush Script MT', cursive !important;
+    font-size: 28px;
     font-weight: 700;
     color: #ff4143;
     text-transform: lowercase;
