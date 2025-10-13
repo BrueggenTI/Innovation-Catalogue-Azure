@@ -1022,10 +1022,10 @@ a:hover {
 }
 
 .platform-line-2 {
-    font-family: var(--brg-font-body);
+    font-family: var(--brg-font-heading);
     font-size: 20px;
     font-weight: 700;
-    color: white;
+    color: #ff4143;
 }
 
 /* Brüggen Title */
