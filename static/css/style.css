@@ -147,6 +147,12 @@ body::before {
     text-transform: uppercase;
 }
 
+/* Development Badge - Light Dark Blue */
+.bg-development {
+    background-color: #5B9BD5 !important;
+    color: white !important;
+}
+
 /* Enhanced Form Switch */
 .exclusive-switch {
     width: 3rem !important;
