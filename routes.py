@@ -2026,6 +2026,16 @@ def analyze_recipe():
                     else:
                         recipe_data['base_recipe']['has_base'] = bool(has_base_value)
                 
+                # MARK UNAPPROVED RAW MATERIALS: Check ingredients for recipe numbers starting with "6000"
+                if 'ingredients' in recipe_data and isinstance(recipe_data['ingredients'], list):
+                    for ingredient in recipe_data['ingredients']:
+                        if isinstance(ingredient, dict) and 'recipe_number' in ingredient:
+                            recipe_number = str(ingredient['recipe_number']).strip() if ingredient['recipe_number'] else ""
+                            # Check if recipe number starts with "6000"
+                            if recipe_number.startswith('6000'):
+                                ingredient['status'] = 'unapproved_raw_material'
+                                logging.info(f"Marked ingredient '{ingredient.get('name', 'Unknown')}' with recipe number {recipe_number} as unapproved raw material")
+                
                 # Validate that required fields are present
                 if 'name' not in recipe_data:
                     recipe_data['name'] = 'Unknown Product'
