@@ -2026,6 +2026,14 @@ def analyze_recipe():
                     else:
                         recipe_data['base_recipe']['has_base'] = bool(has_base_value)
                 
+                # ADDITIONAL VALIDATION: Prevent product from being its own base recipe
+                if (recipe_data.get('base_recipe', {}).get('has_base') and 
+                    recipe_data.get('base_recipe', {}).get('base_recipe_number') == recipe_data.get('recipe_number')):
+                    logging.warning(f"Detected product {recipe_data.get('recipe_number')} incorrectly marked as its own base recipe. Correcting has_base to false.")
+                    recipe_data['base_recipe']['has_base'] = False
+                    recipe_data['base_recipe']['base_ingredient_name'] = None
+                    recipe_data['base_recipe']['base_recipe_number'] = None
+                
                 # MARK UNAPPROVED RAW MATERIALS: Check ingredients for recipe numbers where first non-zero digit is "6"
                 if 'ingredients' in recipe_data and isinstance(recipe_data['ingredients'], list):
                     for ingredient in recipe_data['ingredients']:
