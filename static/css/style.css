@@ -147,9 +147,9 @@ body::before {
     text-transform: uppercase;
 }
 
-/* Development Badge - Light Dark Blue */
+/* Development Badge - Dark Blue */
 .bg-development {
-    background-color: #5B9BD5 !important;
+    background-color: #2B5D8C !important;
     color: white !important;
 }
 
