@@ -3966,26 +3966,27 @@ body.modal-open {
    Unapproved Raw Material Warning Overlay
    =============================================== */
 
-/* Hover Overlay Container */
+/* Hover Overlay Container - nur über card-body ohne Buttons */
 .unapproved-material-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 65, 67, 0.95);
+    background: rgba(255, 65, 67, 0.92);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 10;
-    border-radius: inherit;
+    z-index: 5;
+    border-radius: 0;
+    pointer-events: none;
 }
 
-/* Show overlay on card hover */
-.unapproved-material-card:hover .unapproved-material-overlay {
+/* Show overlay on product-content-wrapper hover - NOT on buttons */
+.product-content-wrapper:hover .unapproved-material-overlay {
     opacity: 1;
     visibility: visible;
 }
@@ -3994,23 +3995,25 @@ body.modal-open {
 .unapproved-material-content {
     text-align: center;
     color: white;
-    padding: 24px;
+    padding: 32px;
+    pointer-events: none;
 }
 
-/* Warning Triangle Icon */
+/* Warning Triangle Icon - sehr groß */
 .unapproved-material-content i {
-    font-size: 64px;
-    margin-bottom: 16px;
+    font-size: 80px;
+    margin-bottom: 20px;
     display: block;
     animation: pulse 2s ease-in-out infinite;
 }
 
-/* Warning Text */
+/* Warning Text - größer und prominenter */
 .unapproved-material-content p {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
 }
 
 /* Pulse Animation for Warning Icon */
@@ -4020,7 +4023,7 @@ body.modal-open {
         transform: scale(1);
     }
     50% {
-        opacity: 0.8;
-        transform: scale(1.05);
+        opacity: 0.85;
+        transform: scale(1.08);
     }
 }

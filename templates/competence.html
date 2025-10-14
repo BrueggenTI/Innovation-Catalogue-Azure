@@ -164,16 +164,7 @@
             <div class="row g-4">
                 {% for product in products %}
                     <div class="col-lg-4 col-md-6">
-                        <div class="card product-card h-100 shadow-sm d-flex flex-column position-relative {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %}">
-                            <!-- Unapproved Material Hover Overlay -->
-                            {% if product.has_unapproved_material %}
-                            <div class="unapproved-material-overlay">
-                                <div class="unapproved-material-content">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <p>This recipe contains unapproved raw materials</p>
-                                </div>
-                            </div>
-                            {% endif %}
+                        <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %}">
                             
                             <div class="product-image-container position-relative">
                                 <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
@@ -217,37 +208,50 @@
                             </div>
                             
                             <div class="card-body p-4 d-flex flex-column flex-grow-1">
-                                <h5 class="card-title fw-bold text-primary mb-3">{{ product.name }}</h5>
-                                <p class="card-text text-muted mb-3">{{ product.description[:120] }}...</p>
-                                
-                                <div class="product-highlights mb-3 flex-grow-1">
-                                    {% if product.parsed_ingredients %}
-                                        <div class="highlight-item mb-2">
-                                            <i class="fas fa-seedling text-success me-2"></i>
-                                            <span class="small">
-                                                {% set ingredient_names = [] %}
-                                                {% for ingredient in product.parsed_ingredients[:3] %}
-                                                    {% if ingredient is mapping and ingredient.name %}
-                                                        {% set _ = ingredient_names.append(ingredient.name) %}
-                                                    {% elif ingredient is string %}
-                                                        {% set _ = ingredient_names.append(ingredient) %}
-                                                    {% endif %}
-                                                {% endfor %}
-                                                {{ ingredient_names|join(', ') }}
-                                                {% if product.parsed_ingredients|length > 3 %} +{{ product.parsed_ingredients|length - 3 }} {{ get_text('more', lang) }}{% endif %}
-                                            </span>
+                                <!-- Content wrapper with overlay - excludes buttons -->
+                                <div class="product-content-wrapper position-relative flex-grow-1 mb-3">
+                                    <!-- Unapproved Material Hover Overlay - only over content area -->
+                                    {% if product.has_unapproved_material %}
+                                    <div class="unapproved-material-overlay">
+                                        <div class="unapproved-material-content">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <p>This recipe contains unapproved raw materials</p>
                                         </div>
+                                    </div>
                                     {% endif %}
                                     
-                                    {% if product.parsed_nutritional_claims %}
-                                        <div class="highlight-item">
-                                            <i class="fas fa-medal text-warning me-2"></i>
-                                            <span class="small">{{ product.parsed_nutritional_claims[:2]|join(', ') }}{% if product.parsed_nutritional_claims|length > 2 %} +{{ product.parsed_nutritional_claims|length - 2 }} {{ get_text('more', lang) }}{% endif %}</span>
-                                        </div>
-                                    {% endif %}
+                                    <h5 class="card-title fw-bold text-primary mb-3">{{ product.name }}</h5>
+                                    <p class="card-text text-muted mb-3">{{ product.description[:120] }}...</p>
+                                    
+                                    <div class="product-highlights mb-3">
+                                        {% if product.parsed_ingredients %}
+                                            <div class="highlight-item mb-2">
+                                                <i class="fas fa-seedling text-success me-2"></i>
+                                                <span class="small">
+                                                    {% set ingredient_names = [] %}
+                                                    {% for ingredient in product.parsed_ingredients[:3] %}
+                                                        {% if ingredient is mapping and ingredient.name %}
+                                                            {% set _ = ingredient_names.append(ingredient.name) %}
+                                                        {% elif ingredient is string %}
+                                                            {% set _ = ingredient_names.append(ingredient) %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    {{ ingredient_names|join(', ') }}
+                                                    {% if product.parsed_ingredients|length > 3 %} +{{ product.parsed_ingredients|length - 3 }} {{ get_text('more', lang) }}{% endif %}
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if product.parsed_nutritional_claims %}
+                                            <div class="highlight-item">
+                                                <i class="fas fa-medal text-warning me-2"></i>
+                                                <span class="small">{{ product.parsed_nutritional_claims[:2]|join(', ') }}{% if product.parsed_nutritional_claims|length > 2 %} +{{ product.parsed_nutritional_claims|length - 2 }} {{ get_text('more', lang) }}{% endif %}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 
-                                <div class="d-grid gap-2 mt-auto">
+                                <div class="d-grid gap-2">
                                     <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-outline-primary rounded-pill">
                                         <i class="fas fa-info-circle me-2"></i>{{ get_text('view_details', lang) }}
                                     </a>
