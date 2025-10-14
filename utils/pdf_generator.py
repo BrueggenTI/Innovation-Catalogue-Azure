@@ -150,12 +150,29 @@ def generate_concept_pdf(concept_session):
     recipe_details = []
     recipe_details.append(Paragraph("Recipe Details", card_header_style))
     
-    # Base ingredients section
+    # Base ingredients section with unapproved raw material marking
     if config.get('baseIngredients'):
         recipe_details.append(Paragraph("<b>Base Ingredients:</b>", ParagraphStyle('BoldLabel', parent=normal_style, fontName='Helvetica-Bold')))
         if isinstance(config['baseIngredients'], list):
             for ingredient in config['baseIngredients']:
-                recipe_details.append(Paragraph(f"• {ingredient}", normal_style))
+                # Check if ingredient is a structured object or just a string
+                if isinstance(ingredient, dict):
+                    ing_name = ingredient.get('display') or ingredient.get('name', str(ingredient))
+                    # Check for unapproved raw material status
+                    if ingredient.get('status') == 'unapproved_raw_material':
+                        # Red color style for unapproved ingredients
+                        unapproved_style = ParagraphStyle(
+                            'UnapprovedIngredient',
+                            parent=normal_style,
+                            textColor=colors.HexColor('#dc3545'),  # Bootstrap danger red
+                            fontName='Helvetica-Bold'
+                        )
+                        recipe_details.append(Paragraph(f"• {ing_name} <font color='#dc3545'><b>[UNAPPROVED RAW MATERIAL]</b></font>", unapproved_style))
+                    else:
+                        recipe_details.append(Paragraph(f"• {ing_name}", normal_style))
+                else:
+                    # Fallback for string ingredients
+                    recipe_details.append(Paragraph(f"• {ingredient}", normal_style))
         else:
             recipe_details.append(Paragraph(str(config['baseIngredients']), normal_style))
         recipe_details.append(Spacer(1, 10))

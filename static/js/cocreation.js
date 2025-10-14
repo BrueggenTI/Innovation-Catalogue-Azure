@@ -1418,7 +1418,7 @@ class CoCreationLab {
             const content = popup.querySelector('.ingredients-content');
             if (content) {
                 content.innerHTML = ingredients.length > 0 
-                    ? ingredients.join(', ')
+                    ? ingredients.map(ing => ing.display || ing).join(', ')
                     : 'No ingredients available';
             }
         } catch (error) {
@@ -1598,9 +1598,18 @@ class CoCreationLab {
                 if (data.success && data.ingredients && Array.isArray(data.ingredients)) {
                     const realIngredients = data.ingredients.map(ingredient => {
                         if (typeof ingredient === 'object' && ingredient.name) {
-                            return ingredient.name + (ingredient.percentage > 0 ? ` (${ingredient.percentage}%)` : '');
+                            // Keep structured data with status field for PDF generation
+                            const structuredIngredient = {
+                                name: ingredient.name,
+                                percentage: ingredient.percentage || 0,
+                                recipe_number: ingredient.recipe_number || null,
+                                status: ingredient.status || null
+                            };
+                            // Also create display string for UI
+                            structuredIngredient.display = ingredient.name + (ingredient.percentage > 0 ? ` (${ingredient.percentage}%)` : '');
+                            return structuredIngredient;
                         } else if (typeof ingredient === 'string') {
-                            return ingredient;
+                            return { name: ingredient, display: ingredient, status: null };
                         }
                         return null;
                     }).filter(Boolean);
@@ -2008,7 +2017,7 @@ class CoCreationLab {
                         <strong>Base Ingredients (${baseProductIngredients.length}):</strong>
                         <div class="component-list">
                             ${baseProductIngredients.map(ingredient => 
-                                `<span class="component-item base">${ingredient}</span>`
+                                `<span class="component-item base">${ingredient.display || ingredient}</span>`
                             ).join('')}
                         </div>
                     </div>
