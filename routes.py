@@ -632,6 +632,9 @@ def catalog():
                 product.parsed_nutritional_claims = []
         else:
             product.parsed_nutritional_claims = []
+        
+        # Check for unapproved raw materials
+        product.has_unapproved_material = contains_unapproved_material(product)
 
     # Get unique values for filters from currently displayed products only
     categories = list(set([p.category for p in products if p.category]))

@@ -164,7 +164,17 @@
             <div class="row g-4">
                 {% for product in products %}
                     <div class="col-lg-4 col-md-6">
-                        <div class="card product-card h-100 border-0 shadow-sm d-flex flex-column">
+                        <div class="card product-card h-100 shadow-sm d-flex flex-column position-relative {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %}">
+                            <!-- Unapproved Material Hover Overlay -->
+                            {% if product.has_unapproved_material %}
+                            <div class="unapproved-material-overlay">
+                                <div class="unapproved-material-content">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <p>This recipe contains unapproved raw materials</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
                             <div class="product-image-container position-relative">
                                 <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
                                 
