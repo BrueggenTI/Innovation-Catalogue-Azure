@@ -46,8 +46,8 @@
                                 </div>
                                 <div class="nav-card-features">
                                     <div class="feature-tags">
-                                        <span class="badge bg-light text-dark">{{ get_text('250_plus_recipes', lang) }}</span>
-                                        <span class="badge bg-light text-dark">{{ get_text('15_categories', lang) }}</span>
+                                        <span class="badge bg-light text-dark">{{ total_recipes }}{% if total_recipes == 1 %} Recipe{% else %} Recipes{% endif %}</span>
+                                        <span class="badge bg-light text-dark">{{ total_categories }}{% if total_categories == 1 %} Category{% else %} Categories{% endif %}</span>
                                     </div>
                                     <div class="feature-item mt-2">
                                         <small class="text-muted">{{ get_text('all_certifications', lang) }}</small>

@@ -529,7 +529,16 @@ def set_language(language):
 def index():
     init_user_session()
     lang = session.get('language', 'en')
-    return render_template('index.html', get_text=get_text, lang=lang)
+    
+    # Get actual counts from database
+    total_recipes = Product.query.count()
+    total_categories = db.session.query(Product.category).distinct().count()
+    
+    return render_template('index.html', 
+                         get_text=get_text, 
+                         lang=lang,
+                         total_recipes=total_recipes,
+                         total_categories=total_categories)
 
 @app.route('/catalog')
 @login_required
