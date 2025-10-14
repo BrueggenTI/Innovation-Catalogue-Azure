@@ -677,7 +677,7 @@ h4, .h4 {
 .btn-outline-primary {
     background-color: transparent;
     color: var(--brg-color-interactive-primary);
-    border: 2px solid var(--brg-color-interactive-primary);
+    border: 1px solid var(--brg-color-interactive-primary);
     box-shadow: var(--btn-shadow-sm);
 }
 
@@ -702,7 +702,7 @@ h4, .h4 {
 .btn-outline-secondary {
     background-color: transparent;
     color: var(--brg-color-secondary);
-    border: 2px solid var(--brg-color-secondary);
+    border: 1px solid var(--brg-color-secondary);
     box-shadow: var(--btn-shadow-sm);
 }
 
@@ -792,7 +792,7 @@ h4, .h4 {
 .btn-outline-success,
 .btn-outline-dark,
 .btn-outline-light {
-    border: 2px solid var(--brg-color-secondary);
+    border: 1px solid var(--brg-color-secondary);
     color: var(--brg-color-secondary);
     background-color: transparent;
     box-shadow: var(--btn-shadow-sm);
@@ -3695,9 +3695,9 @@ body.modal-open {
 
 .filter-option-btn {
     background: white;
-    border: 2px solid var(--brg-color-interactive-primary);
+    border: 1px solid var(--brg-color-interactive-primary);
     color: var(--brg-color-interactive-primary);
-    padding: 9px 20px;
+    padding: 10px 20px;
     border-radius: var(--btn-border-radius-pill);
     font-size: 14px;
     font-weight: 500;
@@ -3734,7 +3734,7 @@ body.modal-open {
 
 .category-clear-btn {
     background: white !important;
-    border: 2px solid var(--brg-color-secondary) !important;
+    border: 1px solid var(--brg-color-secondary) !important;
     color: var(--brg-color-secondary) !important;
     box-shadow: var(--btn-shadow-sm) !important;
 }
@@ -3762,7 +3762,7 @@ body.modal-open {
 
 .report-type-clear-btn {
     background: white !important;
-    border: 2px solid var(--brg-color-secondary) !important;
+    border: 1px solid var(--brg-color-secondary) !important;
     color: var(--brg-color-secondary) !important;
     box-shadow: var(--btn-shadow-sm) !important;
 }
