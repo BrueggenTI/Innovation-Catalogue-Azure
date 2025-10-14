@@ -659,19 +659,31 @@ document.addEventListener('DOMContentLoaded', function() {
             const baseRecipeName = ing.base_recipe_name || '';
             const baseRecipeNumber = ing.base_recipe_number || '';
             const hasChildren = ing.has_children || (ing.children && ing.children.length > 0);
+            const ingredientStatus = ing.status || '';
             
             // SECURITY: Escape all values before inserting into HTML
             const escapedName = escapeHtml(ing.name);
             const escapedType = escapeHtml(ingredientType);
             const escapedBaseRecipeName = escapeHtml(baseRecipeName);
             const escapedBaseRecipeNumber = escapeHtml(baseRecipeNumber);
+            const escapedStatus = escapeHtml(ingredientStatus);
             
-            // Visual styling for mix ingredients with base recipe
-            const badge = hasChildren 
-                ? `<span class="badge bg-info text-white ms-2" title="Contains base recipe: ${escapeHtml(baseRecipeName)}">
-                     <i class="fas fa-layer-group me-1"></i>BASE RECIPE
-                   </span>` 
-                : '';
+            // Visual badges for ingredient status
+            let badges = '';
+            
+            // Badge for base recipe
+            if (hasChildren) {
+                badges += `<span class="badge bg-info text-white ms-2" title="Contains base recipe: ${escapeHtml(baseRecipeName)}">
+                             <i class="fas fa-layer-group me-1"></i>BASE RECIPE
+                           </span>`;
+            }
+            
+            // Badge for unapproved raw material
+            if (ingredientStatus === 'unapproved_raw_material') {
+                badges += `<span class="badge bg-danger text-white ms-2" title="This ingredient has an unapproved specification number starting with 6">
+                             <i class="fas fa-exclamation-triangle me-1"></i>UNAPPROVED RAW MATERIAL
+                           </span>`;
+            }
             
             // Main ingredient row
             let html = `<tr class="draggable-ingredient" draggable="true" 
@@ -691,8 +703,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                data-base-recipe-name="${escapedBaseRecipeName}"
                                data-base-recipe-number="${escapedBaseRecipeNumber}"
                                data-has-children="${hasChildren ? 'true' : 'false'}"
+                               data-status="${escapedStatus}"
                                style="border: 1px solid #ced4da; background: #fff; cursor: text; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
-                        ${badge}
+                        ${badges}
                     </div>
                 </td>
                 <td>
@@ -1314,6 +1327,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const baseRecipeName = input.getAttribute('data-base-recipe-name') || '';
             const baseRecipeNumber = input.getAttribute('data-base-recipe-number') || '';
             const hasChildren = input.getAttribute('data-has-children') === 'true';
+            const ingredientStatus = input.getAttribute('data-status') || '';
             
             if (name.trim()) {
                 const ingredient = { 
@@ -1330,6 +1344,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (baseRecipeNumber) {
                     ingredient.base_recipe_number = baseRecipeNumber;
+                }
+                if (ingredientStatus) {
+                    ingredient.status = ingredientStatus;
                 }
                 if (hasChildren) {
                     ingredient.has_children = true;
