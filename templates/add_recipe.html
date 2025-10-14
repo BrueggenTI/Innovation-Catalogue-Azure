@@ -274,7 +274,9 @@
                         <div class="row g-3" id="recipesGrid">
                             {% for recipe in recipes %}
                             <div class="col-lg-3 col-md-4 col-sm-6" id="recipe-{{ recipe.id }}">
-                                <div class="card h-100 recipe-card">
+                                <div class="card h-100 recipe-card {% if recipe.has_unapproved_material %}unapproved-recipe{% endif %}" 
+                                     data-has-unapproved="{{ 'true' if recipe.has_unapproved_material else 'false' }}"
+                                     style="{% if recipe.has_unapproved_material %}border: 1px solid #ff4143;{% endif %}">
                                     <div class="recipe-image-container" style="height: 200px; overflow: hidden;">
                                         <img src="{{ recipe.image_url or '/static/images/product-placeholder.png' }}" 
                                              class="card-img-top" alt="{{ recipe.name }}" 
