@@ -342,6 +342,33 @@
         </div>
     </div>
 </div>
+
+<!-- Unapproved Material Warning Modal -->
+<div class="modal fade" id="unapprovedWarningModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #ff4143; border: none;">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Warning
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
+                <h5 class="mb-3">This recipe contains unapproved raw material</h5>
+                <p class="text-muted">One or more ingredients in this recipe have an unapproved specification number.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="proceedToRecipeBtn">
+                    <i class="fas fa-arrow-right me-2"></i>Continue to Recipe
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -2274,6 +2301,48 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log(`Cleared ${type} image`);
         }
+    }
+    
+    // Handle recipe card clicks with unapproved material warning
+    const recipeCards = document.querySelectorAll('.recipe-card');
+    let pendingRecipeId = null;
+    
+    recipeCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't trigger if clicking delete button
+            if (e.target.closest('.delete-recipe-btn')) {
+                return;
+            }
+            
+            const recipeId = this.closest('[id^="recipe-"]').id.replace('recipe-', '');
+            const hasUnapproved = this.dataset.hasUnapproved === 'true';
+            
+            if (hasUnapproved) {
+                // Show warning modal
+                pendingRecipeId = recipeId;
+                const warningModal = new bootstrap.Modal(document.getElementById('unapprovedWarningModal'));
+                warningModal.show();
+            } else {
+                // Directly navigate to recipe
+                window.location.href = `/product/${recipeId}`;
+            }
+        });
+        
+        // Add pointer cursor to indicate clickability
+        card.style.cursor = 'pointer';
+    });
+    
+    // Handle proceed button in warning modal
+    const proceedBtn = document.getElementById('proceedToRecipeBtn');
+    if (proceedBtn) {
+        proceedBtn.addEventListener('click', function() {
+            if (pendingRecipeId) {
+                // Close modal and navigate
+                const warningModal = bootstrap.Modal.getInstance(document.getElementById('unapprovedWarningModal'));
+                warningModal.hide();
+                window.location.href = `/product/${pendingRecipeId}`;
+            }
+        });
     }
 });
 
