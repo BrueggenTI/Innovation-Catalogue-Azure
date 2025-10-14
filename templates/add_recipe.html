@@ -4,6 +4,52 @@
 
 {% block head %}
 <style>
+/* Unapproved Raw Material Warning Tooltip */
+.unapproved-warning {
+    position: relative;
+    display: inline-block;
+    color: #dc3545;
+    font-size: 1.5rem;
+    cursor: help;
+    margin-left: 8px;
+}
+
+.unapproved-warning .tooltip-text {
+    visibility: hidden;
+    background-color: #dc3545;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.unapproved-warning .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #dc3545 transparent transparent transparent;
+}
+
+.unapproved-warning:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
 /* Recipe Preview Specific Styles */
 .ingredient-name {
     font-weight: 500;
@@ -680,8 +726,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Badge for unapproved raw material
             if (ingredientStatus === 'unapproved_raw_material') {
-                badges += `<span class="ms-2" title="Unapproved Raw Material" style="color: #dc3545; font-size: 1.2rem; cursor: help;">
+                badges += `<span class="unapproved-warning">
                              <i class="fas fa-exclamation-triangle"></i>
+                             <span class="tooltip-text">UNAPPROVED RAW MATERIAL</span>
                            </span>`;
             }
             

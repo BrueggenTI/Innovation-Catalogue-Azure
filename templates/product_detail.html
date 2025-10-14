@@ -3,6 +3,58 @@
 {% block title %}{{ product.name }} - Brüggen Innovation Catalogue{% endblock %}
 
 {% block content %}
+<style>
+/* Unapproved Raw Material Warning Tooltip */
+.unapproved-warning {
+    position: relative;
+    display: inline-block;
+    color: #dc3545;
+    font-size: 1.4rem;
+    cursor: help;
+    margin-left: 8px;
+}
+
+.unapproved-warning .tooltip-text {
+    visibility: hidden;
+    background-color: #dc3545;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.unapproved-warning .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #dc3545 transparent transparent transparent;
+}
+
+.unapproved-warning:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.unapproved-warning.small-icon {
+    font-size: 1.1rem;
+}
+</style>
+
 <div class="product-detail-header py-5 bg-light">
     <div class="container-fluid px-4">
         <div class="row align-items-start">
@@ -213,8 +265,9 @@
                                                         <span class="badge bg-primary ms-2" style="font-size: 0.7rem;">{{ get_text('base_recipe', lang) }}</span>
                                                     {% endif %}
                                                     {% if ingredient.status == 'unapproved_raw_material' %}
-                                                        <span class="ms-2" title="Unapproved Raw Material" style="color: #dc3545; font-size: 1.1rem; cursor: help;">
+                                                        <span class="unapproved-warning">
                                                             <i class="fas fa-exclamation-triangle"></i>
+                                                            <span class="tooltip-text">UNAPPROVED RAW MATERIAL</span>
                                                         </span>
                                                     {% endif %}
                                                 </td>
@@ -227,8 +280,9 @@
                                                         <td class="ps-5" style="font-size: 0.85rem; font-style: italic; color: #6c757d;">
                                                             {{ child.name }}
                                                             {% if child.status == 'unapproved_raw_material' %}
-                                                                <span class="ms-2" title="Unapproved Raw Material" style="color: #dc3545; font-size: 0.95rem; cursor: help;">
+                                                                <span class="unapproved-warning small-icon">
                                                                     <i class="fas fa-exclamation-triangle"></i>
+                                                                    <span class="tooltip-text">UNAPPROVED RAW MATERIAL</span>
                                                                 </span>
                                                             {% endif %}
                                                         </td>
