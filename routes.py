@@ -2151,15 +2151,27 @@ def analyze_recipe():
                 
                 # AUTOMATIC NUTRITIONAL CLAIMS CALCULATION
                 # Calculate claims based on nutritional values using Brüggen thresholds
-                nutritional_info = recipe_data.get('nutritional_info', {})
-                auto_claims = calculate_nutritional_claims(nutritional_info)
-                
-                # Merge auto-calculated claims with AI-extracted claims
-                existing_claims = recipe_data.get('claims', [])
-                recipe_data['claims'] = merge_claims(auto_claims, existing_claims)
-                
-                logging.info(f"Automatic claims calculated: {auto_claims}")
-                logging.info(f"Final merged claims: {recipe_data['claims']}")
+                try:
+                    logging.info("=== STARTING AUTOMATIC CLAIMS CALCULATION ===")
+                    nutritional_info = recipe_data.get('nutritional_info', {})
+                    logging.info(f"Nutritional info for claims calculation: {nutritional_info}")
+                    
+                    auto_claims = calculate_nutritional_claims(nutritional_info)
+                    logging.info(f"Automatic claims calculated: {auto_claims}")
+                    
+                    # Merge auto-calculated claims with AI-extracted claims
+                    existing_claims = recipe_data.get('claims', [])
+                    logging.info(f"Existing claims from AI: {existing_claims}")
+                    
+                    merged_claims = merge_claims(auto_claims, existing_claims)
+                    logging.info(f"Merged claims result: {merged_claims}")
+                    
+                    recipe_data['claims'] = merged_claims
+                    logging.info(f"Final recipe_data['claims']: {recipe_data['claims']}")
+                    logging.info("=== CLAIMS CALCULATION COMPLETED SUCCESSFULLY ===")
+                except Exception as claims_error:
+                    logging.error(f"ERROR IN CLAIMS CALCULATION: {str(claims_error)}")
+                    logging.error(f"Claims error traceback:", exc_info=True)
             else:
                 raise ValueError("No response from AI analysis")
                 
