@@ -1725,12 +1725,16 @@ def contains_unapproved_material(product):
         
         ingredients = json.loads(product.ingredients) if isinstance(product.ingredients, str) else product.ingredients
         
+        # Debug logging
+        logging.debug(f"Checking product {product.id} ({product.name}) for unapproved materials")
+        
         # Check all ingredients (including nested children)
         def check_ingredients_recursive(ing_list):
             for ing in ing_list:
                 if isinstance(ing, dict):
                     # Check if this ingredient has unapproved status
                     if ing.get('status') == 'unapproved_raw_material':
+                        logging.info(f"Found unapproved material in product {product.id}: {ing.get('name')} (recipe_number: {ing.get('recipe_number')})")
                         return True
                     # Check nested children
                     if ing.get('children'):
@@ -1738,14 +1742,21 @@ def contains_unapproved_material(product):
                             return True
             return False
         
-        return check_ingredients_recursive(ingredients)
-    except:
+        result = check_ingredients_recursive(ingredients)
+        logging.debug(f"Product {product.id} has_unapproved_material: {result}")
+        return result
+    except Exception as e:
+        logging.error(f"Error checking unapproved material for product {product.id}: {e}")
         return False
 
 @app.route('/add-recipe')
 @master_required
 def add_recipe():
     init_user_session()
+    
+    # Refresh database session to ensure we have latest data
+    db.session.expire_all()
+    
     # Get all recipes to display in the list at the bottom
     all_recipes = Product.query.order_by(Product.created_at.desc()).all()
     
