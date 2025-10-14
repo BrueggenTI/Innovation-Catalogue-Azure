@@ -166,60 +166,60 @@
                     <div class="col-lg-4 col-md-6">
                         <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %}">
                             
-                            <div class="product-image-container position-relative">
-                                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
-                                
-                                <!-- Badges container to prevent overlap -->
-                                <div class="product-badges-container" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 4px; flex-wrap: wrap; row-gap: 2px;">
-                                    <!-- Category Badge (first) -->
-                                    <div class="product-category-badge" style="position: static; order: 1;">{{ product.category }}</div>
-                                    
-                                    <!-- Recipe Status Badge (second) -->
-                                    {% if product.recipe_number %}
-                                        {% set recipe_digits = product.recipe_number.lstrip('0') %}
-                                        {% if recipe_digits and recipe_digits[0] == '4' %}
-                                            <div class="recipe-status-badge bg-success text-white" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
-                                                {{ get_text('productive', lang) }}
-                                            </div>
-                                        {% elif recipe_digits and recipe_digits[0] == '1' %}
-                                            <div class="recipe-status-badge bg-development" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
-                                                {{ get_text('development', lang) }}
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
-                                    
-                                    <!-- Exclusive Badge (wraps to next line if needed) -->
-                                    {% if product.is_exclusive %}
-                                        {% set tooltip_text = get_text('exclusive_product', lang) %}
-                                        {% if product.customer %}
-                                            {% set tooltip_text = get_text('exclusive_for_customer', lang) + ' <strong>' + (product.customer|e) + '</strong>' %}
-                                        {% elif product.market %}
-                                            {% set tooltip_text = get_text('exclusive_for_market', lang) + ' <strong>' + (product.market|e) + '</strong>' %}
-                                        {% endif %}
-                                        <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
-                                             data-bs-toggle="tooltip" 
-                                             data-bs-placement="top" 
-                                             data-bs-html="true"
-                                             title="{{ tooltip_text|safe }}">
-                                            {{ get_text('exclusive', lang) }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <div class="card-body p-4 d-flex flex-column flex-grow-1">
-                                <!-- Content wrapper with overlay - excludes buttons -->
-                                <div class="product-content-wrapper position-relative flex-grow-1 mb-3">
-                                    <!-- Unapproved Material Hover Overlay - only over content area -->
-                                    {% if product.has_unapproved_material %}
-                                    <div class="unapproved-material-overlay">
-                                        <div class="unapproved-material-content">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <p>This recipe contains unapproved raw materials</p>
-                                        </div>
+                            <!-- Wrapper für Bild + Content (für Overlay-Bereich) -->
+                            <div class="product-hoverable-area position-relative">
+                                <!-- Unapproved Material Hover Overlay - über Bild und Content -->
+                                {% if product.has_unapproved_material %}
+                                <div class="unapproved-material-overlay">
+                                    <div class="unapproved-material-content">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <p>This recipe contains unapproved raw materials</p>
                                     </div>
-                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="product-image-container">
+                                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
                                     
+                                    <!-- Badges container to prevent overlap -->
+                                    <div class="product-badges-container" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 4px; flex-wrap: wrap; row-gap: 2px;">
+                                        <!-- Category Badge (first) -->
+                                        <div class="product-category-badge" style="position: static; order: 1;">{{ product.category }}</div>
+                                        
+                                        <!-- Recipe Status Badge (second) -->
+                                        {% if product.recipe_number %}
+                                            {% set recipe_digits = product.recipe_number.lstrip('0') %}
+                                            {% if recipe_digits and recipe_digits[0] == '4' %}
+                                                <div class="recipe-status-badge bg-success text-white" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
+                                                    {{ get_text('productive', lang) }}
+                                                </div>
+                                            {% elif recipe_digits and recipe_digits[0] == '1' %}
+                                                <div class="recipe-status-badge bg-development" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
+                                                    {{ get_text('development', lang) }}
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                        
+                                        <!-- Exclusive Badge (wraps to next line if needed) -->
+                                        {% if product.is_exclusive %}
+                                            {% set tooltip_text = get_text('exclusive_product', lang) %}
+                                            {% if product.customer %}
+                                                {% set tooltip_text = get_text('exclusive_for_customer', lang) + ' <strong>' + (product.customer|e) + '</strong>' %}
+                                            {% elif product.market %}
+                                                {% set tooltip_text = get_text('exclusive_for_market', lang) + ' <strong>' + (product.market|e) + '</strong>' %}
+                                            {% endif %}
+                                            <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
+                                                 data-bs-toggle="tooltip" 
+                                                 data-bs-placement="top" 
+                                                 data-bs-html="true"
+                                                 title="{{ tooltip_text|safe }}">
+                                                {{ get_text('exclusive', lang) }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body-content p-4">
                                     <h5 class="card-title fw-bold text-primary mb-3">{{ product.name }}</h5>
                                     <p class="card-text text-muted mb-3">{{ product.description[:120] }}...</p>
                                     
@@ -250,7 +250,10 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                
+                            </div>
+                            
+                            <!-- Buttons außerhalb des hoverable-area Wrappers -->
+                            <div class="card-body p-4 pt-0">
                                 <div class="d-grid gap-2">
                                     <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-outline-primary rounded-pill">
                                         <i class="fas fa-info-circle me-2"></i>{{ get_text('view_details', lang) }}

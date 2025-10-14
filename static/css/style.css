@@ -3966,7 +3966,7 @@ body.modal-open {
    Unapproved Raw Material Warning Overlay
    =============================================== */
 
-/* Hover Overlay Container - nur über card-body ohne Buttons */
+/* Hover Overlay Container - nur über Bild + Content, nicht über Buttons */
 .unapproved-material-overlay {
     position: absolute;
     top: 0;
@@ -3985,8 +3985,8 @@ body.modal-open {
     pointer-events: none;
 }
 
-/* Show overlay on product-content-wrapper hover - NOT on buttons */
-.product-content-wrapper:hover .unapproved-material-overlay {
+/* Show overlay on entire card hover - overlay appears over hoverable-area only */
+.unapproved-material-card:hover .unapproved-material-overlay {
     opacity: 1;
     visibility: visible;
 }
