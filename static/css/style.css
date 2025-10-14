@@ -491,27 +491,44 @@ h4, .h4 {
     letter-spacing: 0.01em;
 }
 
-/* Button Styles - Moderne 2025 Design mit Mikrointeraktionen */
+/* ============================================
+   BUTTON SYSTEM 2025 - Zeitlose Grundlagen & Moderne Trends
+   ============================================ */
+
+/* Basis Button - Zeitlose Grundlagen */
 .btn {
+    /* Typography */
     font-family: var(--brg-font-body);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     line-height: 1.5;
-    letter-spacing: 0.02em;
-    padding: 14px 28px;
-    border-radius: 50px;  /* Pill-Form - stark abgerundete Ecken */
+    letter-spacing: 0.025em;
+    
+    /* Spacing - Großzügiger Weißraum */
+    padding: 12px 32px;
+    min-height: 44px;  /* Touch-freundlich (min. 44x44px) */
+    
+    /* Form - Stark abgerundete Ecken (Pill-Form) */
+    border-radius: var(--btn-border-radius-pill);
     border: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* Sanfte Kurve */
-    cursor: pointer;
+    
+    /* Layout */
     display: inline-flex;
     align-items: center;
-    gap: var(--brg-spacing-02);
+    justify-content: center;
+    gap: 8px;
     position: relative;
     overflow: hidden;
-    min-height: 44px;  /* Mindestgröße für Touch-Geräte */
+    
+    /* Mikrointeraktionen - Sanfte Übergänge */
+    transition: var(--btn-transition);
+    cursor: pointer;
+    
+    /* Visuelles Feedback ist Pflicht */
+    text-decoration: none;
 }
 
-/* Mikrointeraktion: Button drückt sich beim Klick ein */
+/* Befriedigende Mikrointeraktion: Ripple-Effekt beim Klick */
 .btn::before {
     content: '';
     position: absolute;
@@ -520,265 +537,307 @@ h4, .h4 {
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25);
     transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+    transition: width 0.6s ease-out, height 0.6s ease-out, opacity 0.6s ease-out;
+    opacity: 0;
 }
 
 .btn:active::before {
     width: 300px;
     height: 300px;
+    opacity: 1;
 }
 
+/* ============================================
+   PRIMARY BUTTONS - Hauptaktionen
+   Subtile Rot-Verläufe mit weichen Schatten
+   ============================================ */
 .btn-primary {
-    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);  /* Subtiler Verlauf */
-    color: var(--brg-color-background-primary);
-    box-shadow: 0 8px 24px rgba(102, 28, 49, 0.25), 0 4px 8px rgba(102, 28, 49, 0.15);  /* Weicher, diffuser Schatten */
+    background: var(--btn-gradient-primary);
+    color: white;
+    box-shadow: var(--btn-shadow-primary);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #7a2139 0%, #8d2642 100%);
-    transform: translateY(-2px);  /* Sanftes Anheben */
-    box-shadow: 0 12px 32px rgba(102, 28, 49, 0.3), 0 6px 12px rgba(102, 28, 49, 0.2);  /* Stärkerer Schatten beim Hover */
+    background: var(--btn-gradient-primary-hover);
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: var(--btn-shadow-primary-hover);
+    color: white;
 }
 
 .btn-primary:active {
-    transform: translateY(0px) scale(0.98);  /* Sanftes Eindrücken */
-    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.2);
+    transform: translateY(0) scale(var(--btn-active-scale));
+    box-shadow: var(--btn-shadow-md);
 }
 
 .btn-primary:focus {
-    box-shadow: var(--brg-focus-shadow), 0 4px 15px rgba(102, 28, 49, 0.3);
     outline: none;
+    box-shadow: var(--brg-focus-shadow), var(--btn-shadow-primary);
 }
 
-.btn-primary:disabled {
-    background-color: var(--brg-color-border-subtle);
-    color: var(--brg-color-text-secondary);
-    cursor: not-allowed;
-}
-
+/* ============================================
+   SECONDARY BUTTONS - Sekundäre Aktionen  
+   Minimalistisch in Grau/Weiß mit subtilen Schatten
+   ============================================ */
 .btn-secondary {
-    background-color: var(--brg-color-background-secondary);
+    background: white;
     color: var(--brg-color-text-primary);
+    border: 1px solid var(--brg-color-border-subtle);
+    box-shadow: var(--btn-shadow-sm);
 }
 
 .btn-secondary:hover {
-    background-color: var(--brg-color-border-subtle);
-    transform: scale(1.02);
+    background: var(--brg-color-background-secondary);
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: var(--btn-shadow-md);
+    border-color: #d0d0d0;
+    color: var(--brg-color-text-primary);
 }
 
+.btn-secondary:active {
+    transform: translateY(0) scale(var(--btn-active-scale));
+    box-shadow: var(--btn-shadow-sm);
+}
+
+.btn-secondary:focus {
+    outline: none;
+    box-shadow: var(--brg-focus-shadow), var(--btn-shadow-sm);
+}
+
+/* ============================================
+   LINK BUTTONS - Minimale Text-Buttons
+   ============================================ */
 .btn-link {
     background-color: transparent;
     color: var(--brg-color-interactive-primary);
     text-decoration: none;
-    padding: 0;
+    padding: 8px 16px;
+    box-shadow: none;
 }
 
 .btn-link:hover {
     color: var(--brg-color-interactive-hover);
     text-decoration: underline;
+    transform: none;
+    background-color: transparent;
 }
 
+.btn-link:active {
+    transform: scale(0.97);
+}
+
+/* ============================================
+   ACCENT BUTTONS - Coral-Rot für besondere CTAs
+   ============================================ */
 .btn-apply-trend {
-    background-color: #ff4143;
+    background: var(--btn-gradient-coral);
     color: white;
     border: none;
-    padding: 8px 20px;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    box-shadow: var(--btn-shadow-coral);
 }
 
 .btn-apply-trend:hover {
-    background-color: #e6393b;
+    background: var(--btn-gradient-coral-hover);
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: var(--btn-shadow-coral-hover);
     color: white;
-    transform: scale(1.02);
 }
 
 .btn-apply-trend:active {
-    background-color: #cc3133;
-    transform: scale(0.98);
+    transform: translateY(0) scale(var(--btn-active-scale));
+    box-shadow: var(--btn-shadow-md);
 }
 
+/* ============================================
+   SUCCESS BUTTONS - Burgundy statt Grün
+   ============================================ */
 .btn-success {
-    background: linear-gradient(135deg, #28a745 0%, #2fb84f 100%);
+    background: var(--btn-gradient-primary);
     color: white;
-    box-shadow: 0 8px 24px rgba(40, 167, 69, 0.25), 0 4px 8px rgba(40, 167, 69, 0.15);
+    box-shadow: var(--btn-shadow-primary);
 }
 
 .btn-success:hover {
-    background: linear-gradient(135deg, #2fb84f 0%, #36c659 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(40, 167, 69, 0.3), 0 6px 12px rgba(40, 167, 69, 0.2);
+    background: var(--btn-gradient-primary-hover);
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: var(--btn-shadow-primary-hover);
     color: white;
 }
 
 .btn-success:active {
-    transform: translateY(0px) scale(0.98);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+    transform: translateY(0) scale(var(--btn-active-scale));
+    box-shadow: var(--btn-shadow-md);
 }
 
+/* ============================================
+   GHOST BUTTONS - Outline-Buttons mit Füll-Animation
+   Klarer Hover-Effekt gemäß 2025-Prinzipien
+   ============================================ */
 .btn-outline-primary {
     background-color: transparent;
     color: var(--brg-color-interactive-primary);
     border: 2px solid var(--brg-color-interactive-primary);
-    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.1);
+    box-shadow: var(--btn-shadow-sm);
 }
 
 .btn-outline-primary:hover {
     background-color: var(--brg-color-interactive-primary);
-    color: var(--brg-color-background-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 28, 49, 0.25);
-}
-
-.btn-outline-primary:focus,
-.btn-outline-primary:active {
-    background-color: var(--brg-color-interactive-primary);
-    color: var(--brg-color-background-primary);
+    color: white;
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: var(--btn-shadow-primary);
     border-color: var(--brg-color-interactive-primary);
-    box-shadow: var(--brg-focus-shadow);
 }
 
-/* Minimalist Trend Action Buttons */
+.btn-outline-primary:active {
+    transform: translateY(0) scale(var(--btn-active-scale));
+    box-shadow: var(--btn-shadow-sm);
+}
+
+.btn-outline-primary:focus {
+    outline: none;
+    box-shadow: var(--brg-focus-shadow), var(--btn-shadow-sm);
+}
+
+.btn-outline-secondary {
+    background-color: transparent;
+    color: var(--brg-color-secondary);
+    border: 2px solid var(--brg-color-secondary);
+    box-shadow: var(--btn-shadow-sm);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--brg-color-secondary);
+    color: white;
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: var(--btn-shadow-coral);
+    border-color: var(--brg-color-secondary);
+}
+
+.btn-outline-secondary:active {
+    transform: translateY(0) scale(var(--btn-active-scale));
+    box-shadow: var(--btn-shadow-sm);
+}
+
+.btn-outline-secondary:focus {
+    outline: none;
+    box-shadow: var(--brg-focus-shadow), var(--btn-shadow-sm);
+}
+
+/* ============================================
+   TREND ACTION BUTTONS - Minimalistische Inspiration
+   Weiß mit subtilen Schatten (wie "Create" & "Deep Research")
+   ============================================ */
 .btn-trends-action {
-    background: rgba(255, 255, 255, 0.95);
-    color: #333;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 10px 24px;
-    font-size: 14px;
+    background: rgba(255, 255, 255, 0.98);
+    color: var(--brg-color-text-primary);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: var(--btn-shadow-md);
+    font-size: 15px;
     font-weight: 500;
-    border-radius: 50px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 11px 28px;
 }
 
 .btn-trends-action:hover {
     background: white;
-    color: #000;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-    border-color: rgba(0, 0, 0, 0.15);
+    color: var(--brg-color-text-primary);
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: var(--btn-shadow-lg);
+    border-color: rgba(0, 0, 0, 0.12);
 }
 
 .btn-trends-action:active {
-    transform: translateY(0px) scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(0) scale(var(--btn-active-scale));
+    box-shadow: var(--btn-shadow-md);
 }
 
-/* Override Bootstrap's default blue button styles */
-.btn-primary:focus,
-.btn-primary:active,
-.btn-primary.active,
-.btn-primary.focus {
-    background-color: var(--brg-color-interactive-hover);
-    border-color: var(--brg-color-interactive-hover);
-    box-shadow: var(--brg-focus-shadow);
+/* ============================================
+   DISABLED STATES - Einheitlich für alle Button-Typen
+   Ausgegraut und nicht klickbar
+   ============================================ */
+.btn:disabled,
+.btn.disabled {
+    background: #e8e8e8 !important;
+    color: #a0a0a0 !important;
+    border-color: #e8e8e8 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+    box-shadow: none !important;
+    transform: none !important;
+    pointer-events: none;
 }
 
-.btn-secondary:focus,
-.btn-secondary:active,
-.btn-secondary.active,
-.btn-secondary.focus {
-    background-color: var(--brg-color-border-subtle);
-    border-color: var(--brg-color-secondary);
-    box-shadow: var(--brg-focus-shadow);
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-success:disabled,
+.btn-apply-trend:disabled {
+    background: #e8e8e8 !important;
+    color: #a0a0a0 !important;
+    border: none !important;
 }
 
-/* Override Bootstrap's outline button styles */
-.btn-outline-secondary {
-    color: var(--brg-color-secondary);
-    border-color: var(--brg-color-secondary);
+.btn-outline-primary:disabled,
+.btn-outline-secondary:disabled {
+    background: transparent !important;
+    border-color: #d0d0d0 !important;
+    color: #a0a0a0 !important;
 }
 
-.btn-outline-secondary:hover,
-.btn-outline-secondary:focus,
-.btn-outline-secondary:active {
-    background-color: var(--brg-color-secondary);
-    border-color: var(--brg-color-secondary);
-    color: var(--brg-color-background-primary);
-    box-shadow: var(--brg-focus-shadow);
-}
-
-/* General button focus override */
-.btn:focus,
-.btn:active,
-.btn.active,
-.btn.focus {
-    outline: none;
-    box-shadow: var(--brg-focus-shadow);
-}
-
-/* Ensure all button borders use coral color */
-.btn-outline-primary,
-.btn-outline-secondary,
+/* ============================================
+   BOOTSTRAP OVERRIDES - Alle Varianten auf neue Farben
+   ============================================ */
 .btn-outline-danger,
 .btn-outline-warning,
 .btn-outline-info,
 .btn-outline-success,
 .btn-outline-dark,
 .btn-outline-light {
-    border-color: var(--brg-color-secondary) !important;
-    color: var(--brg-color-secondary) !important;
+    border: 2px solid var(--brg-color-secondary);
+    color: var(--brg-color-secondary);
+    background-color: transparent;
+    box-shadow: var(--btn-shadow-sm);
 }
 
-/* Custom styling for success buttons - use Brüggen burgundy */
-.btn-success {
-    background-color: #661c31 !important;
-    border-color: #661c31 !important;
-    color: white !important;
-}
-
-.btn-success:hover,
-.btn-success:focus,
-.btn-success:active {
-    background-color: #4d1525 !important;
-    border-color: #4d1525 !important;
-    color: white !important;
-}
-
-/* Override any Bootstrap defaults for btn-success */
-.btn-success:not(:disabled):not(.disabled):active,
-.btn-success:not(:disabled):not(.disabled).active,
-.show > .btn-success.dropdown-toggle {
-    background-color: #4d1525 !important;
-    border-color: #4d1525 !important;
-    color: white !important;
-}
-
-.btn-outline-primary:hover,
-.btn-outline-secondary:hover,
 .btn-outline-danger:hover,
 .btn-outline-warning:hover,
 .btn-outline-info:hover,
 .btn-outline-success:hover,
 .btn-outline-dark:hover,
 .btn-outline-light:hover {
-    background-color: var(--brg-color-secondary) !important;
-    border-color: var(--brg-color-secondary) !important;
-    color: var(--brg-color-background-primary) !important;
+    background-color: var(--brg-color-secondary);
+    border-color: var(--brg-color-secondary);
+    color: white;
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: var(--btn-shadow-coral);
 }
 
-.btn-outline-primary:focus,
-.btn-outline-secondary:focus,
-.btn-outline-danger:focus,
-.btn-outline-warning:focus,
-.btn-outline-info:focus,
-.btn-outline-success:focus,
-.btn-outline-dark:focus,
-.btn-outline-light:focus,
-.btn-outline-primary:active,
-.btn-outline-secondary:active,
 .btn-outline-danger:active,
 .btn-outline-warning:active,
 .btn-outline-info:active,
 .btn-outline-success:active,
 .btn-outline-dark:active,
 .btn-outline-light:active {
-    background-color: var(--brg-color-secondary) !important;
-    border-color: var(--brg-color-secondary) !important;
-    color: var(--brg-color-background-primary) !important;
-    box-shadow: var(--brg-focus-shadow) !important;
+    transform: translateY(0) scale(var(--btn-active-scale));
+    box-shadow: var(--btn-shadow-sm);
+}
+
+.btn-outline-danger:focus,
+.btn-outline-warning:focus,
+.btn-outline-info:focus,
+.btn-outline-success:focus,
+.btn-outline-dark:focus,
+.btn-outline-light:focus {
+    outline: none;
+    box-shadow: var(--brg-focus-shadow), var(--btn-shadow-sm);
+}
+
+/* Bootstrap btn-success override - Burgundy statt grün */
+.btn-success:not(:disabled):not(.disabled):active,
+.btn-success:not(:disabled):not(.disabled).active,
+.show > .btn-success.dropdown-toggle {
+    background: var(--btn-gradient-primary-hover) !important;
+    border: none !important;
+    color: white !important;
 }
 
 /* Text color utilities */
