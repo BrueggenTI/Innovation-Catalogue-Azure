@@ -1717,13 +1717,45 @@ def generate_image():
             'error': 'An error occurred while generating the image'
         }), 500
 
+def contains_unapproved_material(product):
+    """Check if a product contains any ingredients with unapproved raw material status"""
+    try:
+        if not product.ingredients:
+            return False
+        
+        ingredients = json.loads(product.ingredients) if isinstance(product.ingredients, str) else product.ingredients
+        
+        # Check all ingredients (including nested children)
+        def check_ingredients_recursive(ing_list):
+            for ing in ing_list:
+                if isinstance(ing, dict):
+                    # Check if this ingredient has unapproved status
+                    if ing.get('status') == 'unapproved_raw_material':
+                        return True
+                    # Check nested children
+                    if ing.get('children'):
+                        if check_ingredients_recursive(ing['children']):
+                            return True
+            return False
+        
+        return check_ingredients_recursive(ingredients)
+    except:
+        return False
+
 @app.route('/add-recipe')
 @master_required
 def add_recipe():
     init_user_session()
     # Get all recipes to display in the list at the bottom
     all_recipes = Product.query.order_by(Product.created_at.desc()).all()
-    return render_template('add_recipe.html', recipes=all_recipes)
+    
+    # Add unapproved material flag to each recipe
+    recipes_with_flags = []
+    for recipe in all_recipes:
+        recipe.has_unapproved_material = contains_unapproved_material(recipe)
+        recipes_with_flags.append(recipe)
+    
+    return render_template('add_recipe.html', recipes=recipes_with_flags)
 
 @app.route('/api/analyze-recipe', methods=['POST'])
 @csrf.exempt
