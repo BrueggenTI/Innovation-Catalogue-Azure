@@ -5,6 +5,7 @@ from data.products import init_products
 from data.trends import init_trends
 from utils.pdf_generator import generate_concept_pdf
 from utils.email_sender import send_concept_email
+from utils.claim_calculator import calculate_nutritional_claims, merge_claims
 from translations import get_text, get_available_languages
 import json
 import uuid
@@ -883,6 +884,38 @@ def save_concept():
         client_name = data.get('client_name', '')
         client_email = data.get('client_email', '')
         product_config = data.get('product_config', {})
+        
+        # AUTOMATIC NUTRITIONAL CLAIMS CALCULATION FOR CO-CREATION
+        # Get base product ID from config
+        base_product_id = product_config.get('baseProduct')
+        
+        if base_product_id:
+            try:
+                # Load base product from database
+                base_product = Product.query.get(int(base_product_id))
+                
+                if base_product and base_product.nutritional_info:
+                    # Parse nutritional info
+                    nutritional_info = json.loads(base_product.nutritional_info)
+                    
+                    # Calculate automatic claims based on nutritional values
+                    auto_claims = calculate_nutritional_claims(nutritional_info)
+                    
+                    # Get manually selected claims from config
+                    manual_claims = product_config.get('nutritionalClaims', [])
+                    
+                    # Merge automatic and manual claims
+                    merged_claims = merge_claims(auto_claims, manual_claims)
+                    
+                    # Update product config with merged claims
+                    product_config['nutritionalClaims'] = merged_claims
+                    
+                    logging.info(f"Co-Creation automatic claims calculated: {auto_claims}")
+                    logging.info(f"Co-Creation manual claims: {manual_claims}")
+                    logging.info(f"Co-Creation final merged claims: {merged_claims}")
+                    
+            except (ValueError, TypeError) as e:
+                logging.warning(f"Could not calculate automatic claims for base product {base_product_id}: {e}")
 
         # Check if session already exists
         existing_concept = ConceptSession.query.filter_by(session_id=session_id).first()
@@ -2115,6 +2148,18 @@ def analyze_recipe():
                     recipe_data['storage_conditions'] = 'Store in a cool, dry place, protect from direct sunlight'
                 if 'recipe_number' not in recipe_data:
                     recipe_data['recipe_number'] = None
+                
+                # AUTOMATIC NUTRITIONAL CLAIMS CALCULATION
+                # Calculate claims based on nutritional values using Brüggen thresholds
+                nutritional_info = recipe_data.get('nutritional_info', {})
+                auto_claims = calculate_nutritional_claims(nutritional_info)
+                
+                # Merge auto-calculated claims with AI-extracted claims
+                existing_claims = recipe_data.get('claims', [])
+                recipe_data['claims'] = merge_claims(auto_claims, existing_claims)
+                
+                logging.info(f"Automatic claims calculated: {auto_claims}")
+                logging.info(f"Final merged claims: {recipe_data['claims']}")
             else:
                 raise ValueError("No response from AI analysis")
                 
@@ -2128,6 +2173,15 @@ def analyze_recipe():
                 })
             
             # Provide a fallback response if AI fails
+            fallback_nutritional_info = {
+                'energy': '0', 'fat': '0', 'saturated_fat': '0',
+                'carbohydrates': '0', 'sugars': '0', 'fiber': '0',
+                'protein': '0', 'salt': '0'
+            }
+            
+            # Calculate automatic claims even for fallback data
+            fallback_auto_claims = calculate_nutritional_claims(fallback_nutritional_info)
+            
             recipe_data = {
                 'name': f'Recipe from {filename}',
                 'category': 'Traditional Muesli',
@@ -2136,13 +2190,9 @@ def analyze_recipe():
                     {'name': 'Oat flakes', 'percentage': 0},
                     {'name': 'Mixed cereals', 'percentage': 0}
                 ],
-                'nutritional_info': {
-                    'energy': '0', 'fat': '0', 'saturated_fat': '0',
-                    'carbohydrates': '0', 'sugars': '0', 'fiber': '0',
-                    'protein': '0', 'salt': '0'
-                },
+                'nutritional_info': fallback_nutritional_info,
                 'allergens': ['Gluten'],
-                'claims': [],
+                'claims': fallback_auto_claims,
                 'storage_conditions': 'Store in a cool, dry place, protect from direct sunlight'
             }
             # Add all extracted images to fallback data too
