@@ -213,8 +213,8 @@
                                                         <span class="badge bg-primary ms-2" style="font-size: 0.7rem;">{{ get_text('base_recipe', lang) }}</span>
                                                     {% endif %}
                                                     {% if ingredient.status == 'unapproved_raw_material' %}
-                                                        <span class="badge bg-danger ms-2" style="font-size: 0.7rem;" title="This ingredient has an unapproved specification number starting with 6">
-                                                            <i class="fas fa-exclamation-triangle me-1"></i>UNAPPROVED RAW MATERIAL
+                                                        <span class="ms-2" title="Unapproved Raw Material" style="color: #dc3545; font-size: 1.1rem; cursor: help;">
+                                                            <i class="fas fa-exclamation-triangle"></i>
                                                         </span>
                                                     {% endif %}
                                                 </td>
@@ -227,8 +227,8 @@
                                                         <td class="ps-5" style="font-size: 0.85rem; font-style: italic; color: #6c757d;">
                                                             {{ child.name }}
                                                             {% if child.status == 'unapproved_raw_material' %}
-                                                                <span class="badge bg-danger ms-2" style="font-size: 0.65rem;" title="This ingredient has an unapproved specification number starting with 6">
-                                                                    <i class="fas fa-exclamation-triangle me-1"></i>UNAPPROVED
+                                                                <span class="ms-2" title="Unapproved Raw Material" style="color: #dc3545; font-size: 0.95rem; cursor: help;">
+                                                                    <i class="fas fa-exclamation-triangle"></i>
                                                                 </span>
                                                             {% endif %}
                                                         </td>
