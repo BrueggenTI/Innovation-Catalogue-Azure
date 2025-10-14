@@ -1814,14 +1814,14 @@ span.search-result-badge,
 }
 
 .nav-card-action .btn:hover {
-    /* Milchglasoptik mit #ff4143 beim Hover */
-    background: rgba(255, 65, 67, 0.15) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 65, 67, 0.4) !important;
-    color: #ff4143 !important;
+    /* Fast vollständig #ff4143 mit minimalster Milchglasoptik */
+    background: rgba(255, 65, 67, 0.9) !important;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    border: 1px solid #ff4143 !important;
+    color: white !important;
     transform: translateY(var(--btn-hover-lift));
-    box-shadow: 0 8px 24px rgba(255, 65, 67, 0.2);
+    box-shadow: 0 8px 24px rgba(255, 65, 67, 0.3);
 }
 
 /* View Details Buttons - Milchglasoptik */
@@ -1834,13 +1834,14 @@ span.search-result-badge,
 }
 
 .d-grid .btn-outline-primary.rounded-pill:hover {
-    background: rgba(255, 65, 67, 0.15) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 65, 67, 0.4) !important;
-    color: #ff4143 !important;
+    /* Fast vollständig #ff4143 mit minimalster Milchglasoptik */
+    background: rgba(255, 65, 67, 0.9) !important;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    border: 1px solid #ff4143 !important;
+    color: white !important;
     transform: translateY(var(--btn-hover-lift));
-    box-shadow: 0 8px 24px rgba(255, 65, 67, 0.2);
+    box-shadow: 0 8px 24px rgba(255, 65, 67, 0.3);
 }
 
 /* Nav card image styles for compact dashboard */
