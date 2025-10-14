@@ -13,8 +13,15 @@
                 </p>
             </div>
             <div class="col-lg-4 text-end">
-                <div class="trend-icon">
-                    <i class="fas fa-chart-line fa-5x opacity-25"></i>
+                <div class="competence-stats">
+                    <div class="stat-item d-inline-block mx-3">
+                        <div class="h2 fw-bold text-dark">{{ total_trends_count }}</div>
+                        <div class="small text-dark">{{ get_text('trends_available', lang) }}</div>
+                    </div>
+                    <div class="stat-item d-inline-block mx-3">
+                        <div class="h2 fw-bold text-dark">{{ total_categories_count }}</div>
+                        <div class="small text-dark">{{ get_text('categories', lang) }}</div>
+                    </div>
                 </div>
             </div>
         </div>

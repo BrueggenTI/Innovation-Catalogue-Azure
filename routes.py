@@ -785,6 +785,10 @@ def trends():
     if not report_types:
         report_types = ['produktentwicklung', 'marktdaten']
 
+    # Calculate total counts for header display
+    total_trends_count = Trend.query.count()
+    total_categories_count = db.session.query(Trend.category).distinct().count()
+
     # Start with base query
     query = Trend.query
 
@@ -811,7 +815,9 @@ def trends():
                          trends=trends, 
                          selected_categories=categories,  # List of selected categories
                          selected_report_types=report_types,  # List of selected report types
-                         search_query=search_query)
+                         search_query=search_query,
+                         total_trends_count=total_trends_count,
+                         total_categories_count=total_categories_count)
 
 @app.route('/trend/<int:trend_id>/pdf')
 @login_required
