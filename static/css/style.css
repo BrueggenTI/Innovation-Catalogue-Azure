@@ -3966,20 +3966,22 @@ body.modal-open {
    Unapproved Raw Material Warning Overlay
    =============================================== */
 
-/* Hover Overlay Container - nur über Bild + Content, nicht über Buttons */
+/* Hover Overlay Container - Moderne Milchglas-Optik */
 .unapproved-material-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 65, 67, 0.92);
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 5;
     border-radius: 0;
     pointer-events: none;
@@ -3994,36 +3996,38 @@ body.modal-open {
 /* Overlay Content */
 .unapproved-material-content {
     text-align: center;
-    color: white;
     padding: 32px;
     pointer-events: none;
 }
 
-/* Warning Triangle Icon - sehr groß */
+/* Warning Triangle Icon - Burgundy Red */
 .unapproved-material-content i {
-    font-size: 80px;
-    margin-bottom: 20px;
+    font-size: 72px;
+    margin-bottom: 16px;
     display: block;
-    animation: pulse 2s ease-in-out infinite;
+    color: #661c31;
+    animation: pulse-warning 2s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(102, 28, 49, 0.15));
 }
 
-/* Warning Text - größer und prominenter */
+/* Warning Text - Burgundy Red, modern typography */
 .unapproved-material-content p {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 600;
     margin: 0;
     line-height: 1.5;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
+    color: #661c31;
 }
 
-/* Pulse Animation for Warning Icon */
-@keyframes pulse {
+/* Subtle Pulse Animation for Warning Icon */
+@keyframes pulse-warning {
     0%, 100% {
         opacity: 1;
         transform: scale(1);
     }
     50% {
-        opacity: 0.85;
-        transform: scale(1.08);
+        opacity: 0.9;
+        transform: scale(1.05);
     }
 }
