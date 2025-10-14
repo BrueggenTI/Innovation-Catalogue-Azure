@@ -1804,6 +1804,43 @@ span.search-result-badge,
     padding: var(--brg-spacing-02) var(--brg-spacing-03);
     font-weight: 600;
     transition: var(--brg-transition);
+    
+    /* Milchglasoptik im Normalzustand */
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: var(--brg-color-text-primary) !important;
+}
+
+.nav-card-action .btn:hover {
+    /* Milchglasoptik mit #ff4143 beim Hover */
+    background: rgba(255, 65, 67, 0.15) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 65, 67, 0.4) !important;
+    color: #ff4143 !important;
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: 0 8px 24px rgba(255, 65, 67, 0.2);
+}
+
+/* View Details Buttons - Milchglasoptik */
+.d-grid .btn-outline-primary.rounded-pill {
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: var(--brg-color-text-primary) !important;
+}
+
+.d-grid .btn-outline-primary.rounded-pill:hover {
+    background: rgba(255, 65, 67, 0.15) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 65, 67, 0.4) !important;
+    color: #ff4143 !important;
+    transform: translateY(var(--btn-hover-lift));
+    box-shadow: 0 8px 24px rgba(255, 65, 67, 0.2);
 }
 
 /* Nav card image styles for compact dashboard */
