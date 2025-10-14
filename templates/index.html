@@ -73,9 +73,8 @@
                                 </div>
                                 <div class="nav-card-features">
                                     <div class="feature-tags">
-                                        <span class="badge bg-light text-dark">{{ get_text('health_wellness', lang) }}</span>
-                                        <span class="badge bg-light text-dark">{{ get_text('sustainability', lang) }}</span>
-                                        <span class="badge bg-light text-dark">{{ get_text('innovation', lang) }}</span>
+                                        <span class="badge bg-light text-dark">{{ total_trends }}{% if total_trends == 1 %} Trend{% else %} Trends{% endif %}</span>
+                                        <span class="badge bg-light text-dark">{{ total_trend_categories }}{% if total_trend_categories == 1 %} Category{% else %} Categories{% endif %}</span>
                                     </div>
                                 </div>
                                 <div class="nav-card-action mt-4">

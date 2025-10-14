@@ -534,11 +534,17 @@ def index():
     total_recipes = Product.query.count()
     total_categories = db.session.query(Product.category).distinct().count()
     
+    # Get trend counts
+    total_trends = Trend.query.count()
+    total_trend_categories = db.session.query(Trend.category).distinct().count()
+    
     return render_template('index.html', 
                          get_text=get_text, 
                          lang=lang,
                          total_recipes=total_recipes,
-                         total_categories=total_categories)
+                         total_categories=total_categories,
+                         total_trends=total_trends,
+                         total_trend_categories=total_trend_categories)
 
 @app.route('/catalog')
 @login_required
