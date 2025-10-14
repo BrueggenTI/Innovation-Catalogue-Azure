@@ -4002,8 +4002,8 @@ body.modal-open {
 
 /* Warning Triangle Icon - Burgundy Red */
 .unapproved-material-content i {
-    font-size: 72px;
-    margin-bottom: 16px;
+    font-size: 144px;
+    margin-bottom: 24px;
     display: block;
     color: #661c31;
     animation: pulse-warning 2s ease-in-out infinite;
