@@ -193,12 +193,18 @@ class ExcelBatchProcessor:
                 spec_num = spec_match.group(1)
                 
                 # Extract nutritional data
+                # Energy is typically in columns 6 (kJ) and 7 (kcal)
+                energy_kj = self._safe_float(row[6]) if len(row) > 6 else 0
+                energy_kcal = self._safe_float(row[7]) if len(row) > 7 else 0
+                
                 recipes[spec_num] = {
                     'name': row[1] if len(row) > 1 else '',
                     'specification': spec_num,
                     'full_specification': row[2] if len(row) > 2 else '',
                     'nutritional_info': {
-                        'energy': self._safe_float(row[7]) if len(row) > 7 else 0,
+                        'energy_kj': energy_kj,
+                        'energy_kcal': energy_kcal,
+                        'energy': energy_kcal,  # Keep for backward compatibility
                         'fat': self._safe_float(row[9]) if len(row) > 9 else 0,
                         'saturated_fat': self._safe_float(row[10]) if len(row) > 10 else 0,
                         'carbohydrates': self._safe_float(row[11]) if len(row) > 11 else 0,
