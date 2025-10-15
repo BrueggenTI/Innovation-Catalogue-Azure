@@ -505,13 +505,17 @@ document.addEventListener('DOMContentLoaded', function() {
         category: '',
         ingredient: [], // Changed to array for multiple ingredients
         claim: [], // Changed to array for multiple claims
-        recipeNumber: [] // Add recipe number filtering
+        recipeNumber: [], // Add recipe number filtering
+        product_type: '', // Product or Development
+        exclusivity: '' // exclusive, non-exclusive, or both
     };
     
     // Only set filters if they have actual meaningful values from URL
     const urlCategory = '{{ selected_category if selected_category and selected_category.strip() and selected_category != "None" else "" }}';
     const urlIngredient = '{{ selected_ingredient if selected_ingredient and selected_ingredient.strip() and selected_ingredient != "None" else "" }}';
     const urlClaim = '{{ selected_claim if selected_claim and selected_claim.strip() and selected_claim != "None" else "" }}';
+    const urlProductType = '{{ selected_product_type if selected_product_type and selected_product_type.strip() and selected_product_type != "None" else "" }}';
+    const urlExclusivity = '{{ selected_exclusivity if selected_exclusivity and selected_exclusivity.strip() and selected_exclusivity != "None" else "" }}';
     
     if (urlCategory && urlCategory.trim().length > 0) {
         activeFilters.category = urlCategory.trim();
@@ -523,6 +527,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (urlClaim && urlClaim.trim().length > 0) {
         // Handle pipe-separated claims from URL
         activeFilters.claim = urlClaim.split('|').map(cl => cl.trim()).filter(cl => cl.length > 0);
+    }
+    if (urlProductType && urlProductType.trim().length > 0) {
+        activeFilters.product_type = urlProductType.trim();
+    }
+    if (urlExclusivity && urlExclusivity.trim().length > 0) {
+        activeFilters.exclusivity = urlExclusivity.trim();
     }
     
     let currentOpenFilter = null;
@@ -566,6 +576,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const filterType = this.dataset.filter;
             const filterValue = this.dataset.value;
             selectFilter(filterType, filterValue);
+        });
+    });
+    
+    // Exclusivity radio button handlers
+    document.querySelectorAll('input[name="exclusivityFilter"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            activeFilters.exclusivity = this.value;
+            redirectToBackend();
         });
     });
     
@@ -718,13 +736,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     activeFiltersContainer.appendChild(filterBtn);
                 });
-            } else if (value && value.trim !== undefined && value.trim() !== '' && value !== 'None') {
-                // Handle single value filters (only category now)
+            } else if (value && value.trim !== undefined && value.trim() !== '' && value !== 'None' && value !== 'both') {
+                // Handle single value filters (category, product_type, exclusivity)
+                // Skip 'both' for exclusivity as it means no filter
                 hasActiveFilters = true;
                 const filterBtn = document.createElement('button');
                 filterBtn.className = 'active-filter-btn';
+                
+                // Display text based on filter type
+                let displayText = value;
+                if (filterType === 'product_type') {
+                    displayText = `Type: ${value}`;
+                } else if (filterType === 'exclusivity') {
+                    displayText = value === 'exclusive' ? 'Exclusive Only' : 'Non-Exclusive Only';
+                }
+                
                 filterBtn.innerHTML = `
-                    ${value}
+                    ${displayText}
                     <span class="remove-filter" onclick="removeFilter('${filterType}')">
                         <i class="fas fa-times"></i>
                     </span>
@@ -756,6 +784,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (activeFilters.ingredient.length > 0) params.set('ingredient', activeFilters.ingredient.join('|'));
         if (activeFilters.claim.length > 0) params.set('claim', activeFilters.claim.join('|'));
         if (activeFilters.recipeNumber.length > 0) params.set('recipe', activeFilters.recipeNumber.join('|'));
+        if (activeFilters.product_type) params.set('product_type', activeFilters.product_type);
+        if (activeFilters.exclusivity && activeFilters.exclusivity !== 'both') params.set('exclusivity', activeFilters.exclusivity);
         
         const newUrl = '/catalog' + (params.toString() ? '?' + params.toString() : '');
         window.location.href = newUrl;
@@ -815,6 +845,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.classList.add('selected');
             } else {
                 btn.classList.remove('selected');
+            }
+        });
+        
+        // Update product type buttons
+        document.querySelectorAll('.filter-option-btn[data-filter="product_type"]').forEach(btn => {
+            const value = btn.dataset.value;
+            if (activeFilters.product_type === value) {
+                btn.classList.add('selected');
+            } else {
+                btn.classList.remove('selected');
+            }
+        });
+        
+        // Update exclusivity radio buttons
+        document.querySelectorAll('input[name="exclusivityFilter"]').forEach(radio => {
+            if (radio.value === activeFilters.exclusivity || (!activeFilters.exclusivity && radio.value === 'both')) {
+                radio.checked = true;
             }
         });
     }
