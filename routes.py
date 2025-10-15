@@ -2473,6 +2473,18 @@ def publish_recipe():
         if recipe_number:
             new_product.recipe_number = recipe_number
             logging.info(f"Recipe number set to: {new_product.recipe_number}")
+        
+        # Determine product type based on recipe number or from data
+        product_type = data.get('product_type')
+        if not product_type and recipe_number:
+            # Auto-detect from recipe number: 4* = Product, 1* = Development
+            import re
+            if re.match(r'^0*4', str(recipe_number)):
+                product_type = 'Product'
+            else:
+                product_type = 'Development'
+        new_product.product_type = product_type or 'Development'
+        logging.info(f"Product type set to: {new_product.product_type}")
 
         # Store new business fields: Exclusive, Department, Customer, Market
         exclusive = data.get('exclusive')

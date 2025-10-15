@@ -243,10 +243,16 @@ class ExcelBatchProcessor:
                 # Remove recipe number from beginning (e.g., "1000091 BWC 79-01" -> "BWC 79-01")
                 product_name = re.sub(r'^\d{7}\s+', '', product_name).strip()
                 
+                # Determine product type based on recipe number (4* = Product, 1* = Development)
+                product_type = 'Development'  # Default
+                if re.match(r'^0*4', spec_num):
+                    product_type = 'Product'
+                
                 recipes[spec_num] = {
                     'name': product_name,
                     'specification': spec_num,
                     'full_specification': row[2] if len(row) > 2 else '',
+                    'product_type': product_type,
                     'nutritional_info': {
                         'energy_kj': energy_kj,
                         'energy_kcal': energy_kcal,
