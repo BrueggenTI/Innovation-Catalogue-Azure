@@ -113,18 +113,21 @@ class ExcelBatchProcessor:
             ingredient_section = False
             for row in sheet.iter_rows(min_row=2, values_only=True):
                 # Check if we've reached the ingredient section
-                # Look specifically for EXACTLY "Ingredient" in column A (index 0)
-                if row[0] and str(row[0]).strip().lower() == 'ingredient':
+                # Look for "Ingredient" or "Ingredient List" in column A (index 0)
+                cell_value = str(row[0]).strip().lower() if row[0] else ""
+                if cell_value in ['ingredient', 'ingredient list']:
                     ingredient_section = True
-                    logger.info(f"Found 'Ingredient' marker in column A - starting ingredient extraction from this row")
+                    logger.info(f"Found '{row[0]}' marker in column A - starting ingredient extraction from this row")
                     # Don't continue - process this row too if it has data in column B
                 
                 # Stop extraction if we hit a new section header in column A (but column B is empty)
-                # BUT don't stop at the "Ingredient" header itself
-                if ingredient_section and row[0] and not row[1] and str(row[0]).strip().lower() != 'ingredient':
-                    # This might be a new section header, stop ingredient extraction
-                    logger.info(f"Found new section '{row[0]}' - stopping ingredient extraction")
-                    break
+                # BUT don't stop at the "Ingredient" or "Ingredient List" header itself
+                if ingredient_section and row[0] and not row[1]:
+                    cell_val_lower = str(row[0]).strip().lower()
+                    if cell_val_lower not in ['ingredient', 'ingredient list']:
+                        # This is a new section header, stop ingredient extraction
+                        logger.info(f"Found new section '{row[0]}' - stopping ingredient extraction")
+                        break
                 
                 # Only extract ingredients AFTER we've found the ingredient section marker
                 if ingredient_section and row[1]:  # Row has ingredient data
