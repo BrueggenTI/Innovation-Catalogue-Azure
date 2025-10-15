@@ -74,11 +74,13 @@
             <input type="hidden" name="category" id="hiddenCategory" value="{{ selected_category }}">
             <input type="hidden" name="ingredient" id="hiddenIngredient" value="{{ selected_ingredient }}">
             <input type="hidden" name="claim" id="hiddenClaim" value="{{ selected_claim }}">
+            <input type="hidden" name="product_type" id="hiddenProductType" value="{{ selected_product_type }}">
+            <input type="hidden" name="exclusivity" id="hiddenExclusivity" value="{{ selected_exclusivity }}">
         </form>
         
         <!-- Filter Headers -->
         <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="filter-header" data-filter="category">
                     <h6 class="mb-2 fw-semibold text-dark">
                         <i class="fas fa-tags me-2" style="color: #661c31;"></i>{{ get_text('category', lang) }}
@@ -88,7 +90,7 @@
                 </div>
             </div>
             
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="filter-header" data-filter="ingredient">
                     <h6 class="mb-2 fw-semibold text-dark">
                         <i class="fas fa-seedling me-2" style="color: #661c31;"></i>{{ get_text('key_ingredient', lang) }}
@@ -98,13 +100,36 @@
                 </div>
             </div>
             
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="filter-header" data-filter="claim">
                     <h6 class="mb-2 fw-semibold text-dark">
                         <i class="fas fa-medal me-2" style="color: #661c31;"></i>{{ get_text('claims', lang) }}
                         <i class="fas fa-chevron-down filter-chevron ms-2"></i>
                     </h6>
                     <div class="filter-count text-muted small">{{ claims|length }} {{ get_text('available', lang) }}</div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="filter-header" data-filter="product_type">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-flask me-2" style="color: #661c31;"></i>Product Type
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">{{ product_types|length }} {{ get_text('available', lang) }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Second Row of Filters -->
+        <div class="row g-3 mt-2">
+            <div class="col-md-3">
+                <div class="filter-header" data-filter="exclusivity">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-star me-2" style="color: #661c31;"></i>Exclusivity
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">Filter by exclusive status</div>
                 </div>
             </div>
         </div>
@@ -153,6 +178,51 @@
                     </button>
                 </div>
                 {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Product Type Options -->
+        <div class="filter-options" id="product_typeOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">Select Product Type</h6>
+            <div class="row g-2">
+                {% for ptype in product_types %}
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn" data-filter="product_type" data-value="{{ ptype }}">
+                        {{ ptype }}
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Exclusivity Options (Checkboxes) -->
+        <div class="filter-options" id="exclusivityOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">Select Exclusivity</h6>
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exclusivityFilter" id="exclusivityBoth" value="both" checked>
+                        <label class="form-check-label" for="exclusivityBoth">
+                            Both (Exclusive & Non-Exclusive)
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exclusivityFilter" id="exclusivityExclusive" value="exclusive">
+                        <label class="form-check-label" for="exclusivityExclusive">
+                            <i class="fas fa-star text-warning me-2"></i>Exclusive Only
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exclusivityFilter" id="exclusivityNonExclusive" value="non-exclusive">
+                        <label class="form-check-label" for="exclusivityNonExclusive">
+                            Non-Exclusive Only
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
