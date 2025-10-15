@@ -259,7 +259,7 @@
                                     <tbody>
                                         {% for ingredient in ingredients %}
                                             <tr>
-                                                <td class="{% if ingredient.type == 'mix' %}fw-bold{% else %}fw-medium{% endif %}">
+                                                <td style="font-weight: normal; font-size: 0.9rem;">
                                                     {{ ingredient.name }}
                                                     {% if ingredient.base_recipe_name %}
                                                         <span class="badge bg-primary ms-2" style="font-size: 0.7rem;">{{ get_text('base_recipe', lang) }}</span>
@@ -271,7 +271,7 @@
                                                         </span>
                                                     {% endif %}
                                                 </td>
-                                                <td class="text-end {% if ingredient.type == 'mix' %}fw-bold{% endif %}">{{ ingredient.percentage }}%</td>
+                                                <td class="text-end" style="font-weight: normal; font-size: 0.9rem;">{{ ingredient.percentage }}%</td>
                                             </tr>
                                             
                                             {% if ingredient.children and ingredient.children|length > 0 %}
