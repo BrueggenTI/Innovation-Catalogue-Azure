@@ -20,7 +20,15 @@ mail = Mail()
 
 # create the app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "bruggen-innovation-dev-key-2025")
+
+# Require SESSION_SECRET from environment - fail fast if missing
+session_secret = os.environ.get("SESSION_SECRET")
+if not session_secret:
+    raise RuntimeError(
+        "SESSION_SECRET environment variable is required but not set. "
+        "Please configure SESSION_SECRET before starting the application."
+    )
+app.secret_key = session_secret
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Configure Flask-Session for Microsoft SSO
