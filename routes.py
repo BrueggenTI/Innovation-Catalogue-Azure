@@ -2348,14 +2348,18 @@ def analyze_batch_recipes():
         # Convert to list format for frontend
         recipes_list = []
         for spec_num, recipe in recipes_data.items():
-            # Calculate claims from ingredients and nutritional data
-            from utils.claim_calculator import calculate_nutritional_claims
+            # Calculate claims from nutritional data
             claims = []
-            if recipe.get('ingredients') and recipe.get('nutritional_info'):
-                claims = calculate_nutritional_claims(
-                    recipe.get('ingredients', []),
-                    recipe.get('nutritional_info', {})
-                )
+            try:
+                from utils.claim_calculator import calculate_nutritional_claims
+                nutritional_info = recipe.get('nutritional_info', {})
+                
+                # Ensure nutritional_info has all required fields
+                if nutritional_info and isinstance(nutritional_info, dict):
+                    claims = calculate_nutritional_claims(nutritional_info)
+            except Exception as e:
+                logging.error(f"Error calculating claims for recipe {spec_num}: {e}")
+                claims = []
             
             # Format for frontend
             formatted_recipe = {
