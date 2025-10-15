@@ -108,30 +108,44 @@ class ExcelBatchProcessor:
                             'ingredients': []
                         }
             
-            # Parse ingredients (ONLY from the row where column A contains "Ingredients" onwards)
-            # Example: If "Ingredients" is in row 70, extract ingredients starting from row 70
-            # IMPORTANT: Ignore "Ingredient List" section - only extract from "Ingredients"
-            ingredient_section = False
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                # Check if we've reached the ingredient section
-                # Look ONLY for "Ingredients" in column A (index 0) - NOT "Ingredient List"!
-                cell_value = str(row[0]).strip().lower() if row[0] else ""
-                if cell_value == 'ingredients':
-                    ingredient_section = True
-                    logger.info(f"Found 'Ingredients' marker in column A - starting ingredient extraction from this row")
-                    # Don't continue - process this row too if it has data in column B
-                
-                # Stop extraction if we hit a new section header in column A (but column B is empty)
-                # BUT don't stop at the "Ingredients" header itself
-                if ingredient_section and row[0] and not row[1]:
-                    cell_val_lower = str(row[0]).strip().lower()
-                    if cell_val_lower != 'ingredients':
-                        # This is a new section header, stop ingredient extraction
-                        logger.info(f"Found new section '{row[0]}' - stopping ingredient extraction")
+            # Parse ingredients (ONLY from merged cell "Ingredients" range)
+            # Find the "Ingredients" merged cell and extract ONLY from those rows
+            ingredients_start_row = None
+            ingredients_end_row = None
+            
+            # First, find the "Ingredients" merged cell range
+            for merged_range in sheet.merged_cells.ranges:
+                # Check if the first cell of this merged range contains "Ingredients"
+                first_cell = sheet.cell(merged_range.min_row, merged_range.min_col)
+                if first_cell.value and str(first_cell.value).strip().lower() == 'ingredients':
+                    ingredients_start_row = merged_range.min_row
+                    ingredients_end_row = merged_range.max_row
+                    logger.info(f"Found 'Ingredients' merged cell spanning rows {ingredients_start_row} to {ingredients_end_row}")
+                    break
+            
+            # If no merged cell found, fall back to simple search
+            if ingredients_start_row is None:
+                for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+                    cell_value = str(row[0]).strip().lower() if row[0] else ""
+                    if cell_value == 'ingredients':
+                        ingredients_start_row = row_idx
+                        # Find end by looking for next section header
+                        for next_row_idx in range(row_idx + 1, sheet.max_row + 1):
+                            next_row = sheet[next_row_idx]
+                            if next_row[0].value and not next_row[1].value:
+                                ingredients_end_row = next_row_idx - 1
+                                break
+                        if ingredients_end_row is None:
+                            ingredients_end_row = sheet.max_row
+                        logger.info(f"Found 'Ingredients' marker at row {ingredients_start_row}, extracting until row {ingredients_end_row}")
                         break
-                
-                # Only extract ingredients AFTER we've found the ingredient section marker
-                if ingredient_section and row[1]:  # Row has ingredient data
+            
+            # Now extract ingredients ONLY from the specified row range
+            if ingredients_start_row is not None:
+                for row in sheet.iter_rows(min_row=ingredients_start_row, max_row=ingredients_end_row, values_only=True):
+                    if not row[1]:  # Skip rows without ingredient data in column B
+                        continue
+                    
                     ingredient_spec = row[1]  # Column B has ingredient specification
                     ingredient_name_match = re.search(r'\d+\s+(.+)', str(ingredient_spec))
                     ingredient_name = ingredient_name_match.group(1) if ingredient_name_match else str(ingredient_spec)
