@@ -108,19 +108,20 @@ class ExcelBatchProcessor:
                             'ingredients': []
                         }
             
-            # Parse ingredients (ONLY after the row where column A contains "Ingredient")
-            # Example: If "Ingredient" is in row 70, only extract ingredients from row 71 onwards
+            # Parse ingredients (ONLY from the row where column A contains "Ingredient" onwards)
+            # Example: If "Ingredient" is in row 70, extract ingredients starting from row 70
             ingredient_section = False
             for row in sheet.iter_rows(min_row=2, values_only=True):
                 # Check if we've reached the ingredient section
                 # Look specifically for EXACTLY "Ingredient" in column A (index 0)
                 if row[0] and str(row[0]).strip().lower() == 'ingredient':
                     ingredient_section = True
-                    logger.info(f"Found 'Ingredient' marker in column A - starting ingredient extraction from next row")
-                    continue
+                    logger.info(f"Found 'Ingredient' marker in column A - starting ingredient extraction from this row")
+                    # Don't continue - process this row too if it has data in column B
                 
                 # Stop extraction if we hit a new section header in column A (but column B is empty)
-                if ingredient_section and row[0] and not row[1]:
+                # BUT don't stop at the "Ingredient" header itself
+                if ingredient_section and row[0] and not row[1] and str(row[0]).strip().lower() != 'ingredient':
                     # This might be a new section header, stop ingredient extraction
                     logger.info(f"Found new section '{row[0]}' - stopping ingredient extraction")
                     break
