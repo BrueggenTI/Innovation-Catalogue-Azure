@@ -238,8 +238,13 @@ class ExcelBatchProcessor:
                         energy_kcal = self._safe_float(row[col_idx]) if len(row) > col_idx else 0
                         break
                 
+                # Extract product name without recipe number
+                product_name = str(row[1]) if len(row) > 1 else ''
+                # Remove recipe number from beginning (e.g., "1000091 BWC 79-01" -> "BWC 79-01")
+                product_name = re.sub(r'^\d{7}\s+', '', product_name).strip()
+                
                 recipes[spec_num] = {
-                    'name': row[1] if len(row) > 1 else '',
+                    'name': product_name,
                     'specification': spec_num,
                     'full_specification': row[2] if len(row) > 2 else '',
                     'nutritional_info': {
