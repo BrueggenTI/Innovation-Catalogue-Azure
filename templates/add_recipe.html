@@ -514,6 +514,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showRecipePreview(recipeData) {
         console.log('showRecipePreview called with:', recipeData);
+        console.log('🔍 DEBUG - Claims data:', recipeData.claims);
+        console.log('🔍 DEBUG - Claims type:', typeof recipeData.claims);
+        console.log('🔍 DEBUG - Claims length:', recipeData.claims ? recipeData.claims.length : 'undefined');
         
         // Generate preview HTML and show modal
         const previewContent = document.getElementById('recipePreviewContent');
@@ -875,8 +878,12 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>`;
         }).join('');
 
-        const claimsHTML = data.claims.map((claim, index) => {
+        console.log('🎯 generatePreviewHTML - Claims:', data.claims);
+        console.log('🎯 generatePreviewHTML - Claims is array?', Array.isArray(data.claims));
+        
+        const claimsHTML = (data.claims || []).map((claim, index) => {
             const escapedClaim = escapeHtml(claim);
+            console.log(`🎯 Processing claim ${index}:`, claim);
             return `<div class="input-group mb-2 me-2 draggable-claim" draggable="true" style="width: 100%; display: flex; margin-bottom: 8px;">
                 <span class="input-group-text bg-success text-white drag-handle" style="cursor: move; display: inline-flex;">
                     <i class="fas fa-grip-vertical"></i>
@@ -892,6 +899,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             </div>`;
         }).join('');
+        
+        console.log('🎯 Final claimsHTML:', claimsHTML);
 
         return `
             <div class="container-fluid p-4 recipe-preview-modal">
