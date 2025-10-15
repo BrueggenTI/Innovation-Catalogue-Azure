@@ -184,44 +184,114 @@
 <div class="container-fluid px-4 py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <!-- Upload Section -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header" style="background-color: #661c31;">
-                    <h3 class="card-title mb-0 text-white">
-                        <i class="fas fa-upload me-2"></i>{{ get_text('upload_recipe_document', lang) }}
-                    </h3>
-                </div>
-                <div class="card-body p-4">
-                    <form id="recipeUploadForm" enctype="multipart/form-data">
-                        <div class="mb-4">
-                            <label for="recipeFile" class="form-label fw-bold">{{ get_text('recipe_documents', lang) }}</label>
-                            <div class="upload-area border border-2 border-dashed rounded-3 p-4 text-center" 
-                                 ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">
-                                <input type="file" class="form-control d-none" id="recipeFile" name="recipe_file" 
-                                       accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xlsx,.jpg,.jpeg,.png" multiple required>
-                                <div class="upload-content">
-                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                                    <h5>{{ get_text('drag_drop_recipe_docs', lang) }}</h5>
-                                    <p class="text-muted">{{ get_text('or', lang) }} <a href="#" onclick="document.getElementById('recipeFile').click()">{{ get_text('browse_files', lang) }}</a></p>
-                                    <small class="text-muted">{{ get_text('supported_formats', lang) }}<br>{{ get_text('multiple_files_supported', lang) }}</small>
-                                </div>
-                                <div class="selected-files d-none">
-                                    <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
-                                    <p class="files-info fw-bold mb-1"></p>
-                                    <div class="files-list small text-muted"></div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Upload Tabs -->
+            <ul class="nav nav-tabs mb-4" id="uploadTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="single-upload-tab" data-bs-toggle="tab" data-bs-target="#single-upload" type="button" role="tab">
+                        <i class="fas fa-file-alt me-2"></i>Einzelnes Rezept
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="batch-upload-tab" data-bs-toggle="tab" data-bs-target="#batch-upload" type="button" role="tab">
+                        <i class="fas fa-layer-group me-2"></i>Batch Upload (Excel + Bilder)
+                    </button>
+                </li>
+            </ul>
 
-                        <div class="d-flex gap-3">
-                            <button type="submit" class="btn btn-primary px-4" id="analyzeBtn">
-                                <i class="fas fa-magic me-2"></i>{{ get_text('analyze_with_ai', lang) }}
-                            </button>
-                            <a href="{{ url_for('catalog') }}" class="btn btn-outline-secondary px-4">
-                                <i class="fas fa-times me-2"></i>{{ get_text('cancel', lang) }}
-                            </a>
+            <div class="tab-content" id="uploadTabsContent">
+                <!-- Single Recipe Upload Tab -->
+                <div class="tab-pane fade show active" id="single-upload" role="tabpanel">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header" style="background-color: #661c31;">
+                            <h3 class="card-title mb-0 text-white">
+                                <i class="fas fa-upload me-2"></i>{{ get_text('upload_recipe_document', lang) }}
+                            </h3>
                         </div>
-                    </form>
+                        <div class="card-body p-4">
+                            <form id="recipeUploadForm" enctype="multipart/form-data">
+                                <div class="mb-4">
+                                    <label for="recipeFile" class="form-label fw-bold">{{ get_text('recipe_documents', lang) }}</label>
+                                    <div class="upload-area border border-2 border-dashed rounded-3 p-4 text-center" 
+                                         ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">
+                                        <input type="file" class="form-control d-none" id="recipeFile" name="recipe_file" 
+                                               accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xlsx,.jpg,.jpeg,.png" multiple required>
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                            <h5>{{ get_text('drag_drop_recipe_docs', lang) }}</h5>
+                                            <p class="text-muted">{{ get_text('or', lang) }} <a href="#" onclick="document.getElementById('recipeFile').click()">{{ get_text('browse_files', lang) }}</a></p>
+                                            <small class="text-muted">{{ get_text('supported_formats', lang) }}<br>{{ get_text('multiple_files_supported', lang) }}</small>
+                                        </div>
+                                        <div class="selected-files d-none">
+                                            <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
+                                            <p class="files-info fw-bold mb-1"></p>
+                                            <div class="files-list small text-muted"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-3">
+                                    <button type="submit" class="btn btn-primary px-4" id="analyzeBtn">
+                                        <i class="fas fa-magic me-2"></i>{{ get_text('analyze_with_ai', lang) }}
+                                    </button>
+                                    <a href="{{ url_for('catalog') }}" class="btn btn-outline-secondary px-4">
+                                        <i class="fas fa-times me-2"></i>{{ get_text('cancel', lang) }}
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Upload Tab -->
+                <div class="tab-pane fade" id="batch-upload" role="tabpanel">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header" style="background-color: #661c31;">
+                            <h3 class="card-title mb-0 text-white">
+                                <i class="fas fa-layer-group me-2"></i>Batch Upload - Mehrere Rezepte
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Batch Upload:</strong> Laden Sie Excel-Dateien mit Zutaten und Nährwerten sowie Produktbilder hoch. 
+                                Die Zuordnung erfolgt automatisch über die Rezept-Spezifikationsnummer.
+                            </div>
+                            
+                            <form id="batchUploadForm" enctype="multipart/form-data">
+                                <div class="mb-4">
+                                    <label for="batchFiles" class="form-label fw-bold">Excel-Dateien und Bilder</label>
+                                    <div class="batch-upload-area border border-2 border-dashed rounded-3 p-4 text-center" 
+                                         ondrop="batchDropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">
+                                        <input type="file" class="form-control d-none" id="batchFiles" name="batch_files" 
+                                               accept=".xlsx,.jpg,.jpeg,.png" multiple required>
+                                        <div class="batch-upload-content">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                            <h5>Excel-Dateien & Bilder hier ablegen</h5>
+                                            <p class="text-muted">oder <a href="#" onclick="document.getElementById('batchFiles').click()">Dateien auswählen</a></p>
+                                            <small class="text-muted">
+                                                Unterstützte Formate: Excel (.xlsx), Bilder (.jpg, .png)<br>
+                                                Bilder müssen die Rezeptnummer im Dateinamen enthalten
+                                            </small>
+                                        </div>
+                                        <div class="batch-selected-files d-none">
+                                            <i class="fas fa-file-excel fa-2x text-success mb-2"></i>
+                                            <p class="batch-files-info fw-bold mb-1"></p>
+                                            <div class="batch-files-list small text-muted"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-3">
+                                    <button type="submit" class="btn btn-success px-4" id="analyzeBatchBtn">
+                                        <i class="fas fa-magic me-2"></i>Batch-Analyse starten
+                                    </button>
+                                    <a href="{{ url_for('catalog') }}" class="btn btn-outline-secondary px-4">
+                                        <i class="fas fa-times me-2"></i>{{ get_text('cancel', lang) }}
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -2353,6 +2423,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Batch upload file selection
+    const batchFileInput = document.getElementById('batchFiles');
+    if (batchFileInput) {
+        batchFileInput.addEventListener('change', function(e) {
+            handleBatchFileSelect(e.target.files);
+        });
+    }
+
+    // Batch upload form submission
+    const batchUploadForm = document.getElementById('batchUploadForm');
+    if (batchUploadForm) {
+        batchUploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            analyzeBatchRecipes();
+        });
+    }
 });
 
 // Drag and drop handlers
@@ -2374,6 +2461,343 @@ function dropHandler(ev) {
         document.getElementById('recipeFile').files = files;
         handleFileSelect(files);
     }
+}
+
+function batchDropHandler(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.remove('border-primary');
+
+    const files = ev.dataTransfer.files;
+    if (files.length > 0) {
+        document.getElementById('batchFiles').files = files;
+        handleBatchFileSelect(files);
+    }
+}
+
+function handleBatchFileSelect(files) {
+    if (files && files.length > 0) {
+        const uploadContent = document.querySelector('.batch-upload-content');
+        const selectedFiles = document.querySelector('.batch-selected-files');
+
+        uploadContent.classList.add('d-none');
+        selectedFiles.classList.remove('d-none');
+
+        // Count Excel and image files
+        let excelCount = 0;
+        let imageCount = 0;
+        let listHTML = '';
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const fileName = file.name.toLowerCase();
+            
+            if (fileName.endsWith('.xlsx')) {
+                excelCount++;
+                listHTML += `<div class="mb-1"><i class="fas fa-file-excel text-success me-1"></i>${file.name}</div>`;
+            } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png')) {
+                imageCount++;
+                listHTML += `<div class="mb-1"><i class="fas fa-image text-primary me-1"></i>${file.name}</div>`;
+            }
+        }
+
+        const filesInfo = document.querySelector('.batch-files-info');
+        const filesList = document.querySelector('.batch-files-list');
+        
+        filesInfo.textContent = `${excelCount} Excel-Datei(en), ${imageCount} Bild(er) ausgewählt`;
+        filesList.innerHTML = listHTML;
+    }
+}
+
+function analyzeBatchRecipes() {
+    const files = document.getElementById('batchFiles').files;
+    if (!files || files.length === 0) {
+        alert('Bitte wählen Sie mindestens eine Datei aus.');
+        return;
+    }
+
+    // Show analysis progress
+    const progressElement = document.getElementById('analysisProgress');
+    if (progressElement) {
+        progressElement.classList.remove('d-none');
+    }
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        formData.append('batch_files', files[i]);
+    }
+
+    fetch('/api/analyze-batch-recipes', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (progressElement) {
+            progressElement.classList.add('d-none');
+        }
+
+        if (data.success) {
+            // Store batch recipes data
+            window.batchRecipes = data.recipes;
+            window.currentBatchIndex = 0;
+
+            // Show batch recipe carousel modal
+            showBatchRecipeCarousel(data.recipes);
+        } else {
+            alert('Batch-Analyse fehlgeschlagen: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Batch analysis error:', error);
+        if (progressElement) {
+            progressElement.classList.add('d-none');
+        }
+        alert('Ein Fehler ist während der Batch-Analyse aufgetreten.');
+    });
+}
+
+// Batch recipe carousel modal
+function showBatchRecipeCarousel(recipes) {
+    const modalHTML = `
+    <div class="modal fade" id="batchRecipeCarouselModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #661c31;">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-layer-group me-2"></i>Batch-Rezepte bearbeiten
+                        <span class="badge bg-light text-dark ms-2" id="batchProgressBadge">1 / ${recipes.length}</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="batchRecipeContent">
+                        <!-- Recipe content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary" id="batchPrevBtn" disabled>
+                            <i class="fas fa-chevron-left me-2"></i>Vorheriges
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="batchNextBtn">
+                            Nächstes<i class="fas fa-chevron-right ms-2"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Abbrechen
+                        </button>
+                        <button type="button" class="btn btn-primary" id="publishCurrentRecipeBtn">
+                            <i class="fas fa-save me-2"></i>Aktuelles speichern
+                        </button>
+                        <button type="button" class="btn btn-success" id="publishAllRecipesBtn">
+                            <i class="fas fa-check-double me-2"></i>Alle veröffentlichen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById('batchRecipeCarouselModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // Add modal to DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('batchRecipeCarouselModal'));
+    modal.show();
+
+    // Load first recipe
+    loadBatchRecipe(0);
+
+    // Setup navigation buttons
+    document.getElementById('batchPrevBtn').addEventListener('click', () => navigateBatchRecipe(-1));
+    document.getElementById('batchNextBtn').addEventListener('click', () => navigateBatchRecipe(1));
+    
+    // Setup publish buttons
+    document.getElementById('publishCurrentRecipeBtn').addEventListener('click', () => publishBatchRecipe(window.currentBatchIndex));
+    document.getElementById('publishAllRecipesBtn').addEventListener('click', publishAllBatchRecipes);
+}
+
+function loadBatchRecipe(index) {
+    const recipe = window.batchRecipes[index];
+    window.currentBatchIndex = index;
+
+    // Update progress badge
+    document.getElementById('batchProgressBadge').textContent = `${index + 1} / ${window.batchRecipes.length}`;
+
+    // Update navigation buttons
+    document.getElementById('batchPrevBtn').disabled = index === 0;
+    document.getElementById('batchNextBtn').disabled = index === window.batchRecipes.length - 1;
+
+    // Generate compact form HTML
+    const formHTML = generateCompactRecipeForm(recipe, index);
+    document.getElementById('batchRecipeContent').innerHTML = formHTML;
+}
+
+function navigateBatchRecipe(direction) {
+    const newIndex = window.currentBatchIndex + direction;
+    if (newIndex >= 0 && newIndex < window.batchRecipes.length) {
+        loadBatchRecipe(newIndex);
+    }
+}
+
+function generateCompactRecipeForm(recipe, index) {
+    const ingredientsHTML = (recipe.ingredients || []).map((ing, i) => `
+        <tr>
+            <td><input type="text" class="form-control form-control-sm" value="${ing.name}" data-field="ingredients.${i}.name"></td>
+            <td><input type="number" class="form-control form-control-sm text-end" value="${ing.percentage}" step="0.1" data-field="ingredients.${i}.percentage"></td>
+        </tr>
+    `).join('');
+
+    return `
+        <div class="container-fluid p-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small">Rezeptname</label>
+                    <input type="text" class="form-control form-control-sm" value="${recipe.name}" data-field="name">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small">Kategorie</label>
+                    <select class="form-select form-select-sm" data-field="category">
+                        <option value="Traditional Muesli" ${recipe.category === 'Traditional Muesli' ? 'selected' : ''}>Traditional Muesli</option>
+                        <option value="Bars" ${recipe.category === 'Bars' ? 'selected' : ''}>Bars</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small">Spec-Nr.</label>
+                    <input type="text" class="form-control form-control-sm" value="${recipe.specification}" readonly>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small">Zutaten</label>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm">
+                            <thead><tr><th>Name</th><th style="width: 100px;">%</th></tr></thead>
+                            <tbody>${ingredientsHTML || '<tr><td colspan="2" class="text-muted">Keine Zutaten</td></tr>'}</tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small">Nährwerte (pro 100g)</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="small">Energie (kcal)</label>
+                            <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.energy || 0}" step="0.1" data-field="nutritional_info.energy">
+                        </div>
+                        <div class="col-6">
+                            <label class="small">Fett (g)</label>
+                            <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.fat || 0}" step="0.1" data-field="nutritional_info.fat">
+                        </div>
+                        <div class="col-6">
+                            <label class="small">Kohlenhydrate (g)</label>
+                            <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.carbohydrates || 0}" step="0.1" data-field="nutritional_info.carbohydrates">
+                        </div>
+                        <div class="col-6">
+                            <label class="small">Protein (g)</label>
+                            <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.protein || 0}" step="0.1" data-field="nutritional_info.protein">
+                        </div>
+                    </div>
+                    
+                    ${recipe.nutri_score_image ? `
+                    <div class="mt-3">
+                        <label class="small">Nutri-Score</label>
+                        <div><img src="${recipe.nutri_score_image}" alt="Nutri Score" style="height: 60px;"></div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function publishBatchRecipe(index) {
+    const recipe = window.batchRecipes[index];
+    // Collect updated data from form
+    const formData = collectBatchRecipeData();
+    
+    fetch('/api/publish-recipe', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Rezept "${formData.name}" wurde gespeichert!`);
+            // Mark as published
+            window.batchRecipes[index]._published = true;
+        } else {
+            alert('Fehler beim Speichern: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Publish error:', error);
+        alert('Fehler beim Speichern des Rezepts');
+    });
+}
+
+function publishAllBatchRecipes() {
+    if (!confirm(`Möchten Sie wirklich alle ${window.batchRecipes.length} Rezepte veröffentlichen?`)) {
+        return;
+    }
+
+    let published = 0;
+    const promises = window.batchRecipes.map((recipe, index) => {
+        if (recipe._published) {
+            return Promise.resolve();
+        }
+
+        return fetch('/api/publish-recipe', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(recipe)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                published++;
+                window.batchRecipes[index]._published = true;
+            }
+        });
+    });
+
+    Promise.all(promises).then(() => {
+        alert(`${published} Rezepte wurden erfolgreich veröffentlicht!`);
+        location.reload();
+    }).catch(error => {
+        console.error('Batch publish error:', error);
+        alert('Fehler beim Veröffentlichen einiger Rezepte');
+    });
+}
+
+function collectBatchRecipeData() {
+    const recipe = window.batchRecipes[window.currentBatchIndex];
+    const form = document.getElementById('batchRecipeContent');
+    const inputs = form.querySelectorAll('[data-field]');
+    
+    const data = JSON.parse(JSON.stringify(recipe)); // Deep clone
+    
+    inputs.forEach(input => {
+        const field = input.dataset.field;
+        const value = input.value;
+        
+        // Handle nested fields like "nutritional_info.energy"
+        const parts = field.split('.');
+        let obj = data;
+        for (let i = 0; i < parts.length - 1; i++) {
+            obj = obj[parts[i]];
+        }
+        obj[parts[parts.length - 1]] = input.type === 'number' ? parseFloat(value) : value;
+    });
+    
+    return data;
 }
 </script>
 {% endblock %}
