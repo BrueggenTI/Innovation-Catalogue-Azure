@@ -78,9 +78,9 @@
             <input type="hidden" name="exclusivity" id="hiddenExclusivity" value="{{ selected_exclusivity }}">
         </form>
         
-        <!-- Filter Headers -->
+        <!-- Filter Headers - All 5 in one row with equal width -->
         <div class="row g-3">
-            <div class="col-md-3">
+            <div class="col filter-col-equal">
                 <div class="filter-header" data-filter="category">
                     <h6 class="mb-2 fw-semibold text-dark">
                         <i class="fas fa-tags me-2" style="color: #661c31;"></i>{{ get_text('category', lang) }}
@@ -90,7 +90,7 @@
                 </div>
             </div>
             
-            <div class="col-md-3">
+            <div class="col filter-col-equal">
                 <div class="filter-header" data-filter="ingredient">
                     <h6 class="mb-2 fw-semibold text-dark">
                         <i class="fas fa-seedling me-2" style="color: #661c31;"></i>{{ get_text('key_ingredient', lang) }}
@@ -100,7 +100,7 @@
                 </div>
             </div>
             
-            <div class="col-md-3">
+            <div class="col filter-col-equal">
                 <div class="filter-header" data-filter="claim">
                     <h6 class="mb-2 fw-semibold text-dark">
                         <i class="fas fa-medal me-2" style="color: #661c31;"></i>{{ get_text('claims', lang) }}
@@ -110,7 +110,7 @@
                 </div>
             </div>
             
-            <div class="col-md-3">
+            <div class="col filter-col-equal">
                 <div class="filter-header" data-filter="product_type">
                     <h6 class="mb-2 fw-semibold text-dark">
                         <i class="fas fa-flask me-2" style="color: #661c31;"></i>Product Type
@@ -119,17 +119,14 @@
                     <div class="filter-count text-muted small">{{ product_types|length }} {{ get_text('available', lang) }}</div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Second Row of Filters -->
-        <div class="row g-3 mt-2">
-            <div class="col-md-3">
+            
+            <div class="col filter-col-equal">
                 <div class="filter-header" data-filter="exclusivity">
                     <h6 class="mb-2 fw-semibold text-dark">
                         <i class="fas fa-star me-2" style="color: #661c31;"></i>Exclusivity
                         <i class="fas fa-chevron-down filter-chevron ms-2"></i>
                     </h6>
-                    <div class="filter-count text-muted small">Filter by exclusive status</div>
+                    <div class="filter-count text-muted small">Filter by status</div>
                 </div>
             </div>
         </div>
@@ -195,33 +192,24 @@
             </div>
         </div>
         
-        <!-- Exclusivity Options (Checkboxes) -->
+        <!-- Exclusivity Options (Modern Button Style) -->
         <div class="filter-options" id="exclusivityOptions" style="display: none;">
             <h6 class="fw-semibold mb-3 text-dark">Select Exclusivity</h6>
-            <div class="row g-3">
-                <div class="col-12">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="exclusivityFilter" id="exclusivityBoth" value="both" checked>
-                        <label class="form-check-label" for="exclusivityBoth">
-                            Both (Exclusive & Non-Exclusive)
-                        </label>
-                    </div>
+            <div class="row g-2">
+                <div class="col-auto">
+                    <button type="button" class="exclusivity-filter-btn" data-exclusivity="both">
+                        <i class="fas fa-layer-group me-2"></i>Both
+                    </button>
                 </div>
-                <div class="col-12">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="exclusivityFilter" id="exclusivityExclusive" value="exclusive">
-                        <label class="form-check-label" for="exclusivityExclusive">
-                            <i class="fas fa-star text-warning me-2"></i>Exclusive Only
-                        </label>
-                    </div>
+                <div class="col-auto">
+                    <button type="button" class="exclusivity-filter-btn" data-exclusivity="exclusive">
+                        <i class="fas fa-star text-warning me-2"></i>Exclusive Only
+                    </button>
                 </div>
-                <div class="col-12">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="exclusivityFilter" id="exclusivityNonExclusive" value="non-exclusive">
-                        <label class="form-check-label" for="exclusivityNonExclusive">
-                            Non-Exclusive Only
-                        </label>
-                    </div>
+                <div class="col-auto">
+                    <button type="button" class="exclusivity-filter-btn" data-exclusivity="non-exclusive">
+                        <i class="fas fa-cube me-2"></i>Non-Exclusive Only
+                    </button>
                 </div>
             </div>
         </div>
@@ -381,6 +369,12 @@
 
 {% block scripts %}
 <style>
+/* Equal width filter columns */
+.filter-col-equal {
+    flex: 1;
+    min-width: 0;
+}
+
 /* Visual styling for selected filter buttons */
 .filter-option-btn.selected {
     background-color: #661c31 !important;
@@ -397,6 +391,45 @@
 
 .filter-option-btn {
     transition: all 0.2s ease;
+}
+
+/* Modern Exclusivity Filter Buttons */
+.exclusivity-filter-btn {
+    padding: 12px 24px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    color: #495057;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.exclusivity-filter-btn:hover {
+    border-color: #661c31;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.15);
+}
+
+.exclusivity-filter-btn.selected {
+    background: #661c31;
+    color: white;
+    border-color: #661c31;
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.25);
+}
+
+.exclusivity-filter-btn.selected:hover {
+    background: #7d2242;
+    border-color: #7d2242;
+}
+
+.exclusivity-filter-btn .fas {
+    font-size: 14px;
 }
 
 /* Search functionality styling */
@@ -579,10 +612,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Exclusivity radio button handlers
-    document.querySelectorAll('input[name="exclusivityFilter"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            activeFilters.exclusivity = this.value;
+    // Exclusivity button handlers
+    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const value = this.dataset.exclusivity;
+            activeFilters.exclusivity = value;
+            
+            // Update visual state
+            document.querySelectorAll('.exclusivity-filter-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            
             redirectToBackend();
         });
     });
@@ -858,10 +897,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Update exclusivity radio buttons
-        document.querySelectorAll('input[name="exclusivityFilter"]').forEach(radio => {
-            if (radio.value === activeFilters.exclusivity || (!activeFilters.exclusivity && radio.value === 'both')) {
-                radio.checked = true;
+        // Update exclusivity buttons
+        document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+            const value = btn.dataset.exclusivity;
+            if (value === activeFilters.exclusivity || (!activeFilters.exclusivity && value === 'both')) {
+                btn.classList.add('selected');
+            } else {
+                btn.classList.remove('selected');
             }
         });
     }
