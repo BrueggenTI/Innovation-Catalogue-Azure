@@ -2477,10 +2477,10 @@ def publish_recipe():
         # Determine product type based on recipe number or from data
         product_type = data.get('product_type')
         if not product_type and recipe_number:
-            # Auto-detect from recipe number: 4* = Product, 1* = Development
+            # Auto-detect from recipe number: 4* = Productive, 1* = Development
             import re
             if re.match(r'^0*4', str(recipe_number)):
-                product_type = 'Product'
+                product_type = 'Productive'
             else:
                 product_type = 'Development'
         new_product.product_type = product_type or 'Development'
