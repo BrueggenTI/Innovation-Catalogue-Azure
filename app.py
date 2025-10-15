@@ -31,11 +31,29 @@ app.config["SESSION_FILE_THRESHOLD"] = 100
 Session(app)
 
 # configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///bruggen_innovation.db")
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
+database_url = os.environ.get("DATABASE_URL", "sqlite:///bruggen_innovation.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
+# Configure engine options based on database type
+if database_url.startswith("postgresql"):
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+        "pool_size": 10,
+        "max_overflow": 20,
+        "connect_args": {
+            "connect_timeout": 10,
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 5,
+        }
+    }
+else:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+    }
 
 # configure mail
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -96,7 +114,13 @@ app.jinja_env.filters['from_json'] = from_json_filter
 with app.app_context():
     # import models to ensure tables are created
     import models
-    db.create_all()
+    try:
+        db.create_all()
+        logging.info("Database tables created successfully")
+    except Exception as e:
+        logging.error(f"Database initialization error: {e}")
+        # Continue running even if DB initialization fails
+        pass
 
 # Import after app creation to avoid circular imports
 from translations import get_text, get_available_languages
