@@ -564,12 +564,16 @@ def catalog():
     ingredient = request.args.get('ingredient', '').strip()
     claim = request.args.get('claim', '').strip()
     recipe = request.args.get('recipe', '').strip()
+    product_type = request.args.get('product_type', '').strip()
+    exclusivity = request.args.get('exclusivity', '').strip()
     
     # Sanitize only if they have actual values
     category = sanitize_input(category) if category else ''
     ingredient = sanitize_input(ingredient) if ingredient else ''
     claim = sanitize_input(claim) if claim else ''
     recipe = sanitize_input(recipe) if recipe else ''
+    product_type = sanitize_input(product_type) if product_type else ''
+    exclusivity = sanitize_input(exclusivity) if exclusivity else ''
     
     
     # Build query - start with all products
@@ -613,6 +617,18 @@ def catalog():
             from sqlalchemy import or_
             recipe_conditions = [Product.recipe_number.contains(rc) for rc in recipe_list]
             query = query.filter(or_(*recipe_conditions))
+    
+    if product_type and len(product_type) > 0:
+        # Exact match for product type
+        query = query.filter(Product.product_type == product_type)
+    
+    if exclusivity and len(exclusivity) > 0:
+        # Handle exclusivity filter: 'exclusive', 'non-exclusive', or 'both'
+        if exclusivity == 'exclusive':
+            query = query.filter(Product.is_exclusive == True)
+        elif exclusivity == 'non-exclusive':
+            query = query.filter(Product.is_exclusive == False)
+        # If 'both' or any other value, don't filter (show all)
 
     products = query.order_by(Product.created_at.desc()).all()
 
@@ -669,11 +685,16 @@ def catalog():
             except json.JSONDecodeError:
                 continue
 
+    # Get unique product types from all products
+    product_types = list(set([p.product_type for p in Product.query.all() if p.product_type]))
+    
     # Ensure completely empty strings for template variables
     final_category = category if category and category.strip() and category != 'None' else ''
     final_ingredient = ingredient if ingredient and ingredient.strip() and ingredient != 'None' else ''
     final_claim = claim if claim and claim.strip() and claim != 'None' else ''
     final_recipe = recipe if recipe and recipe.strip() and recipe != 'None' else ''
+    final_product_type = product_type if product_type and product_type.strip() and product_type != 'None' else ''
+    final_exclusivity = exclusivity if exclusivity and exclusivity.strip() and exclusivity != 'None' else ''
     
     
     return render_template('competence.html', 
@@ -681,10 +702,13 @@ def catalog():
                          categories=sorted(categories),
                          ingredients=sorted(all_ingredients),
                          claims=sorted(all_claims),
+                         product_types=sorted(product_types),
                          selected_category=final_category,
                          selected_ingredient=final_ingredient,
                          selected_claim=final_claim,
-                         selected_recipe=final_recipe)
+                         selected_recipe=final_recipe,
+                         selected_product_type=final_product_type,
+                         selected_exclusivity=final_exclusivity)
 
 @app.route('/product/<int:id>', methods=['GET', 'POST'])
 @login_required
