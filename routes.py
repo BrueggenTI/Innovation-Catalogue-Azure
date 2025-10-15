@@ -2303,6 +2303,87 @@ def upload_recipe_image():
             'error': f'Upload failed: {str(e)}'
         }), 500
 
+@app.route('/api/analyze-batch-recipes', methods=['POST'])
+@csrf.exempt
+@master_required
+def analyze_batch_recipes():
+    """Analyze multiple Excel files and images for batch recipe creation"""
+    try:
+        # Get all uploaded files
+        files = request.files.getlist('batch_files')
+        
+        if not files or all(f.filename == '' for f in files):
+            return jsonify({'success': False, 'error': 'No files uploaded'})
+        
+        # Separate Excel files and images
+        excel_files = []
+        image_files = []
+        temp_file_paths = []
+        
+        for file in files:
+            if file and file.filename:
+                file_type = file.content_type
+                file_path = document_processor.save_uploaded_file(file)
+                temp_file_paths.append(file_path)
+                
+                if file_type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                    excel_files.append((file_path, file_type, file.filename))
+                elif file_type in ['image/jpeg', 'image/jpg', 'image/png']:
+                    image_files.append((file_path, file.filename))
+        
+        if not excel_files:
+            document_processor.cleanup_files(temp_file_paths)
+            return jsonify({'success': False, 'error': 'No Excel files found in upload'})
+        
+        # Process Excel files
+        from excel_batch_processor import ExcelBatchProcessor
+        batch_processor = ExcelBatchProcessor()
+        
+        recipes_data = batch_processor.process_batch_files(excel_files)
+        
+        # Match images to recipes
+        if image_files:
+            recipes_data = batch_processor.match_images_to_recipes(recipes_data, image_files)
+        
+        # Convert to list format for frontend
+        recipes_list = []
+        for spec_num, recipe in recipes_data.items():
+            # Format for frontend
+            formatted_recipe = {
+                'specification': spec_num,
+                'name': recipe.get('name', f'Recipe {spec_num}'),
+                'category': 'Traditional Muesli',  # Default category
+                'description': f'Recipe specification {spec_num}',
+                'ingredients': recipe.get('ingredients', []),
+                'nutritional_info': recipe.get('nutritional_info', {}),
+                'allergens': [],  # To be filled by user
+                'claims': [],  # To be calculated
+                'nutri_score': recipe.get('nutri_score'),
+                'nutri_score_image': recipe.get('nutri_score_image'),
+                'image_url': recipe.get('image_path'),
+                'recipe_number': spec_num
+            }
+            recipes_list.append(formatted_recipe)
+        
+        # Cleanup temp files
+        document_processor.cleanup_files(temp_file_paths)
+        
+        return jsonify({
+            'success': True,
+            'recipes': recipes_list,
+            'count': len(recipes_list),
+            'message': f'Successfully processed {len(recipes_list)} recipes'
+        })
+        
+    except Exception as e:
+        logging.error(f"Batch recipe analysis error: {str(e)}")
+        if 'temp_file_paths' in locals():
+            document_processor.cleanup_files(temp_file_paths)
+        return jsonify({
+            'success': False,
+            'error': f'Batch analysis failed: {str(e)}'
+        }), 500
+
 @app.route('/api/publish-recipe', methods=['POST'])
 @csrf.exempt
 @master_required
