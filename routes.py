@@ -2348,6 +2348,15 @@ def analyze_batch_recipes():
         # Convert to list format for frontend
         recipes_list = []
         for spec_num, recipe in recipes_data.items():
+            # Calculate claims from ingredients and nutritional data
+            from utils.claim_calculator import calculate_nutritional_claims
+            claims = []
+            if recipe.get('ingredients') and recipe.get('nutritional_info'):
+                claims = calculate_nutritional_claims(
+                    recipe.get('ingredients', []),
+                    recipe.get('nutritional_info', {})
+                )
+            
             # Format for frontend
             formatted_recipe = {
                 'specification': spec_num,
@@ -2357,11 +2366,16 @@ def analyze_batch_recipes():
                 'ingredients': recipe.get('ingredients', []),
                 'nutritional_info': recipe.get('nutritional_info', {}),
                 'allergens': [],  # To be filled by user
-                'claims': [],  # To be calculated
+                'claims': claims,  # Automatically calculated
                 'nutri_score': recipe.get('nutri_score'),
                 'nutri_score_image': recipe.get('nutri_score_image'),
-                'image_url': recipe.get('image_path'),
-                'recipe_number': spec_num
+                'image_url': recipe.get('image_path', ''),
+                'recipe_number': spec_num,
+                'storage_conditions': '',  # To be filled by user
+                'shelf_life': '',  # To be filled by user
+                'exclusive': 'nein',
+                'department': '',
+                'customer': ''
             }
             recipes_list.append(formatted_recipe)
         

@@ -125,12 +125,33 @@ class ExcelBatchProcessor:
                     for spec_num, col_idx in spec_columns.items():
                         if col_idx < len(row) and row[col_idx] and row[col_idx] != '-':
                             percentage = row[col_idx]
+                            
+                            # Filter out invalid ingredients:
+                            # - Values > 100 without % symbol are not ingredients
+                            # - Only accept numeric values or values with %
                             if isinstance(percentage, (int, float)):
-                                recipes[spec_num]['ingredients'].append({
-                                    'name': ingredient_name,
-                                    'percentage': float(percentage),
-                                    'specification': ingredient_spec
-                                })
+                                percentage_value = float(percentage)
+                                # Exclude values > 100 (these are final products with process loss)
+                                if percentage_value <= 100:
+                                    recipes[spec_num]['ingredients'].append({
+                                        'name': ingredient_name,
+                                        'percentage': percentage_value,
+                                        'specification': ingredient_spec
+                                    })
+                            elif isinstance(percentage, str):
+                                # Handle percentage strings like "50%" or "12,5%"
+                                percentage_clean = percentage.replace(',', '.').replace('%', '').strip()
+                                try:
+                                    percentage_value = float(percentage_clean)
+                                    if percentage_value <= 100:
+                                        recipes[spec_num]['ingredients'].append({
+                                            'name': ingredient_name,
+                                            'percentage': percentage_value,
+                                            'specification': ingredient_spec
+                                        })
+                                except ValueError:
+                                    # Skip non-numeric values
+                                    pass
             
             logger.info(f"Parsed {len(recipes)} recipes from ingredients file")
             return recipes
@@ -258,13 +279,32 @@ class ExcelBatchProcessor:
         Returns:
             dict: Updated recipes_data with matched images
         """
+        import shutil
+        import os
+        
         for spec_num, recipe in recipes_data.items():
             # Look for images with this spec number in filename
             for image_path, filename in uploaded_images:
                 if spec_num in filename:
-                    recipe['image_path'] = image_path
-                    recipe['image_filename'] = filename
-                    logger.info(f"Matched image {filename} to recipe {spec_num}")
-                    break
+                    # Copy image to static folder for web access
+                    try:
+                        static_dir = os.path.join('static', 'images', 'recipes')
+                        os.makedirs(static_dir, exist_ok=True)
+                        
+                        # Create unique filename
+                        import time
+                        unique_filename = f"batch_{spec_num}_{int(time.time())}_{filename}"
+                        static_path = os.path.join(static_dir, unique_filename)
+                        
+                        # Copy file to static directory
+                        shutil.copy2(image_path, static_path)
+                        
+                        # Store web-accessible URL
+                        recipe['image_path'] = f"/static/images/recipes/{unique_filename}"
+                        recipe['image_filename'] = filename
+                        logger.info(f"Matched and saved image {filename} to recipe {spec_num} at {static_path}")
+                        break
+                    except Exception as e:
+                        logger.error(f"Error copying image for recipe {spec_num}: {e}")
         
         return recipes_data

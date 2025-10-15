@@ -2655,38 +2655,54 @@ function generateCompactRecipeForm(recipe, index) {
         </tr>
     `).join('');
 
+    const claimsHTML = (recipe.claims || []).map((claim, i) => `
+        <span class="badge bg-success me-1 mb-1">
+            <input type="text" class="form-control form-control-sm d-inline-block" value="${claim}" data-field="claims.${i}" style="width: auto; min-width: 100px; background: transparent; border: none; color: white;">
+        </span>
+    `).join('');
+
     return `
-        <div class="container-fluid p-4">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label fw-bold small">Rezeptname</label>
+        <div class="container-fluid p-3">
+            <div class="row g-2">
+                <!-- Basic Info -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small mb-1">Rezeptname</label>
                     <input type="text" class="form-control form-control-sm" value="${recipe.name}" data-field="name">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-bold small">Kategorie</label>
+                    <label class="form-label fw-bold small mb-1">Kategorie</label>
                     <select class="form-select form-select-sm" data-field="category">
                         <option value="Traditional Muesli" ${recipe.category === 'Traditional Muesli' ? 'selected' : ''}>Traditional Muesli</option>
+                        <option value="Crunchy Muesli" ${recipe.category === 'Crunchy Muesli' ? 'selected' : ''}>Crunchy Muesli</option>
                         <option value="Bars" ${recipe.category === 'Bars' ? 'selected' : ''}>Bars</option>
+                        <option value="Flakes" ${recipe.category === 'Flakes' ? 'selected' : ''}>Flakes</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small">Spec-Nr.</label>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small mb-1">Spec-Nr.</label>
                     <input type="text" class="form-control form-control-sm" value="${recipe.specification}" readonly>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small mb-1">Produktbild</label>
+                    <div>
+                        ${recipe.image_url ? `<img src="${recipe.image_url}" alt="Product" style="height: 50px; width: auto;">` : '<small class="text-muted">Kein Bild</small>'}
+                    </div>
+                </div>
                 
-                <div class="col-md-6">
-                    <label class="form-label fw-bold small">Zutaten</label>
-                    <div style="max-height: 300px; overflow-y: auto;">
-                        <table class="table table-sm">
-                            <thead><tr><th>Name</th><th style="width: 100px;">%</th></tr></thead>
-                            <tbody>${ingredientsHTML || '<tr><td colspan="2" class="text-muted">Keine Zutaten</td></tr>'}</tbody>
+                <!-- Ingredients -->
+                <div class="col-md-5">
+                    <label class="form-label fw-bold small mb-1">Zutaten (${(recipe.ingredients || []).length})</label>
+                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 4px;">
+                        <table class="table table-sm table-borderless mb-0">
+                            <tbody>${ingredientsHTML || '<tr><td class="text-muted small">Keine Zutaten</td></tr>'}</tbody>
                         </table>
                     </div>
                 </div>
                 
-                <div class="col-md-6">
-                    <label class="form-label fw-bold small">Nährwerte (pro 100g)</label>
-                    <div class="row g-2">
+                <!-- Nutritional Info -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small mb-1">Nährwerte (pro 100g)</label>
+                    <div class="row g-1">
                         <div class="col-6">
                             <label class="small">Energie (kcal)</label>
                             <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.energy || 0}" step="0.1" data-field="nutritional_info.energy">
@@ -2696,21 +2712,68 @@ function generateCompactRecipeForm(recipe, index) {
                             <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.fat || 0}" step="0.1" data-field="nutritional_info.fat">
                         </div>
                         <div class="col-6">
+                            <label class="small">davon gesättigt (g)</label>
+                            <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.saturated_fat || 0}" step="0.1" data-field="nutritional_info.saturated_fat">
+                        </div>
+                        <div class="col-6">
                             <label class="small">Kohlenhydrate (g)</label>
                             <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.carbohydrates || 0}" step="0.1" data-field="nutritional_info.carbohydrates">
+                        </div>
+                        <div class="col-6">
+                            <label class="small">davon Zucker (g)</label>
+                            <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.sugars || 0}" step="0.1" data-field="nutritional_info.sugars">
+                        </div>
+                        <div class="col-6">
+                            <label class="small">Ballaststoffe (g)</label>
+                            <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.fiber || 0}" step="0.1" data-field="nutritional_info.fiber">
                         </div>
                         <div class="col-6">
                             <label class="small">Protein (g)</label>
                             <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.protein || 0}" step="0.1" data-field="nutritional_info.protein">
                         </div>
+                        <div class="col-6">
+                            <label class="small">Salz (g)</label>
+                            <input type="number" class="form-control form-control-sm" value="${recipe.nutritional_info?.salt || 0}" step="0.1" data-field="nutritional_info.salt">
+                        </div>
                     </div>
-                    
+                </div>
+                
+                <!-- Nutri-Score & Claims -->
+                <div class="col-md-3">
                     ${recipe.nutri_score_image ? `
-                    <div class="mt-3">
-                        <label class="small">Nutri-Score</label>
-                        <div><img src="${recipe.nutri_score_image}" alt="Nutri Score" style="height: 60px;"></div>
+                    <label class="form-label fw-bold small mb-1">Nutri-Score</label>
+                    <div class="mb-2">
+                        <img src="${recipe.nutri_score_image}" alt="Nutri Score" style="height: 50px;">
                     </div>
                     ` : ''}
+                    <label class="form-label fw-bold small mb-1">Claims (${(recipe.claims || []).length})</label>
+                    <div class="d-flex flex-wrap">${claimsHTML || '<small class="text-muted">Keine Claims</small>'}</div>
+                </div>
+                
+                <!-- Additional Info -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small mb-1">Storage Conditions</label>
+                    <input type="text" class="form-control form-control-sm" value="${recipe.storage_conditions || ''}" data-field="storage_conditions" placeholder="z.B. Kühl und trocken lagern">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small mb-1">Shelf Life</label>
+                    <input type="text" class="form-control form-control-sm" value="${recipe.shelf_life || ''}" data-field="shelf_life" placeholder="z.B. 12 Monate">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small mb-1">Exclusive</label>
+                    <select class="form-select form-select-sm" data-field="exclusive">
+                        <option value="nein" ${recipe.exclusive === 'nein' ? 'selected' : ''}>Nein</option>
+                        <option value="ja" ${recipe.exclusive === 'ja' ? 'selected' : ''}>Ja</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small mb-1">Department</label>
+                    <input type="text" class="form-control form-control-sm" value="${recipe.department || ''}" data-field="department" placeholder="z.B. R&D">
+                </div>
+                
+                <div class="col-md-12">
+                    <label class="form-label fw-bold small mb-1">Beschreibung</label>
+                    <textarea class="form-control form-control-sm" rows="2" data-field="description" placeholder="Produktbeschreibung...">${recipe.description || ''}</textarea>
                 </div>
             </div>
         </div>
@@ -2788,14 +2851,38 @@ function collectBatchRecipeData() {
         const field = input.dataset.field;
         const value = input.value;
         
-        // Handle nested fields like "nutritional_info.energy"
+        // Handle nested fields like "nutritional_info.energy" or "ingredients.0.name"
         const parts = field.split('.');
         let obj = data;
+        
         for (let i = 0; i < parts.length - 1; i++) {
-            obj = obj[parts[i]];
+            const part = parts[i];
+            // Handle array indices
+            if (!isNaN(part)) {
+                obj = obj[parseInt(part)];
+            } else {
+                if (!obj[part]) {
+                    obj[part] = {};
+                }
+                obj = obj[part];
+            }
         }
-        obj[parts[parts.length - 1]] = input.type === 'number' ? parseFloat(value) : value;
+        
+        const lastPart = parts[parts.length - 1];
+        if (input.type === 'number') {
+            obj[lastPart] = parseFloat(value) || 0;
+        } else if (input.type === 'select-one') {
+            obj[lastPart] = value;
+        } else {
+            obj[lastPart] = value;
+        }
     });
+    
+    // Ensure all required fields are present
+    if (!data.ingredients) data.ingredients = [];
+    if (!data.nutritional_info) data.nutritional_info = {};
+    if (!data.claims) data.claims = [];
+    if (!data.allergens) data.allergens = [];
     
     return data;
 }
