@@ -110,21 +110,22 @@ class ExcelBatchProcessor:
             
             # Parse ingredients (ONLY from the row where column A contains "Ingredients" onwards)
             # Example: If "Ingredients" is in row 70, extract ingredients starting from row 70
+            # IMPORTANT: Ignore "Ingredient List" section - only extract from "Ingredients"
             ingredient_section = False
             for row in sheet.iter_rows(min_row=2, values_only=True):
                 # Check if we've reached the ingredient section
-                # Look for "Ingredients", "Ingredient", or "Ingredient List" in column A (index 0)
+                # Look ONLY for "Ingredients" in column A (index 0) - NOT "Ingredient List"!
                 cell_value = str(row[0]).strip().lower() if row[0] else ""
-                if cell_value in ['ingredients', 'ingredient', 'ingredient list']:
+                if cell_value == 'ingredients':
                     ingredient_section = True
-                    logger.info(f"Found '{row[0]}' marker in column A - starting ingredient extraction from this row")
+                    logger.info(f"Found 'Ingredients' marker in column A - starting ingredient extraction from this row")
                     # Don't continue - process this row too if it has data in column B
                 
                 # Stop extraction if we hit a new section header in column A (but column B is empty)
-                # BUT don't stop at the ingredient header itself
+                # BUT don't stop at the "Ingredients" header itself
                 if ingredient_section and row[0] and not row[1]:
                     cell_val_lower = str(row[0]).strip().lower()
-                    if cell_val_lower not in ['ingredients', 'ingredient', 'ingredient list']:
+                    if cell_val_lower != 'ingredients':
                         # This is a new section header, stop ingredient extraction
                         logger.info(f"Found new section '{row[0]}' - stopping ingredient extraction")
                         break
@@ -206,10 +207,22 @@ class ExcelBatchProcessor:
                 
                 spec_num = spec_match.group(1)
                 
-                # Extract nutritional data
-                # Energy is typically in columns 6 (kJ) and 7 (kcal)
-                energy_kj = self._safe_float(row[6]) if len(row) > 6 else 0
-                energy_kcal = self._safe_float(row[7]) if len(row) > 7 else 0
+                # Extract nutritional data using header map
+                # Look for energy columns by header name (kJ and kcal)
+                energy_kj = 0
+                energy_kcal = 0
+                
+                # Find kJ column (look for headers containing "kj")
+                for header_name, col_idx in col_map.items():
+                    if 'kj' in header_name and 'kcal' not in header_name:
+                        energy_kj = self._safe_float(row[col_idx]) if len(row) > col_idx else 0
+                        break
+                
+                # Find kcal column (look for headers containing "kcal")
+                for header_name, col_idx in col_map.items():
+                    if 'kcal' in header_name:
+                        energy_kcal = self._safe_float(row[col_idx]) if len(row) > col_idx else 0
+                        break
                 
                 recipes[spec_num] = {
                     'name': row[1] if len(row) > 1 else '',
