@@ -110,22 +110,9 @@
 
     /**
      * Apply percentage visibility setting
-     * Hides/shows the entire percentage column in ingredient tables
+     * Hides/shows the percentage column in ingredient tables
      */
     function applyPercentageVisibility() {
-        // Hide/show the percentage header column by checking text content
-        const allHeaders = document.querySelectorAll('th');
-        allHeaders.forEach(header => {
-            const headerText = (header.textContent || header.innerText || '').toLowerCase();
-            if (headerText.includes('percentage') || headerText.includes('prozent')) {
-                if (hidePercentages) {
-                    header.style.display = 'none';
-                } else {
-                    header.style.display = '';
-                }
-            }
-        });
-
         // Handle ingredient percentage table cells (entire column)
         const percentageCells = document.querySelectorAll('.ingredient-percentage');
         percentageCells.forEach(cell => {
