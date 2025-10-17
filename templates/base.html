@@ -42,11 +42,11 @@
                             <li class="px-3 py-2">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <label class="form-label mb-0 me-3">
-                                        <i class="fas fa-percent me-2"></i>{{ get_text('ingredient_percentages', lang) }}
+                                        <i class="fas fa-percent me-2"></i>{{ get_text('hide_ingredient_percentages', lang) }}
                                     </label>
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="showPercentagesToggle" 
-                                               {% if session.get('show_percentages', True) %}checked{% endif %}>
+                                        <input class="form-check-input" type="checkbox" id="hidePercentagesToggle" 
+                                               {% if session.get('hide_percentages', False) %}checked{% endif %}>
                                     </div>
                                 </div>
                             </li>
@@ -54,7 +54,7 @@
                             <li class="px-3 py-2">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <label class="form-label mb-0 me-3">
-                                        <i class="fas fa-filter me-2"></i>{{ get_text('unapproved_raw_materials', lang) }}
+                                        <i class="fas fa-filter me-2"></i>{{ get_text('hide_recipes_unapproved_materials', lang) }}
                                     </label>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="hideUnapprovedToggle"
