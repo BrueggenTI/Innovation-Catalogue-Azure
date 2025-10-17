@@ -250,10 +250,16 @@
                         {% if ingredients %}
                             <div class="table-responsive">
                                 <table class="table table-striped mb-0">
+                                    <thead style="background-color: #f8f9fa;">
+                                        <tr>
+                                            <th class="fw-semibold">{{ get_text('ingredient', lang) }}</th>
+                                            <th class="fw-semibold text-end">{{ get_text('percentage', lang) }}</th>
+                                        </tr>
+                                    </thead>
                                     <tbody class="ingredient-list">
                                         {% for ingredient in ingredients %}
                                             <tr class="ingredient-item">
-                                                <td class="fw-medium">
+                                                <td style="font-weight: normal; font-size: 0.9rem;">
                                                     {{ ingredient.name }}
                                                     {% if ingredient.base_recipe_name %}
                                                         <span class="badge bg-primary ms-2" style="font-size: 0.7rem;">{{ get_text('base_recipe', lang) }}</span>
@@ -265,13 +271,13 @@
                                                         </span>
                                                     {% endif %}
                                                 </td>
-                                                <td class="text-end ingredient-percentage">{{ ingredient.percentage }}%</td>
+                                                <td class="text-end ingredient-percentage" style="font-weight: normal; font-size: 0.9rem;">{{ ingredient.percentage }}%</td>
                                             </tr>
                                             
                                             {% if ingredient.children and ingredient.children|length > 0 %}
                                                 {% for child in ingredient.children %}
-                                                    <tr class="ingredient-item table-light">
-                                                        <td class="ps-4">
+                                                    <tr class="ingredient-item">
+                                                        <td class="ps-5" style="font-size: 0.85rem; font-style: italic; color: #6c757d;">
                                                             {{ child.name }}
                                                             {% if child.status == 'unapproved_raw_material' %}
                                                                 <span class="unapproved-warning small-icon">
@@ -280,7 +286,7 @@
                                                                 </span>
                                                             {% endif %}
                                                         </td>
-                                                        <td class="text-end ingredient-percentage">{{ child.percentage }}%</td>
+                                                        <td class="text-end ingredient-percentage" style="font-size: 0.85rem; color: #6c757d;">{{ child.percentage }}%</td>
                                                     </tr>
                                                 {% endfor %}
                                             {% endif %}
