@@ -250,9 +250,7 @@
             <div class="row g-4">
                 {% for product in products %}
                     <div class="col-lg-4 col-md-6">
-                        <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" 
-                             data-has-unapproved="{{ 'true' if product.has_unapproved_material else 'false' }}"
-                             style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %}">
+                        <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %}">
                             
                             <!-- Wrapper für Bild + Content (für Overlay-Bereich) -->
                             <div class="product-hoverable-area position-relative">
@@ -313,7 +311,7 @@
                                     
                                     <div class="product-highlights mb-3">
                                         {% if product.parsed_ingredients %}
-                                            <div class="highlight-item mb-2 ingredient-list">
+                                            <div class="highlight-item mb-2">
                                                 <i class="fas fa-seedling text-success me-2"></i>
                                                 <span class="small ingredients-preview-text">
                                                     {% set ingredient_names = [] %}
