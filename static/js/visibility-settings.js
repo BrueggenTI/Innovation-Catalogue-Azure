@@ -59,6 +59,7 @@
     function setupToggleSwitches() {
         const percentageToggle = document.getElementById('hidePercentagesToggle');
         const unapprovedToggle = document.getElementById('hideUnapprovedToggle');
+        const resetButton = document.getElementById('resetVisibilitySettings');
 
         if (percentageToggle) {
             percentageToggle.addEventListener('change', function() {
@@ -73,6 +74,28 @@
                 hideUnapproved = this.checked;
                 saveSettings();
                 applyUnapprovedVisibility();
+            });
+        }
+
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                // Reset to defaults
+                hidePercentages = false;
+                hideUnapproved = false;
+                
+                // Update toggles
+                if (percentageToggle) percentageToggle.checked = false;
+                if (unapprovedToggle) unapprovedToggle.checked = false;
+                
+                // Clear localStorage
+                localStorage.removeItem(STORAGE_KEYS.HIDE_PERCENTAGES);
+                localStorage.removeItem(STORAGE_KEYS.HIDE_UNAPPROVED);
+                
+                // Re-apply settings (show everything)
+                applyVisibilitySettings();
+                
+                // Show confirmation
+                console.log('Visibility settings reset to defaults');
             });
         }
     }
