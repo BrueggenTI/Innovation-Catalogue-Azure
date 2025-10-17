@@ -2127,6 +2127,22 @@ def analyze_recipe():
                                 ingredient['percentage'] = round(percentage_val, 1)
                             except (ValueError, TypeError):
                                 pass
+                    
+                    # SORT INGREDIENTS BY PERCENTAGE (highest to lowest)
+                    def safe_get_percentage(ingredient):
+                        """Safely extract percentage value for sorting"""
+                        if not isinstance(ingredient, dict):
+                            return 0.0
+                        try:
+                            percentage = ingredient.get('percentage', 0)
+                            return float(percentage) if percentage not in (None, '', ' ') else 0.0
+                        except (ValueError, TypeError):
+                            return 0.0
+                    
+                    recipe_data['ingredients'].sort(
+                        key=safe_get_percentage,
+                        reverse=True
+                    )
                 
                 # Round nutritional values
                 if 'nutritional_info' in recipe_data and isinstance(recipe_data['nutritional_info'], dict):

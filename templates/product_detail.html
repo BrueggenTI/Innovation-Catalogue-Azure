@@ -319,7 +319,14 @@
                                     <tbody>
                                         <tr>
                                             <td class="fw-medium">{{ get_text('energy', lang) }}</td>
-                                            <td class="text-end fw-bold">{{ nutritional_info.energy }} kcal</td>
+                                            <td class="text-end fw-bold">
+                                                {{ nutritional_info.energy }} kcal / 
+                                                {% if nutritional_info.energy_kj %}
+                                                    {{ nutritional_info.energy_kj }} kJ
+                                                {% else %}
+                                                    {{ (nutritional_info.energy | float * 4.184) | round(1) }} kJ
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-medium">{{ get_text('fat', lang) }}</td>

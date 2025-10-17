@@ -182,6 +182,14 @@ class ExcelBatchProcessor:
                                     # Skip non-numeric values
                                     pass
             
+            # SORT INGREDIENTS BY PERCENTAGE (highest to lowest) for all recipes
+            for spec_num in recipes:
+                if 'ingredients' in recipes[spec_num] and isinstance(recipes[spec_num]['ingredients'], list):
+                    recipes[spec_num]['ingredients'].sort(
+                        key=lambda x: float(x.get('percentage', 0)),
+                        reverse=True
+                    )
+            
             logger.info(f"Parsed {len(recipes)} recipes from ingredients file")
             return recipes
             
