@@ -1059,9 +1059,11 @@ a:hover {
     gap: 1rem;
 }
 
-/* Left spacer column */
-.header-left-spacer {
-    /* Empty spacer for balance */
+/* Left section - Visibility Settings */
+.header-left-section {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 /* Header Brand Container - Middle column, naturally centered */
@@ -1077,25 +1079,104 @@ a:hover {
     grid-column: 3;
 }
 
+/* Visibility Settings Dropdown */
+.visibility-settings-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--brg-border-radius);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.visibility-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.visibility-settings-btn:focus {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.visibility-settings-menu {
+    min-width: 320px;
+    border-radius: var(--brg-border-radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-top: 8px;
+}
+
+.visibility-settings-menu .dropdown-header {
+    font-size: 13px;
+    color: var(--brg-color-primary);
+    font-weight: 600;
+    padding: 12px 16px 8px;
+}
+
+.visibility-settings-menu .dropdown-divider {
+    margin: 0.5rem 0;
+    opacity: 0.1;
+}
+
+.visibility-settings-menu .form-check-input {
+    width: 48px;
+    height: 24px;
+    cursor: pointer;
+    background-color: #e0e0e0;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.visibility-settings-menu .form-check-input:checked {
+    background-color: var(--brg-color-primary);
+    border-color: var(--brg-color-primary);
+}
+
+.visibility-settings-menu .form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(102, 28, 49, 0.25);
+}
+
+.visibility-settings-menu .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+}
+
 /* Responsive: Tablet and below */
 @media (max-width: 991px) {
     .header-layout-grid {
-        grid-template-columns: auto 1fr;
+        grid-template-columns: auto auto 1fr;
         gap: 0.5rem;
     }
     
-    .header-left-spacer {
-        display: none;
+    .header-left-section {
+        grid-column: 1;
     }
     
     .header-brand-container {
-        grid-column: 1;
+        grid-column: 2;
         justify-content: flex-start;
     }
     
     .user-info {
-        grid-column: 2;
+        grid-column: 3;
         justify-content: flex-end;
+    }
+    
+    .visibility-settings-btn {
+        padding: 6px 10px;
+        font-size: 13px;
     }
     
     .header-bruggen-logo {
@@ -1120,6 +1201,21 @@ a:hover {
     
     .header-layout-grid {
         gap: 0.25rem;
+        grid-template-columns: auto auto 1fr;
+    }
+    
+    .visibility-settings-btn {
+        padding: 6px 8px;
+        font-size: 0;
+    }
+    
+    .visibility-settings-btn i {
+        font-size: 16px;
+        margin: 0;
+    }
+    
+    .visibility-settings-menu {
+        min-width: 280px;
     }
     
     .header-bruggen-logo {

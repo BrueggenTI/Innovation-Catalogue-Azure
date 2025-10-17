@@ -22,6 +22,14 @@ TRANSLATIONS = {
         'sign_out_microsoft': 'Sign Out (Microsoft)',
         'sign_in_microsoft': 'Sign In with Microsoft',
         'sales_representative': 'Sales Representative',
+        'visibility_settings': 'Visibility Settings',
+        'show_percentages': 'Show Percentages',
+        'hide_percentages': 'Hide Percentages',
+        'show_unapproved_recipes': 'Show Unapproved Recipes',
+        'hide_unapproved_recipes': 'Hide Unapproved Recipes',
+        'ingredient_percentages': 'Ingredient Percentages',
+        'unapproved_raw_materials': 'Unapproved Raw Materials',
+        'visibility_settings_description': 'Control what information is visible in recipes',
         
         # Dashboard
         'welcome_message': 'The World of Cereals',
@@ -584,6 +592,14 @@ TRANSLATIONS = {
         'sign_out_microsoft': 'Abmelden (Microsoft)',
         'sign_in_microsoft': 'Mit Microsoft Anmelden',
         'sales_representative': 'Vertriebsmitarbeiter',
+        'visibility_settings': 'Sichtbarkeitseinstellungen',
+        'show_percentages': 'Prozentangaben Anzeigen',
+        'hide_percentages': 'Prozentangaben Ausblenden',
+        'show_unapproved_recipes': 'Nicht Genehmigte Rezepte Anzeigen',
+        'hide_unapproved_recipes': 'Nicht Genehmigte Rezepte Ausblenden',
+        'ingredient_percentages': 'Zutaten-Prozentangaben',
+        'unapproved_raw_materials': 'Nicht Genehmigte Rohstoffe',
+        'visibility_settings_description': 'Steuern Sie, welche Informationen in Rezepten sichtbar sind',
         
         # Dashboard
         'welcome_message': 'Die Welt der Cerealien',
@@ -1146,6 +1162,14 @@ TRANSLATIONS = {
         'sign_out_microsoft': 'Wyloguj (Microsoft)',
         'sign_in_microsoft': 'Zaloguj się przez Microsoft',
         'sales_representative': 'Przedstawiciel Handlowy',
+        'visibility_settings': 'Ustawienia Widoczności',
+        'show_percentages': 'Pokaż Procenty',
+        'hide_percentages': 'Ukryj Procenty',
+        'show_unapproved_recipes': 'Pokaż Niezatwierdzone Przepisy',
+        'hide_unapproved_recipes': 'Ukryj Niezatwierdzone Przepisy',
+        'ingredient_percentages': 'Procenty Składników',
+        'unapproved_raw_materials': 'Niezatwierdzone Surowce',
+        'visibility_settings_description': 'Kontroluj, jakie informacje są widoczne w przepisach',
         
         # Dashboard
         'welcome_message': 'Świat Płatków',

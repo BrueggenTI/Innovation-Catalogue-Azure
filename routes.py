@@ -525,6 +525,26 @@ def set_language(language):
         session['language'] = language
     return redirect(request.referrer or url_for('index'))
 
+@app.route('/visibility-settings', methods=['POST'])
+def visibility_settings():
+    """Update visibility settings for percentages and unapproved materials"""
+    data = request.get_json()
+    
+    if data:
+        # Update session with visibility settings (coerce to bool for safety)
+        if 'show_percentages' in data:
+            session['show_percentages'] = bool(data['show_percentages'])
+        if 'hide_unapproved_recipes' in data:
+            session['hide_unapproved_recipes'] = bool(data['hide_unapproved_recipes'])
+        
+        return jsonify({
+            'success': True,
+            'show_percentages': session.get('show_percentages', True),
+            'hide_unapproved_recipes': session.get('hide_unapproved_recipes', False)
+        })
+    
+    return jsonify({'success': False, 'error': 'No data provided'}), 400
+
 @app.route('/')
 @login_required
 def index():
@@ -652,6 +672,10 @@ def catalog():
         
         # Check for unapproved raw materials
         product.has_unapproved_material = contains_unapproved_material(product)
+    
+    # Filter out products with unapproved materials if setting is enabled
+    if session.get('hide_unapproved_recipes', False):
+        products = [p for p in products if not p.has_unapproved_material]
 
     # Get unique values for filters from currently displayed products only
     categories = list(set([p.category for p in products if p.category]))
