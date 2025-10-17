@@ -87,19 +87,9 @@
 
     /**
      * Apply percentage visibility setting
-     * Hides/shows percentage values in ingredient lists
+     * Hides/shows the entire percentage column in ingredient tables
      */
     function applyPercentageVisibility() {
-        // Handle ingredient percentage table cells
-        const percentageCells = document.querySelectorAll('.ingredient-percentage');
-        percentageCells.forEach(cell => {
-            if (hidePercentages) {
-                cell.style.display = 'none';
-            } else {
-                cell.style.display = '';
-            }
-        });
-
         // Hide/show the percentage header column by checking text content
         const allHeaders = document.querySelectorAll('th');
         allHeaders.forEach(header => {
@@ -112,77 +102,18 @@
                 }
             }
         });
-        
-        // Find all elements with percentage patterns in text
-        const ingredientElements = document.querySelectorAll('.ingredient-item, .ingredient-list li, .ingredients-list li, .ingredients-preview-text, [class*="ingredient"]');
-        
-        ingredientElements.forEach(element => {
-            const text = element.textContent || element.innerText;
-            
-            // Pattern to match percentages like (45%) or (20%)
-            const percentagePattern = /\s*\((\d+(?:\.\d+)?)\s*%\)/g;
-            
-            if (percentagePattern.test(text)) {
-                if (hidePercentages) {
-                    // Store original text if not already stored
-                    if (!element.dataset.originalText) {
-                        element.dataset.originalText = element.innerHTML;
-                    }
-                    // Remove percentages from display
-                    element.innerHTML = element.innerHTML.replace(/\s*\((\d+(?:\.\d+)?)\s*%\)/g, '');
-                } else {
-                    // Restore original text if available
-                    if (element.dataset.originalText) {
-                        element.innerHTML = element.dataset.originalText;
-                    }
-                }
-            }
-        });
 
-        // Also handle text nodes in product cards and recipe details
-        const productCards = document.querySelectorAll('.product-card, .recipe-card, .product-detail');
-        productCards.forEach(card => {
-            processTextNodes(card);
-        });
-    }
-
-    /**
-     * Process text nodes to hide/show percentages
-     */
-    function processTextNodes(element) {
-        if (!element) return;
-
-        const walker = document.createTreeWalker(
-            element,
-            NodeFilter.SHOW_TEXT,
-            null,
-            false
-        );
-
-        const textNodes = [];
-        let node;
-        while (node = walker.nextNode()) {
-            if (node.nodeValue && /\(\d+(?:\.\d+)?\s*%\)/.test(node.nodeValue)) {
-                textNodes.push(node);
-            }
-        }
-
-        textNodes.forEach(textNode => {
-            const parent = textNode.parentElement;
-            if (!parent) return;
-
+        // Handle ingredient percentage table cells (entire column)
+        const percentageCells = document.querySelectorAll('.ingredient-percentage');
+        percentageCells.forEach(cell => {
             if (hidePercentages) {
-                if (!parent.dataset.originalText) {
-                    parent.dataset.originalText = parent.innerHTML;
-                }
-                parent.innerHTML = parent.innerHTML.replace(/\s*\((\d+(?:\.\d+)?)\s*%\)/g, '');
+                cell.style.display = 'none';
             } else {
-                if (parent.dataset.originalText) {
-                    parent.innerHTML = parent.dataset.originalText;
-                }
+                cell.style.display = '';
             }
         });
     }
+
 
     /**
      * Apply unapproved material visibility setting
@@ -193,14 +124,18 @@
         const recipeCards = document.querySelectorAll('[data-has-unapproved="true"]');
         
         recipeCards.forEach(card => {
+            // Find the parent column div (col-lg-4 col-md-6)
+            const parentCol = card.closest('.col-lg-4, .col-md-6, .col');
+            const elementToHide = parentCol || card;
+            
             if (hideUnapproved) {
-                // Hide the card
-                card.style.display = 'none';
-                card.classList.add('visibility-hidden');
+                // Hide the entire column or card
+                elementToHide.style.display = 'none';
+                elementToHide.classList.add('visibility-hidden');
             } else {
-                // Show the card
-                card.style.display = '';
-                card.classList.remove('visibility-hidden');
+                // Show the column or card
+                elementToHide.style.display = '';
+                elementToHide.classList.remove('visibility-hidden');
             }
         });
 
