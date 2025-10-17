@@ -320,11 +320,11 @@
                                         <tr>
                                             <td class="fw-medium">{{ get_text('energy', lang) }}</td>
                                             <td class="text-end fw-bold">
-                                                {{ nutritional_info.energy }} kcal / 
+                                                {{ nutritional_info.energy }} kcal
                                                 {% if nutritional_info.energy_kj %}
-                                                    {{ nutritional_info.energy_kj }} kJ
-                                                {% else %}
-                                                    {{ (nutritional_info.energy | float * 4.184) | round(1) }} kJ
+                                                    / {{ nutritional_info.energy_kj }} kJ
+                                                {% elif nutritional_info.energy %}
+                                                    / {{ (nutritional_info.energy | float * 4.184) | round(1) }} kJ
                                                 {% endif %}
                                             </td>
                                         </tr>
