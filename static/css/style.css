@@ -1109,9 +1109,7 @@ a:hover {
 }
 
 .visibility-settings-menu {
-    min-width: 300px;
-    max-width: 400px;
-    width: max-content;
+    min-width: 420px;
     border-radius: var(--brg-border-radius);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -1231,9 +1229,8 @@ a:hover {
     }
     
     .visibility-settings-menu {
-        min-width: 280px;
+        min-width: 300px;
         max-width: 90vw;
-        width: max-content;
     }
     
     .header-bruggen-logo {
