@@ -23,13 +23,14 @@ The application uses a Flask-based web architecture with server-side rendering a
 - **Innovation Catalog Module (`/catalog`)**: Showcases existing product formulations and manufacturing capabilities through a filterable product database with detailed views, high-quality imagery, and specifications.
 - **Trends & Insights Module (`/trends`)**: Presents market trends and consumer insights (health, sustainability, innovation) with market data and a visual exploration interface.
 - **Co-Creation Lab Module (`/cocreation`)**: Provides a multi-step, interactive product building workflow for real-time ingredient selection and customization. It generates and emails PDF concept summaries and stores configurations session-based.
-- **Recipe Creation Module (`/add-recipe`)**: Offers AI-powered document analysis (PDF, DOC, DOCX, TXT, PPT, PPTX) for product creation. Includes image upload, interactive recipe editing and validation, and direct integration with the Innovation Catalog. AI analysis includes automatic German-to-English translation and detailed extraction of ingredients, percentages, and nutritional data, which is immediately editable. All ingredient percentages and nutritional values are automatically rounded to one decimal place for consistency across both single and batch upload workflows.
+- **Recipe Creation Module (`/add-recipe`)**: Offers AI-powered document analysis (PDF, DOC, DOCX, TXT, PPT, PPTX) for product creation. Includes image upload, interactive recipe editing and validation, and direct integration with the Innovation Catalog. AI analysis includes automatic German-to-English translation and detailed extraction of ingredients, percentages, and nutritional data, which is immediately editable. All ingredient percentages and nutritional values are automatically rounded to one decimal place for consistency across both single and batch upload workflows. Ingredients are automatically sorted by percentage from highest to lowest for optimal clarity.
 
 ### Design and UI/UX
 - Authentic Brüggen branding: Burgundy (#661c31) and coral (#ff4143) color scheme.
 - Montserrat font family and 8px-based spacing grid system.
 - Responsive design adhering to a max content width of 1280px.
 - Card-based layouts, dynamic breadcrumb navigation, and contextual back buttons for improved usability.
+- Product detail views display energy values in both kcal and kJ formats for comprehensive nutritional information.
 
 ### Technical Implementation
 - **Data Flow**: Structured flows for product exploration, trend discovery, and multi-step co-creation.
