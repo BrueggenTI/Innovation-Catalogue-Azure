@@ -532,14 +532,14 @@ def visibility_settings():
     
     if data:
         # Update session with visibility settings (coerce to bool for safety)
-        if 'show_percentages' in data:
-            session['show_percentages'] = bool(data['show_percentages'])
+        if 'hide_percentages' in data:
+            session['hide_percentages'] = bool(data['hide_percentages'])
         if 'hide_unapproved_recipes' in data:
             session['hide_unapproved_recipes'] = bool(data['hide_unapproved_recipes'])
         
         return jsonify({
             'success': True,
-            'show_percentages': session.get('show_percentages', True),
+            'hide_percentages': session.get('hide_percentages', False),
             'hide_unapproved_recipes': session.get('hide_unapproved_recipes', False)
         })
     

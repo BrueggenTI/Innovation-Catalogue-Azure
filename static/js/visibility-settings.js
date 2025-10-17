@@ -2,17 +2,17 @@
 // Handles toggle functionality for ingredient percentages and unapproved recipes
 
 document.addEventListener('DOMContentLoaded', function() {
-    const showPercentagesToggle = document.getElementById('showPercentagesToggle');
+    const hidePercentagesToggle = document.getElementById('hidePercentagesToggle');
     const hideUnapprovedToggle = document.getElementById('hideUnapprovedToggle');
     
     // Get CSRF token from meta tag
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
     
     // Handle Percentages Toggle
-    if (showPercentagesToggle) {
-        showPercentagesToggle.addEventListener('change', function() {
+    if (hidePercentagesToggle) {
+        hidePercentagesToggle.addEventListener('change', function() {
             updateVisibilitySettings({
-                show_percentages: this.checked
+                hide_percentages: this.checked
             });
         });
     }
