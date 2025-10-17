@@ -1159,6 +1159,16 @@ a:hover {
     align-items: center;
 }
 
+.visibility-setting-row {
+    gap: 12px;
+}
+
+.visibility-settings-menu .form-check.form-switch {
+    flex-shrink: 0;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
 /* Responsive: Tablet and below */
 @media (max-width: 991px) {
     .header-layout-grid {
