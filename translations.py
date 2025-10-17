@@ -23,12 +23,8 @@ TRANSLATIONS = {
         'sign_in_microsoft': 'Sign In with Microsoft',
         'sales_representative': 'Sales Representative',
         'visibility_settings': 'Visibility Settings',
-        'show_percentages': 'Show Percentages',
-        'hide_percentages': 'Hide Percentages',
-        'show_unapproved_recipes': 'Show Unapproved Recipes',
-        'hide_unapproved_recipes': 'Hide Unapproved Recipes',
-        'ingredient_percentages': 'Ingredient Percentages',
-        'unapproved_raw_materials': 'Unapproved Raw Materials',
+        'hide_ingredient_percentages': 'Hide Ingredient Percentages',
+        'hide_recipes_unapproved_materials': 'Hide recipes with unapproved Raw Materials',
         'visibility_settings_description': 'Control what information is visible in recipes',
         
         # Dashboard
@@ -593,12 +589,8 @@ TRANSLATIONS = {
         'sign_in_microsoft': 'Mit Microsoft Anmelden',
         'sales_representative': 'Vertriebsmitarbeiter',
         'visibility_settings': 'Sichtbarkeitseinstellungen',
-        'show_percentages': 'Prozentangaben Anzeigen',
-        'hide_percentages': 'Prozentangaben Ausblenden',
-        'show_unapproved_recipes': 'Nicht Genehmigte Rezepte Anzeigen',
-        'hide_unapproved_recipes': 'Nicht Genehmigte Rezepte Ausblenden',
-        'ingredient_percentages': 'Zutaten-Prozentangaben',
-        'unapproved_raw_materials': 'Nicht Genehmigte Rohstoffe',
+        'hide_ingredient_percentages': 'Zutaten-Prozentangaben Ausblenden',
+        'hide_recipes_unapproved_materials': 'Rezepte mit nicht genehmigten Rohstoffen ausblenden',
         'visibility_settings_description': 'Steuern Sie, welche Informationen in Rezepten sichtbar sind',
         
         # Dashboard
@@ -1163,12 +1155,8 @@ TRANSLATIONS = {
         'sign_in_microsoft': 'Zaloguj się przez Microsoft',
         'sales_representative': 'Przedstawiciel Handlowy',
         'visibility_settings': 'Ustawienia Widoczności',
-        'show_percentages': 'Pokaż Procenty',
-        'hide_percentages': 'Ukryj Procenty',
-        'show_unapproved_recipes': 'Pokaż Niezatwierdzone Przepisy',
-        'hide_unapproved_recipes': 'Ukryj Niezatwierdzone Przepisy',
-        'ingredient_percentages': 'Procenty Składników',
-        'unapproved_raw_materials': 'Niezatwierdzone Surowce',
+        'hide_ingredient_percentages': 'Ukryj Procenty Składników',
+        'hide_recipes_unapproved_materials': 'Ukryj przepisy z niezatwierdzonymi surowcami',
         'visibility_settings_description': 'Kontroluj, jakie informacje są widoczne w przepisach',
         
         # Dashboard
