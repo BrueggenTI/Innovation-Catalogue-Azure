@@ -27,8 +27,61 @@
     <nav class="bruggen-header shadow-sm fixed-top">
         <div class="container-fluid px-4 py-3">
             <div class="header-layout-grid">
-                <!-- Left spacer -->
-                <div class="header-left-spacer"></div>
+                <!-- Left Section: Visibility Settings -->
+                <div class="header-left-spacer">
+                    <div class="dropdown">
+                        <button class="btn btn-visibility-settings dropdown-toggle" type="button" id="visibilitySettingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-eye me-2"></i>
+                            <span class="settings-text">Visibility Settings</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-visibility" aria-labelledby="visibilitySettingsDropdown">
+                            <li class="dropdown-header">
+                                <i class="fas fa-sliders-h me-2"></i>Display Options
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            <!-- Toggle 1: Hide Ingredient Percentages -->
+                            <li class="px-3 py-2">
+                                <div class="visibility-toggle-item">
+                                    <div class="toggle-label-section">
+                                        <div class="toggle-label-main">
+                                            <i class="fas fa-percentage me-2 text-muted"></i>
+                                            Hide Ingredient Percentages
+                                        </div>
+                                        <div class="toggle-label-sub">
+                                            Hide percentage values in all recipes
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="hidePercentagesToggle">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </li>
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            <!-- Toggle 2: Hide Recipes with Unapproved Materials -->
+                            <li class="px-3 py-2">
+                                <div class="visibility-toggle-item">
+                                    <div class="toggle-label-section">
+                                        <div class="toggle-label-main">
+                                            <i class="fas fa-exclamation-triangle me-2 text-muted"></i>
+                                            Hide Unapproved Recipes
+                                        </div>
+                                        <div class="toggle-label-sub">
+                                            Hide recipes with unapproved raw materials
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="hideUnapprovedToggle">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
                 
                 <!-- Centered Brand Section -->
                 <div class="header-brand-container">
@@ -145,6 +198,7 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
     <script src="{{ url_for('static', filename='js/breadcrumb.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/visibility-settings.js') }}"></script>
     <!-- <script src="{{ url_for('static', filename='js/image-handler.js') }}"></script> -->
     
     {% block scripts %}{% endblock %}
