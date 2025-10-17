@@ -164,7 +164,7 @@ class ExcelBatchProcessor:
                                 if percentage_value <= 100:
                                     recipes[spec_num]['ingredients'].append({
                                         'name': ingredient_name,
-                                        'percentage': percentage_value,
+                                        'percentage': round(percentage_value, 1),
                                         'specification': ingredient_spec
                                     })
                             elif isinstance(percentage, str):
@@ -175,7 +175,7 @@ class ExcelBatchProcessor:
                                     if percentage_value <= 100:
                                         recipes[spec_num]['ingredients'].append({
                                             'name': ingredient_name,
-                                            'percentage': percentage_value,
+                                            'percentage': round(percentage_value, 1),
                                             'specification': ingredient_spec
                                         })
                                 except ValueError:
@@ -248,22 +248,29 @@ class ExcelBatchProcessor:
                 if re.match(r'^0*4', spec_num):
                     product_type = 'Product'
                 
+                # Helper to safely round values
+                def safe_round(value, decimals=1):
+                    try:
+                        return round(float(value), decimals) if value is not None else 0.0
+                    except (ValueError, TypeError):
+                        return 0.0
+                
                 recipes[spec_num] = {
                     'name': product_name,
                     'specification': spec_num,
                     'full_specification': row[2] if len(row) > 2 else '',
                     'product_type': product_type,
                     'nutritional_info': {
-                        'energy_kj': energy_kj,
-                        'energy_kcal': energy_kcal,
-                        'energy': energy_kcal,  # Keep for backward compatibility
-                        'fat': self._safe_float(row[9]) if len(row) > 9 else 0,
-                        'saturated_fat': self._safe_float(row[10]) if len(row) > 10 else 0,
-                        'carbohydrates': self._safe_float(row[11]) if len(row) > 11 else 0,
-                        'sugars': self._safe_float(row[12]) if len(row) > 12 else 0,
-                        'fiber': self._safe_float(row[13]) if len(row) > 13 else 0,
-                        'protein': self._safe_float(row[14]) if len(row) > 14 else 0,
-                        'salt': self._safe_float(row[15]) if len(row) > 15 else 0
+                        'energy_kj': safe_round(energy_kj),
+                        'energy_kcal': safe_round(energy_kcal),
+                        'energy': safe_round(energy_kcal),  # Keep for backward compatibility
+                        'fat': safe_round(self._safe_float(row[9]) if len(row) > 9 else 0),
+                        'saturated_fat': safe_round(self._safe_float(row[10]) if len(row) > 10 else 0),
+                        'carbohydrates': safe_round(self._safe_float(row[11]) if len(row) > 11 else 0),
+                        'sugars': safe_round(self._safe_float(row[12]) if len(row) > 12 else 0),
+                        'fiber': safe_round(self._safe_float(row[13]) if len(row) > 13 else 0),
+                        'protein': safe_round(self._safe_float(row[14]) if len(row) > 14 else 0),
+                        'salt': safe_round(self._safe_float(row[15]) if len(row) > 15 else 0)
                     },
                     'nutri_score': row[16] if len(row) > 16 else None,
                     'nutri_score_image': get_nutriscore_image(row[16]) if len(row) > 16 else None

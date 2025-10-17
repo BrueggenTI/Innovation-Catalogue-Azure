@@ -2117,6 +2117,28 @@ def analyze_recipe():
             if ai_response:
                 recipe_data = json.loads(ai_response)
                 
+                # ROUND INGREDIENT PERCENTAGES AND NUTRITIONAL VALUES TO 1 DECIMAL PLACE
+                # Round ingredient percentages
+                if 'ingredients' in recipe_data and isinstance(recipe_data['ingredients'], list):
+                    for ingredient in recipe_data['ingredients']:
+                        if isinstance(ingredient, dict) and 'percentage' in ingredient:
+                            try:
+                                percentage_val = float(ingredient['percentage'])
+                                ingredient['percentage'] = round(percentage_val, 1)
+                            except (ValueError, TypeError):
+                                pass
+                
+                # Round nutritional values
+                if 'nutritional_info' in recipe_data and isinstance(recipe_data['nutritional_info'], dict):
+                    nutritional_fields = ['energy', 'energy_kj', 'energy_kcal', 'fat', 'saturated_fat', 'carbohydrates', 'sugars', 'fiber', 'protein', 'salt']
+                    for field in nutritional_fields:
+                        if field in recipe_data['nutritional_info']:
+                            try:
+                                value = float(recipe_data['nutritional_info'][field])
+                                recipe_data['nutritional_info'][field] = round(value, 1)
+                            except (ValueError, TypeError):
+                                pass
+                
                 # CRITICAL FIX: Ensure has_base is always a Boolean
                 if 'base_recipe' in recipe_data and isinstance(recipe_data['base_recipe'], dict):
                     has_base_value = recipe_data['base_recipe'].get('has_base')
@@ -2223,8 +2245,8 @@ def analyze_recipe():
                 'category': 'Traditional Muesli',
                 'description': 'Recipe imported from document. Please edit the details as needed.',
                 'ingredients': [
-                    {'name': 'Oat flakes', 'percentage': 0},
-                    {'name': 'Mixed cereals', 'percentage': 0}
+                    {'name': 'Oat flakes', 'percentage': 0.0},
+                    {'name': 'Mixed cereals', 'percentage': 0.0}
                 ],
                 'nutritional_info': fallback_nutritional_info,
                 'allergens': ['Gluten'],
