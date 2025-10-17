@@ -253,7 +253,7 @@
                                     <thead style="background-color: #f8f9fa;">
                                         <tr>
                                             <th class="fw-semibold">{{ get_text('ingredient', lang) }}</th>
-                                            {% if session.get('show_percentages', True) %}
+                                            {% if not session.get('hide_percentages', False) %}
                                             <th class="fw-semibold text-end">{{ get_text('percentage', lang) }}</th>
                                             {% endif %}
                                         </tr>
@@ -273,7 +273,7 @@
                                                         </span>
                                                     {% endif %}
                                                 </td>
-                                                {% if session.get('show_percentages', True) %}
+                                                {% if not session.get('hide_percentages', False) %}
                                                 <td class="text-end" style="font-weight: normal; font-size: 0.9rem;">{{ ingredient.percentage }}%</td>
                                                 {% endif %}
                                             </tr>
@@ -290,7 +290,7 @@
                                                                 </span>
                                                             {% endif %}
                                                         </td>
-                                                        {% if session.get('show_percentages', True) %}
+                                                        {% if not session.get('hide_percentages', False) %}
                                                         <td class="text-end" style="font-size: 0.85rem; color: #6c757d;">{{ child.percentage }}%</td>
                                                         {% endif %}
                                                     </tr>
