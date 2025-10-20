@@ -6,6 +6,49 @@
 
 {% block content %}
 <style>
+/* Image Edit Hover Effect */
+.product-image-large:hover .image-edit-overlay {
+    background: rgba(0,0,0,0.6) !important;
+}
+
+.product-image-large:hover .edit-icon-wrapper {
+    opacity: 1 !important;
+}
+
+/* Image Upload Modal */
+.image-drop-zone {
+    border: 2px dashed #661c31;
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.image-drop-zone:hover {
+    background: #e9ecef;
+    border-color: #ff4143;
+}
+
+.image-drop-zone.dragover {
+    background: #fff3cd;
+    border-color: #ff4143;
+    border-style: solid;
+}
+
+.image-preview-container {
+    max-height: 400px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.image-preview-container img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
 /* Unapproved Raw Material Warning Tooltip */
 .unapproved-warning {
     position: relative;
@@ -61,8 +104,16 @@
     <div class="container-fluid px-4">
         <div class="row align-items-start">
             <div class="col-lg-6">
-                <div class="product-image-large">
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded-4 shadow">
+                <div class="product-image-large position-relative">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded-4 shadow" id="productImage">
+                    
+                    <!-- Edit Image Overlay -->
+                    <div class="image-edit-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded-4" style="background: rgba(0,0,0,0); transition: background 0.3s ease; cursor: pointer;" onclick="openImageUploadModal()">
+                        <div class="edit-icon-wrapper text-center" style="opacity: 0; transition: opacity 0.3s ease;">
+                            <i class="fas fa-camera fa-3x text-white mb-2"></i>
+                            <div class="text-white fw-semibold">{{ get_text('change_image', lang) }}</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Exclusive Information Section -->
@@ -846,5 +897,193 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Image Upload Modal Functions
+function openImageUploadModal() {
+    const modal = new bootstrap.Modal(document.getElementById('imageUploadModal'));
+    modal.show();
+}
+
+function closeImageUploadModal() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('imageUploadModal'));
+    if (modal) modal.hide();
+    
+    // Reset the form
+    document.getElementById('imageUploadForm').reset();
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('dropZone').style.display = 'block';
+}
+
+// Drag and Drop Handlers
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('imageFileInput');
+
+if (dropZone && fileInput) {
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleImageFile(files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleImageFile(e.target.files[0]);
+        }
+    });
+}
+
+function handleImageFile(file) {
+    // Validate file type
+    if (!file.type.match('image.*')) {
+        alert('Please select an image file.');
+        return;
+    }
+    
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB.');
+        return;
+    }
+    
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('previewImage').src = e.target.result;
+        document.getElementById('dropZone').style.display = 'none';
+        document.getElementById('imagePreview').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+function changeImage() {
+    document.getElementById('imageFileInput').click();
+}
+
+function uploadImage() {
+    const fileInput = document.getElementById('imageFileInput');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select an image first.');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    
+    // Show loading state
+    const uploadButton = document.querySelector('#imageUploadModal .btn-primary');
+    const originalText = uploadButton.innerHTML;
+    uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Uploading...';
+    uploadButton.disabled = true;
+    
+    // Send AJAX request
+    fetch(`/product/{{ product.id }}/update-image`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Update the image on the page
+            document.getElementById('productImage').src = result.image_url + '?t=' + new Date().getTime();
+            
+            // Show success message
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = '<i class="fas fa-check me-2"></i>Image updated successfully!';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+            
+            // Close modal
+            closeImageUploadModal();
+        } else {
+            throw new Error(result.error || 'Upload failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error uploading image:', error);
+        alert('Failed to upload image. Please try again.');
+    })
+    .finally(() => {
+        uploadButton.innerHTML = originalText;
+        uploadButton.disabled = false;
+    });
+}
 </script>
+
+<!-- Image Upload Modal -->
+<div class="modal fade" id="imageUploadModal" tabindex="-1" aria-labelledby="imageUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageUploadModalLabel">
+                    <i class="fas fa-camera me-2"></i>{{ get_text('change_product_image', lang) }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="imageUploadForm">
+                    <!-- Drop Zone -->
+                    <div class="image-drop-zone" id="dropZone">
+                        <i class="fas fa-cloud-upload-alt fa-4x text-primary mb-3"></i>
+                        <h5 class="mb-2">{{ get_text('drag_drop_image', lang) }}</h5>
+                        <p class="text-muted mb-3">{{ get_text('or_click_to_browse', lang) }}</p>
+                        <button type="button" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-folder-open me-2"></i>{{ get_text('select_file', lang) }}
+                        </button>
+                        <p class="text-muted small mt-3 mb-0">{{ get_text('supported_formats', lang) }}: JPG, PNG, GIF (max 10MB)</p>
+                    </div>
+                    
+                    <!-- Image Preview -->
+                    <div id="imagePreview" style="display: none;">
+                        <div class="image-preview-container mb-3">
+                            <img id="previewImage" src="" alt="Preview">
+                        </div>
+                        <div class="text-center">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeImage()">
+                                <i class="fas fa-exchange-alt me-2"></i>{{ get_text('change_image', lang) }}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>{{ get_text('cancel', lang) }}
+                </button>
+                <button type="button" class="btn btn-primary" onclick="uploadImage()">
+                    <i class="fas fa-upload me-2"></i>{{ get_text('upload', lang) }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

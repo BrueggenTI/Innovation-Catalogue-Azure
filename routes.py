@@ -865,6 +865,83 @@ def update_exclusive_info(id):
             'error': str(e)
         }), 500
 
+@app.route('/product/<int:id>/update-image', methods=['POST'])
+@login_required
+def update_product_image(id):
+    """Update product image"""
+    init_user_session()
+    product = Product.query.get_or_404(id)
+    
+    try:
+        # Check if an image file was uploaded
+        if 'image' not in request.files:
+            return jsonify({
+                'success': False,
+                'error': 'No image file provided'
+            }), 400
+        
+        file = request.files['image']
+        
+        # Check if a file was selected
+        if file.filename == '':
+            return jsonify({
+                'success': False,
+                'error': 'No file selected'
+            }), 400
+        
+        # Validate file type
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        
+        if file_ext not in allowed_extensions:
+            return jsonify({
+                'success': False,
+                'error': f'Invalid file type. Allowed types: {", ".join(allowed_extensions)}'
+            }), 400
+        
+        # Validate file size (max 10MB)
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(0)
+        
+        if file_size > 10 * 1024 * 1024:
+            return jsonify({
+                'success': False,
+                'error': 'File size exceeds 10MB limit'
+            }), 400
+        
+        # Create uploads directory if it doesn't exist
+        upload_folder = os.path.join('static', 'uploads', 'products')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        # Generate unique filename
+        import uuid
+        unique_filename = f"{product.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+        file_path = os.path.join(upload_folder, unique_filename)
+        
+        # Save the file
+        file.save(file_path)
+        
+        # Update product image URL in database
+        product.image_url = f"/static/uploads/products/{unique_filename}"
+        db.session.commit()
+        
+        logging.info(f"Updated image for product {id}: {product.image_url}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Image updated successfully',
+            'image_url': product.image_url
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error updating product image: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/trends')
 @login_required
 def trends():
