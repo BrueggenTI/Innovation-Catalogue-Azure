@@ -183,17 +183,21 @@ def init_user_session():
     # If user_id exists in session, load from database
     user_id = session.get('user_id')
     if user_id:
-        user = User.query.get(user_id)
-        if user:
-            # Load data from database
-            session['user_name'] = user.name or 'User'
-            session['user_email'] = user.email
-            session['user_position'] = user.position
-            session['user_department'] = user.department
-            session['is_master_user'] = user.is_master_user
-            if not session.get('language'):
-                session['language'] = 'en'
-            return
+        try:
+            user = User.query.get(user_id)
+            if user:
+                # Load data from database
+                session['user_name'] = user.name or 'User'
+                session['user_email'] = user.email
+                session['user_position'] = user.position
+                session['user_department'] = user.department
+                session['is_master_user'] = user.is_master_user
+                if not session.get('language'):
+                    session['language'] = 'en'
+                return
+        except Exception as e:
+            # Database not available, fall through to defaults
+            logging.warning(f"Could not load user from database: {e}")
     
     # Fallback to default values if no user in database
     if not session.get('user_name'):
@@ -551,13 +555,19 @@ def index():
     init_user_session()
     lang = session.get('language', 'en')
     
-    # Get actual counts from database
-    total_recipes = Product.query.count()
-    total_categories = db.session.query(Product.category).distinct().count()
-    
-    # Get trend counts
-    total_trends = Trend.query.count()
-    total_trend_categories = db.session.query(Trend.category).distinct().count()
+    # Get actual counts from database with error handling
+    try:
+        total_recipes = Product.query.count()
+        total_categories = db.session.query(Product.category).distinct().count()
+        total_trends = Trend.query.count()
+        total_trend_categories = db.session.query(Trend.category).distinct().count()
+    except Exception as e:
+        logging.warning(f"Could not load counts from database: {e}")
+        # Use default values if database is unavailable
+        total_recipes = 0
+        total_categories = 0
+        total_trends = 0
+        total_trend_categories = 0
     
     return render_template('index.html', 
                          get_text=get_text, 
