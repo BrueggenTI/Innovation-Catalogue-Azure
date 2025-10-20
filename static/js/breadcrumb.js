@@ -165,6 +165,10 @@ function getSmartBackNavigation() {
 
 function getIconForPath(path) {
     // Return appropriate icon based on path
+    if (!path) {
+        return 'fa-arrow-left';
+    }
+    
     if (path === '/') {
         return 'fa-home';
     } else if (path === '/catalog') {
