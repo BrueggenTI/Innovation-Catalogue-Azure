@@ -3228,6 +3228,9 @@ def custom_pages_view(page_id):
             categories_set.add(product.category)
         if product.product_type:
             product_types_set.add(product.product_type)
+        
+        # Check for unapproved raw materials
+        product.has_unapproved_material = contains_unapproved_material(product)
     
     # Convert sets to sorted lists
     categories = sorted(list(categories_set))
