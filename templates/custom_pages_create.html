@@ -807,11 +807,79 @@ const productsData = [
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeFromURL();
-    initializeFilters();
     initializeUniversalSearch();
     initializeTooltips();
     updateButtonVisualState();
     updateActiveFiltersDisplay();
+    
+    // Filter header click handlers
+    document.querySelectorAll('.filter-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const filterType = this.getAttribute('data-filter');
+            toggleFilterOptions(filterType);
+        });
+    });
+    
+    // Filter option button handlers - COMPACT buttons (for ingredients and claims)
+    document.querySelectorAll('.filter-option-btn-compact').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const filterType = this.getAttribute('data-filter');
+            const filterValue = this.getAttribute('data-value');
+            console.log('=== COMPACT BUTTON CLICKED ===');
+            console.log('filterType:', filterType);
+            console.log('filterValue:', filterValue);
+            selectFilter(filterType, filterValue);
+        });
+    });
+    
+    // Filter option button handlers - REGULAR buttons (for category, product_type)
+    document.querySelectorAll('.filter-option-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const filterType = this.getAttribute('data-filter');
+            const filterValue = this.getAttribute('data-value');
+            console.log('=== REGULAR BUTTON CLICKED ===');
+            console.log('filterType:', filterType);
+            console.log('filterValue:', filterValue);
+            selectFilter(filterType, filterValue);
+        });
+    });
+    
+    // Exclusivity filter button handlers
+    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const exclusivityValue = this.getAttribute('data-exclusivity');
+            toggleExclusivityFilter(exclusivityValue, this);
+        });
+    });
+    
+    // Ingredient filter search
+    const ingredientFilterSearch = document.getElementById('ingredientFilterSearch');
+    if (ingredientFilterSearch) {
+        ingredientFilterSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const items = document.querySelectorAll('#ingredientList .filter-item');
+            items.forEach(item => {
+                const filterText = item.getAttribute('data-filter-text');
+                item.style.display = filterText.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+    }
+    
+    // Claim filter search
+    const claimFilterSearch = document.getElementById('claimFilterSearch');
+    if (claimFilterSearch) {
+        claimFilterSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const items = document.querySelectorAll('#claimList .filter-item');
+            items.forEach(item => {
+                const filterText = item.getAttribute('data-filter-text');
+                item.style.display = filterText.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+    }
 });
 
 // Initialize filters from URL parameters (backend-provided selected values)
@@ -854,59 +922,54 @@ function initializeFromURL() {
     console.log('Initialized filters from URL:', activeFilters);
 }
 
-function initializeFilters() {
-    // Filter header click handlers
-    document.querySelectorAll('.filter-header').forEach(header => {
-        header.addEventListener('click', function() {
-            const filterType = this.getAttribute('data-filter');
-            toggleFilterOptions(filterType);
-        });
-    });
+// selectFilter - handles toggling of filter values (from Innovation Catalog)
+function selectFilter(filterType, value) {
+    console.log('=== selectFilter called ===');
+    console.log('filterType:', filterType);
+    console.log('value:', value);
+    console.log('Before - activeFilters:', JSON.parse(JSON.stringify(activeFilters)));
     
-    // Filter option button handlers
-    document.querySelectorAll('.filter-option-btn, .filter-option-btn-compact').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const filterType = this.getAttribute('data-filter');
-            const filterValue = this.getAttribute('data-value');
-            toggleFilter(filterType, filterValue, this);
-        });
-    });
-    
-    // Exclusivity filter button handlers
-    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const exclusivityValue = this.getAttribute('data-exclusivity');
-            toggleExclusivityFilter(exclusivityValue, this);
-        });
-    });
-    
-    // Ingredient filter search
-    const ingredientFilterSearch = document.getElementById('ingredientFilterSearch');
-    if (ingredientFilterSearch) {
-        ingredientFilterSearch.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const items = document.querySelectorAll('#ingredientList .filter-item');
-            items.forEach(item => {
-                const filterText = item.getAttribute('data-filter-text');
-                item.style.display = filterText.includes(searchTerm) ? 'block' : 'none';
-            });
-        });
+    if (filterType === 'ingredient') {
+        // Handle multiple ingredient selection
+        const ingredientIndex = activeFilters.ingredient.indexOf(value);
+        console.log('ingredient indexOf result:', ingredientIndex);
+        if (ingredientIndex > -1) {
+            // Remove ingredient if already selected
+            activeFilters.ingredient.splice(ingredientIndex, 1);
+            console.log('REMOVED ingredient');
+        } else {
+            // Add ingredient if not selected
+            activeFilters.ingredient.push(value);
+            console.log('ADDED ingredient');
+        }
+    } else if (filterType === 'claim') {
+        // Handle multiple claim selection
+        const claimIndex = activeFilters.claim.indexOf(value);
+        console.log('claim indexOf result:', claimIndex);
+        if (claimIndex > -1) {
+            // Remove claim if already selected
+            activeFilters.claim.splice(claimIndex, 1);
+            console.log('REMOVED claim');
+        } else {
+            // Add claim if not selected
+            activeFilters.claim.push(value);
+            console.log('ADDED claim');
+        }
+    } else {
+        // Handle single selection for category and product_type filters
+        if (activeFilters[filterType] === value) {
+            activeFilters[filterType] = '';
+            console.log('CLEARED single-select filter');
+        } else {
+            activeFilters[filterType] = value;
+            console.log('SET single-select filter');
+        }
     }
     
-    // Claim filter search
-    const claimFilterSearch = document.getElementById('claimFilterSearch');
-    if (claimFilterSearch) {
-        claimFilterSearch.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const items = document.querySelectorAll('#claimList .filter-item');
-            items.forEach(item => {
-                const filterText = item.getAttribute('data-filter-text');
-                item.style.display = filterText.includes(searchTerm) ? 'block' : 'none';
-            });
-        });
-    }
+    console.log('After - activeFilters:', JSON.parse(JSON.stringify(activeFilters)));
+    
+    // Redirect to backend with updated filters for server-side processing
+    redirectToBackend();
 }
 
 // Universal Search Functionality
@@ -1157,61 +1220,6 @@ function toggleFilterOptions(filterType) {
     }
 }
 
-function toggleFilter(filterType, filterValue, buttonElement) {
-    console.log('=== toggleFilter called ===');
-    console.log('filterType:', filterType);
-    console.log('filterValue:', filterValue);
-    console.log('filterValue type:', typeof filterValue);
-    console.log('filterValue length:', filterValue.length);
-    console.log('Before toggle - activeFilters:', JSON.parse(JSON.stringify(activeFilters)));
-    
-    // Handle different filter types - category and product_type are single-select, others are multi-select
-    if (filterType === 'category' || filterType === 'product_type') {
-        // Single select - toggle on/off
-        if (activeFilters[filterType] === filterValue) {
-            activeFilters[filterType] = '';
-        } else {
-            activeFilters[filterType] = filterValue;
-        }
-    } else {
-        // Multi-select for ingredient and claim
-        console.log('Current array:', activeFilters[filterType]);
-        console.log('Array length:', activeFilters[filterType].length);
-        
-        // Normalize the filter value for comparison (trim whitespace)
-        const normalizedValue = filterValue.trim();
-        
-        // Find index using manual search with normalization
-        let index = -1;
-        for (let i = 0; i < activeFilters[filterType].length; i++) {
-            const item = activeFilters[filterType][i].trim();
-            console.log(`  [${i}]: "${activeFilters[filterType][i]}" (trimmed: "${item}")`);
-            console.log(`  Comparing with: "${normalizedValue}"`);
-            console.log(`  Match: ${item === normalizedValue}`);
-            if (item === normalizedValue) {
-                index = i;
-                console.log(`  FOUND at index ${i}!`);
-                break;
-            }
-        }
-        
-        console.log('Final index:', index);
-        
-        if (index > -1) {
-            // Remove from array
-            activeFilters[filterType].splice(index, 1);
-            console.log('REMOVED from array');
-        } else {
-            // Add to array (store normalized value)
-            activeFilters[filterType].push(normalizedValue);
-            console.log('ADDED to array');
-        }
-    }
-    
-    console.log('After toggle - activeFilters:', JSON.parse(JSON.stringify(activeFilters)));
-    console.log('=== Calling redirectToBackend() ===');
-    redirectToBackend();
-}
 
 function toggleExclusivityFilter(exclusivityValue, buttonElement) {
     if (exclusivityValue === 'both') {
