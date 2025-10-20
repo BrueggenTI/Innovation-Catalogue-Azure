@@ -595,6 +595,10 @@ def catalog():
     product_type = sanitize_input(product_type) if product_type else ''
     exclusivity = sanitize_input(exclusivity) if exclusivity else ''
     
+    # Pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 30  # 30 recipes per page
+    
     
     # Build query - start with all products
     query = Product.query
@@ -650,10 +654,10 @@ def catalog():
             query = query.filter(Product.is_exclusive == False)
         # If 'both' or any other value, don't filter (show all)
 
-    products = query.order_by(Product.created_at.desc()).all()
+    all_filtered_products = query.order_by(Product.created_at.desc()).all()
 
     # Parse JSON fields for each product
-    for product in products:
+    for product in all_filtered_products:
         if product.ingredients:
             try:
                 product.parsed_ingredients = json.loads(product.ingredients)
@@ -675,16 +679,43 @@ def catalog():
     
     # Filter out products with unapproved materials if setting is enabled
     if session.get('hide_unapproved_recipes', False):
-        products = [p for p in products if not p.has_unapproved_material]
+        all_filtered_products = [p for p in all_filtered_products if not p.has_unapproved_material]
+    
+    # Calculate pagination
+    total_products = len(all_filtered_products)
+    total_pages = (total_products + per_page - 1) // per_page  # Ceiling division
+    
+    # Ensure page is within valid range
+    if page < 1:
+        page = 1
+    elif page > total_pages and total_pages > 0:
+        page = total_pages
+    
+    # Get products for current page
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    products = all_filtered_products[start_idx:end_idx]
+    
+    # Pagination info
+    pagination = {
+        'page': page,
+        'per_page': per_page,
+        'total': total_products,
+        'total_pages': total_pages,
+        'has_prev': page > 1,
+        'has_next': page < total_pages,
+        'prev_page': page - 1 if page > 1 else None,
+        'next_page': page + 1 if page < total_pages else None
+    }
 
-    # Get unique values for filters from currently displayed products only
-    categories = list(set([p.category for p in products if p.category]))
+    # Get unique values for filters from all filtered products (not just current page)
+    categories = list(set([p.category for p in all_filtered_products if p.category]))
 
-    # Extract ingredients and claims from JSON strings of currently displayed products
+    # Extract ingredients and claims from JSON strings of all filtered products
     all_ingredients = set()
     all_claims = set()
 
-    for product in products:
+    for product in all_filtered_products:
         if product.ingredients:
             try:
                 ingredients = json.loads(product.ingredients)
@@ -732,7 +763,8 @@ def catalog():
                          selected_claim=final_claim,
                          selected_recipe=final_recipe,
                          selected_product_type=final_product_type,
-                         selected_exclusivity=final_exclusivity)
+                         selected_exclusivity=final_exclusivity,
+                         pagination=pagination)
 
 @app.route('/product/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -2996,7 +3028,11 @@ def custom_pages_create():
     if Product.query.count() == 0:
         init_products()
     
-    products = Product.query.all()
+    # Pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 30  # 30 recipes per page
+    
+    all_products = Product.query.all()
     
     # Helper function to recursively extract all ingredient names including nested children
     def extract_all_ingredient_names(ingredients_list):
@@ -3020,7 +3056,7 @@ def custom_pages_create():
     claims_set = set()
     product_types_set = set()
     
-    for product in products:
+    for product in all_products:
         try:
             if product.ingredients:
                 product.parsed_ingredients = json.loads(product.ingredients)
@@ -3083,6 +3119,33 @@ def custom_pages_create():
     claims = sorted(list(claims_set))
     product_types = sorted(list(product_types_set))
     
+    # Calculate pagination
+    total_products = len(all_products)
+    total_pages = (total_products + per_page - 1) // per_page  # Ceiling division
+    
+    # Ensure page is within valid range
+    if page < 1:
+        page = 1
+    elif page > total_pages and total_pages > 0:
+        page = total_pages
+    
+    # Get products for current page
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    products = all_products[start_idx:end_idx]
+    
+    # Pagination info
+    pagination = {
+        'page': page,
+        'per_page': per_page,
+        'total': total_products,
+        'total_pages': total_pages,
+        'has_prev': page > 1,
+        'has_next': page < total_pages,
+        'prev_page': page - 1 if page > 1 else None,
+        'next_page': page + 1 if page < total_pages else None
+    }
+    
     return render_template('custom_pages_create.html',
                          products=products,
                          categories=categories,
@@ -3090,7 +3153,8 @@ def custom_pages_create():
                          claims=claims,
                          product_types=product_types,
                          get_text=get_text,
-                         lang=lang)
+                         lang=lang,
+                         pagination=pagination)
 
 @app.route('/custom-pages/save', methods=['POST'])
 @login_required

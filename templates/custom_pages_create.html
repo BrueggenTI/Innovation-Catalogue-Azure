@@ -241,6 +241,38 @@
         </div>
     </div>
 
+    <!-- Pagination Navigation (Top) -->
+    {% if pagination and pagination.total_pages > 1 %}
+    <nav aria-label="Recipe pagination" class="mb-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{% if pagination.has_prev %}{{ url_for('custom_pages_create', page=pagination.prev_page) }}{% else %}#{% endif %}">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            </li>
+            
+            {% for page_num in range(1, pagination.total_pages + 1) %}
+                {% if page_num == pagination.page %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                {% elif page_num <= 3 or page_num > pagination.total_pages - 3 or (page_num >= pagination.page - 1 and page_num <= pagination.page + 1) %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('custom_pages_create', page=page_num) }}">{{ page_num }}</a></li>
+                {% elif page_num == 4 or page_num == pagination.total_pages - 3 %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{% if pagination.has_next %}{{ url_for('custom_pages_create', page=pagination.next_page) }}{% else %}#{% endif %}">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+        <div class="text-center text-muted small mt-2">
+            Showing {{ ((pagination.page - 1) * pagination.per_page + 1) }} - {{ [pagination.page * pagination.per_page, pagination.total]|min }} of {{ pagination.total }} recipes
+        </div>
+    </nav>
+    {% endif %}
+
     <!-- Recipe Grid -->
     <div class="row g-3" id="recipesContainer">
         {% for product in products %}
@@ -325,6 +357,38 @@
         </div>
         {% endfor %}
     </div>
+    
+    <!-- Pagination Navigation (Bottom) -->
+    {% if pagination and pagination.total_pages > 1 %}
+    <nav aria-label="Recipe pagination" class="mt-5">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{% if pagination.has_prev %}{{ url_for('custom_pages_create', page=pagination.prev_page) }}{% else %}#{% endif %}">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            </li>
+            
+            {% for page_num in range(1, pagination.total_pages + 1) %}
+                {% if page_num == pagination.page %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                {% elif page_num <= 3 or page_num > pagination.total_pages - 3 or (page_num >= pagination.page - 1 and page_num <= pagination.page + 1) %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('custom_pages_create', page=page_num) }}">{{ page_num }}</a></li>
+                {% elif page_num == 4 or page_num == pagination.total_pages - 3 %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{% if pagination.has_next %}{{ url_for('custom_pages_create', page=pagination.next_page) }}{% else %}#{% endif %}">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+        <div class="text-center text-muted small mt-2">
+            Showing {{ ((pagination.page - 1) * pagination.per_page + 1) }} - {{ [pagination.page * pagination.per_page, pagination.total]|min }} of {{ pagination.total }} recipes
+        </div>
+    </nav>
+    {% endif %}
 </div>
 
 <style>
@@ -1162,25 +1226,39 @@ function updateActiveFiltersDisplay() {
         if (filterType === 'exclusivity') {
             if (values && values !== 'both') {
                 hasActiveFilters = true;
-                const badge = document.createElement('span');
-                badge.className = 'badge bg-secondary me-2';
+                const filterBtn = document.createElement('button');
+                filterBtn.className = 'active-filter-btn me-2';
                 const displayValue = values === 'exclusive' ? 'Exclusive Only' : 'Non-Exclusive Only';
-                badge.innerHTML = `${displayValue} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
-                badge.querySelector('i').addEventListener('click', () => {
-                    removeFilter('exclusivity', null);
+                filterBtn.innerHTML = `
+                    ${displayValue}
+                    <span class="remove-filter" onclick="removeFilter('exclusivity', null)">
+                        <i class="fas fa-times"></i>
+                    </span>
+                `;
+                filterBtn.addEventListener('click', function(e) {
+                    if (!e.target.closest('.remove-filter')) {
+                        removeFilter('exclusivity', null);
+                    }
                 });
-                activeFiltersDiv.appendChild(badge);
+                activeFiltersDiv.appendChild(filterBtn);
             }
         } else if (Array.isArray(values)) {
             values.forEach(value => {
                 hasActiveFilters = true;
-                const badge = document.createElement('span');
-                badge.className = 'badge bg-secondary me-2';
-                badge.innerHTML = `${value} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
-                badge.querySelector('i').addEventListener('click', () => {
-                    removeFilter(filterType, value);
+                const filterBtn = document.createElement('button');
+                filterBtn.className = 'active-filter-btn me-2';
+                filterBtn.innerHTML = `
+                    ${value}
+                    <span class="remove-filter" onclick="removeFilter('${filterType}', '${value}')">
+                        <i class="fas fa-times"></i>
+                    </span>
+                `;
+                filterBtn.addEventListener('click', function(e) {
+                    if (!e.target.closest('.remove-filter')) {
+                        removeFilter(filterType, value);
+                    }
                 });
-                activeFiltersDiv.appendChild(badge);
+                activeFiltersDiv.appendChild(filterBtn);
             });
         }
     }

@@ -3924,24 +3924,24 @@ body.modal-open {
 }
 
 .active-filter-btn {
-    background: var(--btn-gradient-coral) !important;
+    background: #661c31 !important;
     border: none !important;
     color: white !important;
-    padding: 9px 20px;
-    border-radius: var(--btn-border-radius-pill);
-    font-size: 14px;
-    font-weight: 500;
-    transition: var(--btn-transition);
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s ease;
     cursor: pointer;
     white-space: nowrap;
     position: relative;
-    box-shadow: var(--btn-shadow-coral) !important;
+    box-shadow: 0 2px 8px rgba(102, 28, 49, 0.25) !important;
 }
 
 .active-filter-btn:hover {
-    background: var(--btn-gradient-coral-hover) !important;
-    transform: translateY(var(--btn-hover-lift));
-    box-shadow: var(--btn-shadow-coral-hover) !important;
+    background: #7d2242 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.35) !important;
 }
 
 .active-filter-btn .remove-filter {
