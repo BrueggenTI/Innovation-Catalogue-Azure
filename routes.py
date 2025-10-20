@@ -3046,7 +3046,7 @@ def custom_pages_save():
 @app.route('/custom-pages/view/<int:page_id>')
 @login_required
 def custom_pages_view(page_id):
-    """View a specific custom recipe page"""
+    """View a specific custom recipe page with filtering capabilities"""
     init_user_session()
     lang = session.get('language', 'en')
     user_id = session.get('user_id')
@@ -3064,31 +3064,57 @@ def custom_pages_view(page_id):
     
     products = Product.query.filter(Product.id.in_(product_ids)).all() if product_ids else []
     
-    # Parse JSON fields
+    # Parse JSON fields and collect unique values for filters
+    categories_set = set()
+    ingredients_set = set()
+    claims_set = set()
+    product_types_set = set()
+    
     for product in products:
         try:
             if product.ingredients:
-                product.ingredients_list = json.loads(product.ingredients)
+                product.parsed_ingredients = json.loads(product.ingredients)
+                for ing in product.parsed_ingredients:
+                    if isinstance(ing, dict) and 'name' in ing:
+                        ingredients_set.add(ing['name'])
             else:
-                product.ingredients_list = []
+                product.parsed_ingredients = []
                 
             if product.claims:
-                product.claims_list = json.loads(product.claims)
+                product.parsed_claims = json.loads(product.claims)
+                for claim in product.parsed_claims:
+                    claims_set.add(claim)
             else:
-                product.claims_list = []
+                product.parsed_claims = []
                 
             if product.nutritional_claims:
-                product.nutritional_claims_list = json.loads(product.nutritional_claims)
+                product.parsed_nutritional_claims = json.loads(product.nutritional_claims)
             else:
-                product.nutritional_claims_list = []
+                product.parsed_nutritional_claims = []
         except:
-            product.ingredients_list = []
-            product.claims_list = []
-            product.nutritional_claims_list = []
+            product.parsed_ingredients = []
+            product.parsed_claims = []
+            product.parsed_nutritional_claims = []
+        
+        # Collect unique values
+        if product.category:
+            categories_set.add(product.category)
+        if product.product_type:
+            product_types_set.add(product.product_type)
+    
+    # Convert sets to sorted lists
+    categories = sorted(list(categories_set))
+    ingredients = sorted(list(ingredients_set))
+    claims = sorted(list(claims_set))
+    product_types = sorted(list(product_types_set))
     
     return render_template('custom_pages_view.html',
                          custom_page=custom_page,
                          products=products,
+                         categories=categories,
+                         ingredients=ingredients,
+                         claims=claims,
+                         product_types=product_types,
                          get_text=get_text,
                          lang=lang)
 

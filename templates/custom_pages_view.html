@@ -20,10 +20,141 @@
             <div class="col-lg-4 text-end">
                 <div class="competence-stats">
                     <div class="stat-item d-inline-block mx-3">
-                        <div class="h2 fw-bold" style="color: black !important;">{{ products|length }}</div>
-                        <div class="small" style="color: black !important;">Selected Recipes</div>
+                        <div class="h2 fw-bold" style="color: black !important;">
+                            <span id="filteredCount">{{ products|length }}</span>
+                        </div>
+                        <div class="small" style="color: black !important;">{{ get_text('products_available', lang) }}</div>
+                    </div>
+                    <div class="stat-item d-inline-block mx-3">
+                        <div class="h2 fw-bold" style="color: black !important;">{{ categories|length }}</div>
+                        <div class="small" style="color: black !important;">{{ get_text('categories', lang) }}</div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Filters Section -->
+<div class="active-filters-section py-3 bg-white border-bottom" id="activeFiltersSection" style="display: none;">
+    <div class="container-fluid px-4">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="fw-semibold text-muted me-3">{{ get_text('active_filters', lang) }}</span>
+            <div id="activeFilters" class="d-flex flex-wrap gap-2"></div>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" onclick="clearAllFilters()">
+                <i class="fas fa-times me-1"></i>{{ get_text('clear_all', lang) }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Interface Section -->
+<div class="filters-section py-4 bg-light border-bottom">
+    <div class="container-fluid px-4">
+        <div class="row g-3">
+            <div class="col filter-col-equal">
+                <div class="filter-header" data-filter="category">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-tags me-2" style="color: #661c31;"></i>{{ get_text('category', lang) }}
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">{{ categories|length }} {{ get_text('available', lang) }}</div>
+                </div>
+            </div>
+            
+            <div class="col filter-col-equal">
+                <div class="filter-header" data-filter="ingredient">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-seedling me-2" style="color: #661c31;"></i>{{ get_text('key_ingredient', lang) }}
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">{{ ingredients|length }} {{ get_text('available', lang) }}</div>
+                </div>
+            </div>
+            
+            <div class="col filter-col-equal">
+                <div class="filter-header" data-filter="claim">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-medal me-2" style="color: #661c31;"></i>{{ get_text('claims', lang) }}
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">{{ claims|length }} {{ get_text('available', lang) }}</div>
+                </div>
+            </div>
+            
+            <div class="col filter-col-equal">
+                <div class="filter-header" data-filter="product_type">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-flask me-2" style="color: #661c31;"></i>Product Type
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">{{ product_types|length }} {{ get_text('available', lang) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expandable Filter Options -->
+<div class="filter-options-section bg-white border-bottom" id="filterOptionsSection" style="display: none;">
+    <div class="container-fluid px-4 py-4">
+        <!-- Category Options -->
+        <div class="filter-options" id="categoryOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_category', lang) }}</h6>
+            <div class="row g-2">
+                {% for category in categories %}
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn" data-filter="category" data-value="{{ category }}">
+                        {{ category }}
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Ingredient Options -->
+        <div class="filter-options" id="ingredientOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_key_ingredient', lang) }}</h6>
+            <div class="filter-compact-container">
+                <div class="row g-2">
+                    {% for ingredient in ingredients %}
+                    <div class="col-auto">
+                        <button type="button" class="filter-option-btn-compact" data-filter="ingredient" data-value="{{ ingredient }}">
+                            {{ ingredient }}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Claim Options -->
+        <div class="filter-options" id="claimOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_claims', lang) }}</h6>
+            <div class="filter-compact-container">
+                <div class="row g-2">
+                    {% for claim in claims %}
+                    <div class="col-auto">
+                        <button type="button" class="filter-option-btn-compact" data-filter="claim" data-value="{{ claim }}">
+                            {{ claim }}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Type Options -->
+        <div class="filter-options" id="product_typeOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">Select Product Type</h6>
+            <div class="row g-2">
+                {% for ptype in product_types %}
+                <div class="col-auto">
+                    <button type="button" class="filter-option-btn" data-filter="product_type" data-value="{{ ptype }}">
+                        {{ ptype }}
+                    </button>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -35,9 +166,14 @@
         No recipes found in this custom page.
     </div>
     {% else %}
-    <div class="row g-4">
+    <div class="row g-4" id="productsContainer">
         {% for product in products %}
-        <div class="col-md-6 col-lg-4 col-xl-3">
+        <div class="col-md-6 col-lg-4 col-xl-3 product-item" 
+             data-product-id="{{ product.id }}"
+             data-category="{{ product.category }}"
+             data-product-type="{{ product.product_type }}"
+             data-ingredients="{{ product.parsed_ingredients|map(attribute='name')|join('|') if product.parsed_ingredients else '' }}"
+             data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
             <a href="{{ url_for('product_detail', product_id=product.id) }}" class="text-decoration-none">
                 <div class="product-card h-100">
                     <div class="product-image-container">
@@ -178,5 +314,205 @@
     border-top: 1px solid #e0e0e0;
     padding-top: 12px;
 }
+
+.filter-compact-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
 </style>
+
+<script>
+// Store active filters
+let activeFilters = {
+    category: [],
+    ingredient: [],
+    claim: [],
+    product_type: []
+};
+
+// Initialize filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters();
+});
+
+function initializeFilters() {
+    // Filter header click handlers
+    document.querySelectorAll('.filter-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const filterType = this.getAttribute('data-filter');
+            toggleFilterOptions(filterType);
+        });
+    });
+    
+    // Filter option button handlers
+    document.querySelectorAll('.filter-option-btn, .filter-option-btn-compact').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const filterType = this.getAttribute('data-filter');
+            const filterValue = this.getAttribute('data-value');
+            toggleFilter(filterType, filterValue, this);
+        });
+    });
+}
+
+function toggleFilterOptions(filterType) {
+    const optionsSection = document.getElementById('filterOptionsSection');
+    const optionsDiv = document.getElementById(filterType + 'Options');
+    
+    if (optionsDiv.style.display === 'none') {
+        // Hide all other filter options
+        document.querySelectorAll('.filter-options').forEach(opt => {
+            opt.style.display = 'none';
+        });
+        
+        // Show selected filter options
+        optionsDiv.style.display = 'block';
+        optionsSection.style.display = 'block';
+        
+        // Update chevron
+        document.querySelectorAll('.filter-chevron').forEach(ch => {
+            ch.classList.remove('fa-chevron-up');
+            ch.classList.add('fa-chevron-down');
+        });
+        this.querySelector('.filter-chevron').classList.remove('fa-chevron-down');
+        this.querySelector('.filter-chevron').classList.add('fa-chevron-up');
+    } else {
+        optionsDiv.style.display = 'none';
+        optionsSection.style.display = 'none';
+        this.querySelector('.filter-chevron').classList.remove('fa-chevron-up');
+        this.querySelector('.filter-chevron').classList.add('fa-chevron-down');
+    }
+}
+
+function toggleFilter(filterType, filterValue, buttonElement) {
+    const index = activeFilters[filterType].indexOf(filterValue);
+    
+    if (index > -1) {
+        // Remove filter
+        activeFilters[filterType].splice(index, 1);
+        buttonElement.classList.remove('active');
+    } else {
+        // Add filter
+        activeFilters[filterType].push(filterValue);
+        buttonElement.classList.add('active');
+    }
+    
+    applyFilters();
+    updateActiveFiltersDisplay();
+}
+
+function applyFilters() {
+    const allProducts = document.querySelectorAll('.product-item');
+    let visibleCount = 0;
+    
+    allProducts.forEach(product => {
+        let visible = true;
+        
+        // Category filter
+        if (activeFilters.category.length > 0) {
+            const productCategory = product.getAttribute('data-category');
+            if (!activeFilters.category.includes(productCategory)) {
+                visible = false;
+            }
+        }
+        
+        // Product type filter
+        if (activeFilters.product_type.length > 0) {
+            const productType = product.getAttribute('data-product-type');
+            if (!activeFilters.product_type.includes(productType)) {
+                visible = false;
+            }
+        }
+        
+        // Ingredient filter (product must have ALL selected ingredients)
+        if (activeFilters.ingredient.length > 0) {
+            const productIngredients = product.getAttribute('data-ingredients').split('|');
+            const hasAllIngredients = activeFilters.ingredient.every(ing => 
+                productIngredients.includes(ing)
+            );
+            if (!hasAllIngredients) {
+                visible = false;
+            }
+        }
+        
+        // Claim filter (product must have ALL selected claims)
+        if (activeFilters.claim.length > 0) {
+            const productClaims = product.getAttribute('data-claims').split('|');
+            const hasAllClaims = activeFilters.claim.every(claim => 
+                productClaims.includes(claim)
+            );
+            if (!hasAllClaims) {
+                visible = false;
+            }
+        }
+        
+        // Show/hide product
+        if (visible) {
+            product.style.display = 'block';
+            visibleCount++;
+        } else {
+            product.style.display = 'none';
+        }
+    });
+    
+    // Update filtered count
+    document.getElementById('filteredCount').textContent = visibleCount;
+}
+
+function updateActiveFiltersDisplay() {
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const activeFiltersSection = document.getElementById('activeFiltersSection');
+    
+    let hasActiveFilters = false;
+    activeFiltersDiv.innerHTML = '';
+    
+    // Display all active filters
+    for (const [filterType, values] of Object.entries(activeFilters)) {
+        values.forEach(value => {
+            hasActiveFilters = true;
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-secondary me-2';
+            badge.innerHTML = `${value} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
+            badge.querySelector('i').addEventListener('click', () => {
+                removeFilter(filterType, value);
+            });
+            activeFiltersDiv.appendChild(badge);
+        });
+    }
+    
+    activeFiltersSection.style.display = hasActiveFilters ? 'block' : 'none';
+}
+
+function removeFilter(filterType, filterValue) {
+    const index = activeFilters[filterType].indexOf(filterValue);
+    if (index > -1) {
+        activeFilters[filterType].splice(index, 1);
+    }
+    
+    // Remove active class from button
+    document.querySelectorAll(`[data-filter="${filterType}"][data-value="${filterValue}"]`).forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    applyFilters();
+    updateActiveFiltersDisplay();
+}
+
+function clearAllFilters() {
+    activeFilters = {
+        category: [],
+        ingredient: [],
+        claim: [],
+        product_type: []
+    };
+    
+    // Remove all active classes
+    document.querySelectorAll('.filter-option-btn, .filter-option-btn-compact').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    applyFilters();
+    updateActiveFiltersDisplay();
+}
+</script>
 {% endblock %}
