@@ -22,7 +22,7 @@
     
     {% block head %}{% endblock %}
 </head>
-<body>
+<body{% block body_attrs %}{% endblock %}>
     <!-- Navigation -->
     <nav class="bruggen-header shadow-sm fixed-top">
         <div class="container-fluid px-4 py-3">

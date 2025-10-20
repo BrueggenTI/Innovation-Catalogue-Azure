@@ -2,6 +2,8 @@
 
 {% block title %}{{ custom_page.name }} - Brüggen Innovation Platform{% endblock %}
 
+{% block body_attrs %} data-page-title="{{ custom_page.name }}"{% endblock %}
+
 {% block content %}
 <div class="competence-header py-5" style="background-color: white !important;">
     <div class="container-fluid px-4">

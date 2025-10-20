@@ -2,6 +2,8 @@
 
 {% block title %}{{ product.name }} - Brüggen Innovation Catalogue{% endblock %}
 
+{% block body_attrs %} data-page-title="{{ product.name }}"{% endblock %}
+
 {% block content %}
 <style>
 /* Unapproved Raw Material Warning Tooltip */
