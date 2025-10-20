@@ -1083,6 +1083,31 @@ def cocreation():
                          base_product=base_product,
                          from_custom_page_id=from_custom_page_id)
 
+@app.route('/cocreation/drafts')
+@login_required
+def cocreation_drafts():
+    """View all saved Co-Creation drafts for the current user"""
+    try:
+        init_user_session()
+        from models import CoCreationDraft
+        user_id = session.get('user_id')
+        
+        if not user_id:
+            flash('Please log in to view your drafts', 'error')
+            return redirect(url_for('login'))
+        
+        drafts = CoCreationDraft.query.filter_by(user_id=user_id).order_by(CoCreationDraft.updated_at.desc()).all()
+        
+        lang = session.get('language', 'en')
+        
+        return render_template('cocreation_drafts.html',
+                             drafts=drafts,
+                             lang=lang)
+    except Exception as e:
+        logging.error(f"Error loading drafts page: {str(e)}")
+        flash('Error loading drafts', 'error')
+        return redirect(url_for('index'))
+
 @app.route('/cocreation/save_concept', methods=['POST'])
 @csrf.exempt
 @login_required
@@ -1222,6 +1247,157 @@ def download_pdf(session_id):
         logging.error(f"Error downloading PDF: {str(e)}")
         flash('Error downloading PDF', 'error')
         return redirect(url_for('index'))
+
+@app.route('/cocreation/save-draft', methods=['POST'])
+@csrf.exempt
+@login_required
+def save_cocreation_draft():
+    try:
+        init_user_session()
+        data = request.get_json()
+        draft_name = data.get('draft_name', '').strip()
+        product_config = data.get('product_config', '{}')
+        
+        if not draft_name:
+            return jsonify({
+                'success': False,
+                'error': 'Draft name is required'
+            }), 400
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({
+                'success': False,
+                'error': 'User not authenticated'
+            }), 401
+        
+        from models import CoCreationDraft
+        
+        draft = CoCreationDraft()
+        draft.user_id = user_id
+        draft.draft_name = draft_name
+        draft.product_config = product_config
+        
+        db.session.add(draft)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Draft saved successfully',
+            'draft_id': draft.id
+        })
+    
+    except Exception as e:
+        logging.error(f"Error saving draft: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error saving draft: {str(e)}'
+        }), 500
+
+@app.route('/cocreation/load-draft/<int:draft_id>', methods=['GET'])
+@login_required
+def load_cocreation_draft(draft_id):
+    try:
+        init_user_session()
+        from models import CoCreationDraft
+        user_id = session.get('user_id')
+        
+        draft = CoCreationDraft.query.filter_by(id=draft_id, user_id=user_id).first()
+        
+        if not draft:
+            return jsonify({
+                'success': False,
+                'error': 'Draft not found'
+            }), 404
+        
+        return jsonify({
+            'success': True,
+            'draft': {
+                'id': draft.id,
+                'draft_name': draft.draft_name,
+                'product_config': draft.product_config,
+                'created_at': draft.created_at.isoformat() if draft.created_at else None,
+                'updated_at': draft.updated_at.isoformat() if draft.updated_at else None
+            }
+        })
+    
+    except Exception as e:
+        logging.error(f"Error loading draft: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error loading draft: {str(e)}'
+        }), 500
+
+@app.route('/cocreation/delete-draft/<int:draft_id>', methods=['DELETE'])
+@csrf.exempt
+@login_required
+def delete_cocreation_draft(draft_id):
+    try:
+        init_user_session()
+        from models import CoCreationDraft
+        user_id = session.get('user_id')
+        
+        draft = CoCreationDraft.query.filter_by(id=draft_id, user_id=user_id).first()
+        
+        if not draft:
+            return jsonify({
+                'success': False,
+                'error': 'Draft not found'
+            }), 404
+        
+        db.session.delete(draft)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Draft deleted successfully'
+        })
+    
+    except Exception as e:
+        logging.error(f"Error deleting draft: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error deleting draft: {str(e)}'
+        }), 500
+
+@app.route('/cocreation/update-draft/<int:draft_id>', methods=['PUT'])
+@csrf.exempt
+@login_required
+def update_cocreation_draft(draft_id):
+    try:
+        init_user_session()
+        from models import CoCreationDraft
+        data = request.get_json()
+        user_id = session.get('user_id')
+        
+        draft = CoCreationDraft.query.filter_by(id=draft_id, user_id=user_id).first()
+        
+        if not draft:
+            return jsonify({
+                'success': False,
+                'error': 'Draft not found'
+            }), 404
+        
+        if 'draft_name' in data:
+            draft.draft_name = data['draft_name'].strip()
+        
+        if 'product_config' in data:
+            draft.product_config = data['product_config']
+        
+        draft.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Draft updated successfully'
+        })
+    
+    except Exception as e:
+        logging.error(f"Error updating draft: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error updating draft: {str(e)}'
+        }), 500
 
 @app.route('/api/search', methods=['POST'])
 @csrf.exempt

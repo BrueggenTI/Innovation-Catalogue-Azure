@@ -83,6 +83,9 @@ class CoCreationLab {
         // Step 1: Base product selection
         this.bindBaseProductSelection();
 
+        // Product search functionality
+        this.bindProductSearch();
+
         // Step 2: Ingredient selection
         this.bindIngredientSelection();
 
@@ -95,6 +98,8 @@ class CoCreationLab {
         // Step 5: Final review and submission (packaging step removed)
         this.bindFinalSubmission();
 
+        // Draft management
+        this.bindDraftManagement();
 
         // Preview updates
         this.bindPreviewUpdates();
@@ -231,6 +236,150 @@ class CoCreationLab {
                 this.showSuccessAnimation(card);
             });
         });
+    }
+
+    bindProductSearch() {
+        const searchInput = document.getElementById('product-search-input');
+        const clearBtn = document.getElementById('clear-search');
+        const resultsCount = document.getElementById('search-results-count');
+        
+        if (!searchInput) return;
+
+        const filterProducts = () => {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const productCards = document.querySelectorAll('.product-card-col');
+            let visibleCount = 0;
+
+            productCards.forEach(col => {
+                const card = col.querySelector('.base-product-card');
+                if (!card) return;
+
+                const productName = card.dataset.productName?.toLowerCase() || '';
+                const recipeNumber = card.dataset.recipeNumber?.toLowerCase() || '';
+
+                const matches = productName.includes(searchTerm) || recipeNumber.includes(searchTerm);
+
+                if (searchTerm === '' || matches) {
+                    col.style.display = '';
+                    visibleCount++;
+                } else {
+                    col.style.display = 'none';
+                }
+            });
+
+            // Update results count
+            if (resultsCount) {
+                if (searchTerm === '') {
+                    resultsCount.textContent = '';
+                } else {
+                    resultsCount.textContent = `${visibleCount} product${visibleCount !== 1 ? 's' : ''} found`;
+                }
+            }
+
+            // Show/hide clear button
+            if (clearBtn) {
+                clearBtn.style.display = searchTerm ? 'block' : 'none';
+            }
+        };
+
+        // Bind search input event
+        searchInput.addEventListener('input', filterProducts);
+
+        // Bind clear button event
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                filterProducts();
+                searchInput.focus();
+            });
+        }
+    }
+
+    bindDraftManagement() {
+        const saveDraftBtn = document.getElementById('save-draft-btn');
+        const saveDraftModal = document.getElementById('saveDraftModal');
+        const draftNameInput = document.getElementById('draft-name-input');
+        const confirmSaveBtn = document.getElementById('confirm-save-draft');
+
+        if (!saveDraftBtn) return;
+
+        // Open save draft modal
+        saveDraftBtn.addEventListener('click', () => {
+            if (typeof bootstrap !== 'undefined' && saveDraftModal) {
+                const modal = new bootstrap.Modal(saveDraftModal);
+                modal.show();
+                // Clear previous input
+                if (draftNameInput) {
+                    draftNameInput.value = '';
+                    draftNameInput.classList.remove('is-invalid');
+                }
+            }
+        });
+
+        // Confirm save draft
+        if (confirmSaveBtn && draftNameInput) {
+            confirmSaveBtn.addEventListener('click', () => {
+                const draftName = draftNameInput.value.trim();
+
+                if (!draftName) {
+                    draftNameInput.classList.add('is-invalid');
+                    return;
+                }
+
+                draftNameInput.classList.remove('is-invalid');
+
+                // Prepare draft data
+                const draftData = {
+                    draft_name: draftName,
+                    product_config: JSON.stringify(this.config)
+                };
+
+                // Send draft to backend
+                fetch('/cocreation/save-draft', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(draftData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        if (typeof bootstrap !== 'undefined' && saveDraftModal) {
+                            const modal = bootstrap.Modal.getInstance(saveDraftModal);
+                            if (modal) modal.hide();
+                        }
+
+                        // Show success message
+                        this.showSuccessMessage(`Draft "${draftName}" saved successfully!`);
+                    } else {
+                        alert('Failed to save draft: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving draft:', error);
+                    alert('An error occurred while saving the draft.');
+                });
+            });
+        }
+    }
+
+    showSuccessMessage(message) {
+        // Simple success notification (can be enhanced with a proper toast/notification system)
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
     }
 
     bindIngredientPercentages() {

@@ -100,3 +100,13 @@ class CustomRecipePage(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user = db.relationship('User', backref='custom_recipe_pages')
+
+class CoCreationDraft(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    draft_name = db.Column(db.String(200), nullable=False)
+    product_config = db.Column(db.Text, nullable=False)  # JSON string of Co-Creation configuration
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = db.relationship('User', backref='cocreation_drafts')
