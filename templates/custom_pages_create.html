@@ -823,6 +823,12 @@ function initializeFromURL() {
     const urlProductType = '{{ selected_product_type if selected_product_type and selected_product_type != "" and selected_product_type != "None" else "" }}';
     const urlExclusivity = '{{ selected_exclusivity if selected_exclusivity and selected_exclusivity != "" and selected_exclusivity != "None" else "" }}';
     
+    console.log('=== DEBUG initializeFromURL ===');
+    console.log('urlClaim RAW:', urlClaim);
+    console.log('urlClaim length:', urlClaim.length);
+    console.log('urlClaim trimmed:', urlClaim.trim());
+    console.log('URL search params:', window.location.search);
+    
     // Only set filters if they have actual non-empty values
     if (urlCategory && urlCategory.trim() !== '' && urlCategory !== 'None') {
         activeFilters.category = urlCategory;
@@ -831,7 +837,9 @@ function initializeFromURL() {
         activeFilters.ingredient = urlIngredient.split('|').filter(i => i.trim().length > 0);
     }
     if (urlClaim && urlClaim.trim() !== '' && urlClaim !== 'None') {
+        console.log('SETTING activeFilters.claim from urlClaim');
         activeFilters.claim = urlClaim.split('|').filter(c => c.trim().length > 0);
+        console.log('activeFilters.claim after split:', activeFilters.claim);
     }
     if (urlRecipe && urlRecipe.trim() !== '' && urlRecipe !== 'None') {
         activeFilters.recipe = urlRecipe.split('|').filter(r => r.trim().length > 0);

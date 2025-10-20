@@ -3155,6 +3155,9 @@ def custom_pages_create():
     product_type = request.args.get('product_type', '').strip()
     exclusivity = request.args.get('exclusivity', '').strip()
     
+    logging.debug(f"[CUSTOM_PAGES_CREATE] RAW URL parameters - claim: '{claim}', ingredient: '{ingredient}', category: '{category}'")
+    logging.debug(f"[CUSTOM_PAGES_CREATE] Full request.args: {dict(request.args)}")
+    
     # Sanitize only if they have actual values
     category = sanitize_input(category) if category else ''
     ingredient = sanitize_input(ingredient) if ingredient else ''
@@ -3162,6 +3165,8 @@ def custom_pages_create():
     recipe = sanitize_input(recipe) if recipe else ''
     product_type = sanitize_input(product_type) if product_type else ''
     exclusivity = sanitize_input(exclusivity) if exclusivity else ''
+    
+    logging.debug(f"[CUSTOM_PAGES_CREATE] AFTER sanitization - claim: '{claim}', ingredient: '{ingredient}', category: '{category}'")
     
     # Pagination parameters
     page = request.args.get('page', 1, type=int)
