@@ -4142,3 +4142,153 @@ body.modal-open {
         transform: scale(1.05);
     }
 }
+/* ===========================
+   PAGINATION STYLES - Modern 2025 Design
+   =========================== */
+
+/* Pagination Container */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+/* Page Items */
+.page-item {
+    margin: 0;
+}
+
+/* Page Links - Modern Style */
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--brg-color-text-primary);
+    background: white;
+    border: 2px solid var(--brg-color-border-subtle);
+    border-radius: 12px;
+    text-decoration: none;
+    transition: var(--btn-transition-fast);
+    cursor: pointer;
+    box-shadow: var(--btn-shadow-sm);
+}
+
+.page-link:hover {
+    color: white;
+    background: var(--brg-color-primary);
+    border-color: var(--brg-color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--btn-shadow-primary-hover);
+}
+
+.page-link:focus {
+    outline: none;
+    box-shadow: var(--brg-focus-shadow);
+    z-index: 2;
+}
+
+/* Active Page */
+.page-item.active .page-link {
+    color: white;
+    background: linear-gradient(135deg, var(--brg-color-primary) 0%, #7a2139 100%);
+    border-color: var(--brg-color-primary);
+    box-shadow: var(--btn-shadow-primary);
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Disabled State */
+.page-item.disabled .page-link {
+    color: #9CA3AF;
+    background: #F9FAFB;
+    border-color: #E5E7EB;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+/* Previous/Next Buttons - Larger with Icons */
+.page-item:first-child .page-link,
+.page-item:last-child .page-link {
+    padding: 0 20px;
+    font-weight: 700;
+    gap: 8px;
+}
+
+.page-item:first-child .page-link:hover,
+.page-item:last-child .page-link:hover {
+    background: var(--brg-color-secondary);
+    border-color: var(--brg-color-secondary);
+    box-shadow: var(--btn-shadow-coral-hover);
+}
+
+/* Ellipsis Styling */
+.page-item.disabled .page-link {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    min-width: auto;
+    padding: 0 8px;
+    color: #9CA3AF;
+    font-size: 18px;
+    letter-spacing: 2px;
+}
+
+/* Pagination Info Text */
+.pagination + .text-center {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--brg-color-text-secondary);
+    font-weight: 500;
+}
+
+/* Responsive Pagination */
+@media (max-width: 768px) {
+    .page-link {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+    
+    .page-item:first-child .page-link,
+    .page-item:last-child .page-link {
+        padding: 0 16px;
+    }
+    
+    /* Hide some page numbers on mobile */
+    .page-item:not(.active):not(:first-child):not(:last-child):not(.disabled) {
+        display: none;
+    }
+    
+    .page-item.active,
+    .page-item.disabled {
+        display: block;
+    }
+}
+
+/* Animation for Page Transition */
+@keyframes pageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.products-section .row,
+#recipesContainer {
+    animation: pageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}

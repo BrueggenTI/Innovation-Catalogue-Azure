@@ -865,6 +865,48 @@ def update_exclusive_info(id):
             'error': str(e)
         }), 500
 
+@app.route('/product/<int:id>/update-description', methods=['POST'])
+@login_required
+def update_product_description(id):
+    """Update product description"""
+    init_user_session()
+    product = Product.query.get_or_404(id)
+    
+    try:
+        data = request.get_json()
+        description = data.get('description', '').strip()
+        
+        if not description:
+            return jsonify({
+                'success': False,
+                'error': 'Description cannot be empty'
+            }), 400
+        
+        if len(description) > 500:
+            return jsonify({
+                'success': False,
+                'error': 'Description must be 500 characters or less'
+            }), 400
+        
+        # Update product description
+        product.description = description
+        db.session.commit()
+        
+        logging.info(f"Updated description for product {id}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Description updated successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error updating product description: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/product/<int:id>/update-image', methods=['POST'])
 @login_required
 def update_product_image(id):

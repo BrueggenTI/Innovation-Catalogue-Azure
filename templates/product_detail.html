@@ -272,7 +272,34 @@
                     <div class="mb-4"></div>
                     {% endif %}
                     
-                    <p class="lead text-muted mb-4">{{ product.description }}</p>
+                    <!-- Product Description with Edit Functionality -->
+                    <div class="product-description-section mb-4">
+                        <!-- View Mode -->
+                        <div id="descriptionView">
+                            <p class="lead text-muted mb-2">{{ product.description }}</p>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleDescriptionEdit()">
+                                <i class="fas fa-edit me-1"></i>{{ get_text('edit_description', lang) }}
+                            </button>
+                        </div>
+                        
+                        <!-- Edit Mode -->
+                        <div id="descriptionEdit" style="display: none;">
+                            <form id="descriptionForm">
+                                <textarea class="form-control mb-3" id="descriptionInput" name="description" rows="3" maxlength="500">{{ product.description }}</textarea>
+                                <div class="text-muted small mb-3">
+                                    <span id="charCount">{{ product.description|length }}</span>/500 {{ get_text('characters', lang) }}
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelDescriptionEdit()">
+                                        <i class="fas fa-times me-1"></i>{{ get_text('cancel', lang) }}
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="saveDescription()">
+                                        <i class="fas fa-save me-1"></i>{{ get_text('save', lang) }}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                     
                     <div class="product-actions d-flex flex-column align-items-center gap-3">
                         <a href="{{ url_for('cocreation') }}?base_product={{ product.id }}{% if from_custom_page_id %}&from_custom_page={{ from_custom_page_id }}{% endif %}" class="btn btn-primary btn-lg rounded-pill px-5">
@@ -896,6 +923,39 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.transform = 'scale(1)';
         });
     });
+    
+    // Initialize Image Upload Drag & Drop
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('imageFileInput');
+
+    if (dropZone && fileInput) {
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleImageFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleImageFile(e.target.files[0]);
+            }
+        });
+    }
 });
 
 // Image Upload Modal Functions
@@ -912,39 +972,6 @@ function closeImageUploadModal() {
     document.getElementById('imageUploadForm').reset();
     document.getElementById('imagePreview').style.display = 'none';
     document.getElementById('dropZone').style.display = 'block';
-}
-
-// Drag and Drop Handlers
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('imageFileInput');
-
-if (dropZone && fileInput) {
-    dropZone.addEventListener('click', () => fileInput.click());
-    
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    });
-    
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('dragover');
-    });
-    
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleImageFile(files[0]);
-        }
-    });
-    
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleImageFile(e.target.files[0]);
-        }
-    });
 }
 
 function handleImageFile(file) {
@@ -972,6 +999,94 @@ function handleImageFile(file) {
 
 function changeImage() {
     document.getElementById('imageFileInput').click();
+}
+
+// Description Edit Functions
+function toggleDescriptionEdit() {
+    document.getElementById('descriptionView').style.display = 'none';
+    document.getElementById('descriptionEdit').style.display = 'block';
+    document.getElementById('descriptionInput').focus();
+    
+    // Update character count
+    updateCharCount();
+    
+    // Add event listener for character count
+    document.getElementById('descriptionInput').addEventListener('input', updateCharCount);
+}
+
+function cancelDescriptionEdit() {
+    document.getElementById('descriptionEdit').style.display = 'none';
+    document.getElementById('descriptionView').style.display = 'block';
+    
+    // Reset the textarea to original value
+    document.getElementById('descriptionInput').value = {{ product.description|tojson }};
+}
+
+function updateCharCount() {
+    const textarea = document.getElementById('descriptionInput');
+    const charCount = document.getElementById('charCount');
+    charCount.textContent = textarea.value.length;
+}
+
+function saveDescription() {
+    const textarea = document.getElementById('descriptionInput');
+    const description = textarea.value.trim();
+    
+    if (!description) {
+        alert('Description cannot be empty.');
+        return;
+    }
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    
+    // Show loading state
+    const saveButton = event.target;
+    const originalText = saveButton.innerHTML;
+    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+    saveButton.disabled = true;
+    
+    // Send AJAX request
+    fetch(`/product/{{ product.id }}/update-description`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ description: description })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Update the description in view mode
+            document.querySelector('#descriptionView p').textContent = description;
+            
+            // Show success message
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = '<i class="fas fa-check me-2"></i>Description updated successfully!';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+            
+            // Switch back to view mode
+            cancelDescriptionEdit();
+        } else {
+            throw new Error(result.error || 'Save failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving description:', error);
+        alert('Failed to save description. Please try again.');
+    })
+    .finally(() => {
+        saveButton.innerHTML = originalText;
+        saveButton.disabled = false;
+    });
 }
 
 function uploadImage() {
