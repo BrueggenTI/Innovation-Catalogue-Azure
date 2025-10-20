@@ -737,7 +737,19 @@ let activeFilters = {
 const allCategories = {{ categories|tojson }};
 const allIngredients = {{ ingredients|tojson }};
 const allClaims = {{ claims|tojson }};
-const productsData = {{ products|tojson }};
+const productsData = [
+    {% for product in products %}
+    {
+        id: {{ product.id }},
+        category: "{{ product.category }}",
+        ingredients: {{ product.ingredients|safe if product.ingredients else '[]' }},
+        claims: {{ product.claims|safe if product.claims else '[]' }},
+        recipeNumber: "{{ product.recipe_number if product.recipe_number else '' }}",
+        name: "{{ product.name }}",
+        isExclusive: {{ 'true' if product.is_exclusive else 'false' }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
