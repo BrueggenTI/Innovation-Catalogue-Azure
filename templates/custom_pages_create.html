@@ -88,7 +88,7 @@
                         <div class="filter-count text-muted small">{{ categories|length }} {{ get_text('available', lang) }}</div>
                     </div>
                 </div>
-                
+
                 <div class="col filter-col-equal">
                     <div class="filter-header" data-filter="ingredient">
                         <h6 class="mb-2 fw-semibold text-dark">
@@ -98,7 +98,7 @@
                         <div class="filter-count text-muted small">{{ ingredients|length }} {{ get_text('available', lang) }}</div>
                     </div>
                 </div>
-                
+
                 <div class="col filter-col-equal">
                     <div class="filter-header" data-filter="claim">
                         <h6 class="mb-2 fw-semibold text-dark">
@@ -108,7 +108,7 @@
                         <div class="filter-count text-muted small">{{ claims|length }} {{ get_text('available', lang) }}</div>
                     </div>
                 </div>
-                
+
                 <div class="col filter-col-equal">
                     <div class="filter-header" data-filter="product_type">
                         <h6 class="mb-2 fw-semibold text-dark">
@@ -118,7 +118,7 @@
                         <div class="filter-count text-muted small">{{ product_types|length }} {{ get_text('available', lang) }}</div>
                     </div>
                 </div>
-                
+
                 <div class="col filter-col-equal">
                     <div class="filter-header" data-filter="exclusivity">
                         <h6 class="mb-2 fw-semibold text-dark">
@@ -148,11 +148,11 @@
                     {% endfor %}
                 </div>
             </div>
-            
+
             <!-- Ingredient Options with Search -->
             <div class="filter-options" id="ingredientOptions" style="display: none;">
                 <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_key_ingredient', lang) }}</h6>
-                
+
                 <!-- Search Bar -->
                 <div class="filter-search-container mb-3">
                     <div class="input-group">
@@ -162,7 +162,7 @@
                         <input type="text" class="form-control border-start-0 ps-0" id="ingredientFilterSearch" placeholder="Search ingredients...">
                     </div>
                 </div>
-                
+
                 <div class="filter-compact-container">
                     <div class="row g-2" id="ingredientList">
                         {% for ingredient in ingredients %}
@@ -175,11 +175,11 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Claim Options with Search -->
             <div class="filter-options" id="claimOptions" style="display: none;">
                 <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_claims', lang) }}</h6>
-                
+
                 <!-- Search Bar -->
                 <div class="filter-search-container mb-3">
                     <div class="input-group">
@@ -189,7 +189,7 @@
                         <input type="text" class="form-control border-start-0 ps-0" id="claimFilterSearch" placeholder="Search claims...">
                     </div>
                 </div>
-                
+
                 <div class="filter-compact-container">
                     <div class="row g-2" id="claimList">
                         {% for claim in claims %}
@@ -202,7 +202,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Product Type Options -->
             <div class="filter-options" id="product_typeOptions" style="display: none;">
                 <h6 class="fw-semibold mb-3 text-dark">Select Product Type</h6>
@@ -216,7 +216,7 @@
                     {% endfor %}
                 </div>
             </div>
-            
+
             <!-- Exclusivity Options (Modern Button Style) -->
             <div class="filter-options" id="exclusivityOptions" style="display: none;">
                 <h6 class="fw-semibold mb-3 text-dark">Select Exclusivity</h6>
@@ -250,7 +250,7 @@
                     <i class="fas fa-chevron-left"></i> Previous
                 </a>
             </li>
-            
+
             {% for page_num in range(1, pagination.total_pages + 1) %}
                 {% if page_num == pagination.page %}
                     <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
@@ -260,7 +260,7 @@
                     <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
             {% endfor %}
-            
+
             <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
                 <a class="page-link" href="{% if pagination.has_next %}{{ url_for('custom_pages_create', category=selected_category if selected_category else None, ingredient=selected_ingredient if selected_ingredient else None, claim=selected_claim if selected_claim else None, recipe=selected_recipe if selected_recipe else None, product_type=selected_product_type if selected_product_type else None, exclusivity=selected_exclusivity if selected_exclusivity else None, page=pagination.next_page) }}{% else %}#{% endif %}">
                     Next <i class="fas fa-chevron-right"></i>
@@ -284,17 +284,17 @@
              data-exclusivity="{{ 'exclusive' if product.is_exclusive else 'non-exclusive' }}"
              data-ingredients="{{ product.flattened_ingredient_names|join('|') if product.flattened_ingredient_names else '' }}"
              data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
-            
+
             <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" 
                  style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %} cursor: pointer; transition: all 0.2s ease;"
                  onclick="toggleRecipe({{ product.id }})">
-                
+
                 <!-- Recipe Checkbox -->
                 <div class="recipe-checkbox" style="position: absolute; top: 6px; right: 6px; z-index: 20;">
                     <i class="far fa-square unchecked-icon" style="font-size: 18px; color: white; text-shadow: 0 0 3px rgba(0,0,0,0.5);"></i>
                     <i class="fas fa-check-square checked-icon" style="display: none; font-size: 18px; color: #661c31; text-shadow: 0 0 3px rgba(255,255,255,0.8);"></i>
                 </div>
-                
+
                 <!-- Wrapper for Image + Content (for Overlay area) -->
                 <div class="product-hoverable-area position-relative">
                     <!-- Unapproved Material Hover Overlay -->
@@ -306,15 +306,15 @@
                         </div>
                     </div>
                     {% endif %}
-                    
+
                     <div class="product-image-container">
                         <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 130px; object-fit: cover;">
-                        
+
                         <!-- Badges container -->
                         <div class="product-badges-container" style="position: absolute; top: 6px; left: 6px; right: 40px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 2px; flex-wrap: wrap; row-gap: 2px;">
                             <!-- Category Badge (first) -->
                             <div class="product-category-badge-compact" style="position: static; order: 1; font-size: 10px; padding: 3px 8px;">{{ product.category }}</div>
-                            
+
                             <!-- Recipe Status Badge (second) -->
                             {% if product.recipe_number %}
                                 {% set recipe_digits = product.recipe_number.lstrip('0') %}
@@ -328,7 +328,7 @@
                                     </div>
                                 {% endif %}
                             {% endif %}
-                            
+
                             <!-- Exclusive Badge -->
                             {% if product.is_exclusive %}
                                 {% set tooltip_text = get_text('exclusive_product', lang) %}
@@ -348,7 +348,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <div class="card-body-content px-2 pb-2" style="padding-top: 0 !important;">
                         <h6 class="card-title fw-bold text-primary mb-0" style="font-size: 12px; line-height: 1.2;">{{ product.name }}</h6>
                     </div>
@@ -357,7 +357,7 @@
         </div>
         {% endfor %}
     </div>
-    
+
     <!-- Pagination Navigation (Bottom) -->
     {% if pagination and pagination.total_pages > 1 %}
     <nav aria-label="Recipe pagination" class="mt-5">
@@ -367,7 +367,7 @@
                     <i class="fas fa-chevron-left"></i> Previous
                 </a>
             </li>
-            
+
             {% for page_num in range(1, pagination.total_pages + 1) %}
                 {% if page_num == pagination.page %}
                     <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
@@ -377,7 +377,7 @@
                     <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
             {% endfor %}
-            
+
             <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
                 <a class="page-link" href="{% if pagination.has_next %}{{ url_for('custom_pages_create', page=pagination.next_page) }}{% else %}#{% endif %}">
                     Next <i class="fas fa-chevron-right"></i>
@@ -804,14 +804,14 @@ document.addEventListener('DOMContentLoaded', function() {
         product_type: '', // Product or Development
         exclusivity: '' // exclusive, non-exclusive, or both
     };
-    
+
     // Only set filters if they have actual meaningful values from URL
     const urlCategory = '{{ selected_category if selected_category and selected_category.strip() and selected_category != "None" else "" }}';
     const urlIngredient = '{{ selected_ingredient if selected_ingredient and selected_ingredient.strip() and selected_ingredient != "None" else "" }}';
     const urlClaim = '{{ selected_claim if selected_claim and selected_claim.strip() and selected_claim != "None" else "" }}';
     const urlProductType = '{{ selected_product_type if selected_product_type and selected_product_type.strip() and selected_product_type != "None" else "" }}';
     const urlExclusivity = '{{ selected_exclusivity if selected_exclusivity and selected_exclusivity.strip() and selected_exclusivity != "None" else "" }}';
-    
+
     if (urlCategory && urlCategory.trim().length > 0) {
         activeFilters.category = urlCategory.trim();
     }
@@ -829,9 +829,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (urlExclusivity && urlExclusivity.trim().length > 0) {
         activeFilters.exclusivity = urlExclusivity.trim();
     }
-    
+
     let currentOpenFilter = null;
-    
+
     // Parse URL parameters and set initial filters
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('category')) {
@@ -850,13 +850,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize active filters on page load
     updateActiveFiltersDisplay();
     updateButtonVisualState();
-    
+
     // Initialize search functionality
     initializeUniversalSearch();
-    
+
     // Make functions globally accessible for inline onclick handlers
     window.removeFilter = removeFilter;
-    
+
     // Filter header click handlers
     document.querySelectorAll('.filter-header').forEach(header => {
         header.addEventListener('click', function() {
@@ -864,7 +864,7 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleFilterOptions(filterType);
         });
     });
-    
+
     // Filter option button handlers
     document.querySelectorAll('.filter-option-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -873,7 +873,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectFilter(filterType, filterValue);
         });
     });
-    
+
     // Compact filter button handlers (for ingredients and claims)
     document.querySelectorAll('.filter-option-btn-compact').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -882,28 +882,28 @@ document.addEventListener('DOMContentLoaded', function() {
             selectFilter(filterType, filterValue);
         });
     });
-    
+
     // Exclusivity button handlers
     document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const value = this.dataset.exclusivity;
             activeFilters.exclusivity = value;
-            
+
             // Update visual state
             document.querySelectorAll('.exclusivity-filter-btn').forEach(b => b.classList.remove('selected'));
             this.classList.add('selected');
-            
+
             redirectToBackend();
         });
     });
-    
+
     // Search functionality for ingredients
-    const ingredientSearch = document.getElementById('ingredientSearch');
+    const ingredientSearch = document.getElementById('ingredientFilterSearch');
     if (ingredientSearch) {
         ingredientSearch.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase().trim();
             const ingredientItems = document.querySelectorAll('#ingredientList .filter-item');
-            
+
             ingredientItems.forEach(item => {
                 const text = item.dataset.filterText || '';
                 if (text.includes(searchTerm)) {
@@ -914,14 +914,14 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // Search functionality for claims
-    const claimSearch = document.getElementById('claimSearch');
+    const claimSearch = document.getElementById('claimFilterSearch');
     if (claimSearch) {
         claimSearch.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase().trim();
             const claimItems = document.querySelectorAll('#claimList .filter-item');
-            
+
             claimItems.forEach(item => {
                 const text = item.dataset.filterText || '';
                 if (text.includes(searchTerm)) {
@@ -932,17 +932,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     function toggleFilterOptions(filterType) {
         const filterHeader = document.querySelector(`[data-filter="${filterType}"]`);
         const filterOptions = document.getElementById(`${filterType}Options`);
         const filterOptionsSection = document.getElementById('filterOptionsSection');
-        
+
         // Close currently open filter if different
         if (currentOpenFilter && currentOpenFilter !== filterType) {
             closeFilter(currentOpenFilter);
         }
-        
+
         // Toggle current filter
         if (currentOpenFilter === filterType) {
             closeFilter(filterType);
@@ -952,36 +952,36 @@ document.addEventListener('DOMContentLoaded', function() {
             currentOpenFilter = filterType;
         }
     }
-    
+
     function openFilter(filterType) {
         const filterHeader = document.querySelector(`[data-filter="${filterType}"]`);
         const filterOptions = document.getElementById(`${filterType}Options`);
         const filterOptionsSection = document.getElementById('filterOptionsSection');
-        
+
         // Hide all other filter options
         document.querySelectorAll('.filter-options').forEach(option => {
             option.style.display = 'none';
         });
-        
+
         // Remove active class from all headers
         document.querySelectorAll('.filter-header').forEach(header => {
             header.classList.remove('active');
         });
-        
+
         // Show the selected filter
         filterHeader.classList.add('active');
         filterOptionsSection.style.display = 'block';
         filterOptions.style.display = 'block';
     }
-    
+
     function closeFilter(filterType) {
         const filterHeader = document.querySelector(`[data-filter="${filterType}"]`);
         const filterOptionsSection = document.getElementById('filterOptionsSection');
-        
+
         filterHeader.classList.remove('active');
         filterOptionsSection.style.display = 'none';
     }
-    
+
     function selectFilter(filterType, value) {
         if (filterType === 'ingredient') {
             // Handle multiple ingredient selection
@@ -1011,11 +1011,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeFilters[filterType] = value;
             }
         }
-        
+
         // Redirect to backend with updated filters for server-side processing
         redirectToBackend();
     }
-    
+
     function removeFilter(filterType, specificValue = null) {
         if (filterType === 'ingredient' && specificValue) {
             // Remove specific ingredient
@@ -1047,19 +1047,19 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             activeFilters[filterType] = '';
         }
-        
+
         // Redirect to backend with updated filters for server-side processing
         redirectToBackend();
     }
-    
+
     function updateActiveFiltersDisplay() {
         const activeFiltersContainer = document.getElementById('activeFilters');
         const activeFiltersSection = document.getElementById('activeFiltersSection');
-        
+
         activeFiltersContainer.innerHTML = '';
-        
+
         let hasActiveFilters = false;
-        
+
         Object.keys(activeFilters).forEach(filterType => {
             const value = activeFilters[filterType];
             if ((filterType === 'ingredient' || filterType === 'claim' || filterType === 'recipeNumber') && Array.isArray(value) && value.length > 0) {
@@ -1088,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 hasActiveFilters = true;
                 const filterBtn = document.createElement('button');
                 filterBtn.className = 'active-filter-btn';
-                
+
                 // Display text based on filter type
                 let displayText = value;
                 if (filterType === 'product_type') {
@@ -1096,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (filterType === 'exclusivity') {
                     displayText = value === 'exclusive' ? 'Exclusive Only' : 'Non-Exclusive Only';
                 }
-                
+
                 filterBtn.innerHTML = `
                     ${displayText}
                     <span class="remove-filter" onclick="removeFilter('${filterType}')">
@@ -1111,18 +1111,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeFiltersContainer.appendChild(filterBtn);
             }
         });
-        
+
         activeFiltersSection.style.display = hasActiveFilters ? 'block' : 'none';
     }
-    
+
     // Removed applyClientSideFilters() - now using backend-only filtering
-    
+
     // Global function for clear all filters
     window.clearAllFilters = function() {
         // Simply redirect to competence page without any parameters
         window.location.href = '/custom-pages/create';
     };
-    
+
     // New function to redirect to backend with current filters
     function redirectToBackend() {
         const params = new URLSearchParams();
@@ -1132,13 +1132,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (activeFilters.recipeNumber.length > 0) params.set('recipe', activeFilters.recipeNumber.join('|'));
         if (activeFilters.product_type) params.set('product_type', activeFilters.product_type);
         if (activeFilters.exclusivity && activeFilters.exclusivity !== 'both') params.set('exclusivity', activeFilters.exclusivity);
-        
+
         const newUrl = '/custom-pages/create' + (params.toString() ? '?' + params.toString() : '');
         window.location.href = newUrl;
     }
-    
+
     // Removed getFilteredProducts() - now using backend-only filtering
-    
+
     function getProductIdFromCard(card) {
         const viewDetailsBtn = card.querySelector('a[href*="/product/"]');
         if (viewDetailsBtn) {
@@ -1147,22 +1147,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return null;
     }
-    
+
     // Removed updateAvailableOptions() - counts are now handled by backend
-    
+
     // Removed updateProductCount() - count is now handled by backend
-    
+
     function updateURL() {
         const params = new URLSearchParams();
         if (activeFilters.category) params.set('category', activeFilters.category);
         if (activeFilters.ingredient.length > 0) params.set('ingredient', activeFilters.ingredient.join('|'));
         if (activeFilters.claim.length > 0) params.set('claim', activeFilters.claim.join('|'));
         if (activeFilters.recipeNumber.length > 0) params.set('recipe', activeFilters.recipeNumber.join('|'));
-        
+
         const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
         window.history.pushState({}, '', newUrl);
     }
-    
+
     function updateButtonVisualState() {
         // Update ingredient buttons (both regular and compact)
         document.querySelectorAll('.filter-option-btn[data-filter="ingredient"], .filter-option-btn-compact[data-filter="ingredient"]').forEach(btn => {
@@ -1173,7 +1173,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.classList.remove('selected');
             }
         });
-        
+
         // Update category buttons  
         document.querySelectorAll('.filter-option-btn[data-filter="category"]').forEach(btn => {
             const value = btn.dataset.value;
@@ -1183,7 +1183,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.classList.remove('selected');
             }
         });
-        
+
         // Update claim buttons (both regular and compact)
         document.querySelectorAll('.filter-option-btn[data-filter="claim"], .filter-option-btn-compact[data-filter="claim"]').forEach(btn => {
             const value = btn.dataset.value;
@@ -1193,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.classList.remove('selected');
             }
         });
-        
+
         // Update product type buttons
         document.querySelectorAll('.filter-option-btn[data-filter="product_type"]').forEach(btn => {
             const value = btn.dataset.value;
@@ -1203,7 +1203,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.classList.remove('selected');
             }
         });
-        
+
         // Update exclusivity buttons
         document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
             const value = btn.dataset.exclusivity;
@@ -1214,12 +1214,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Global function for removing individual filters
     window.removeFilter = function(filterType, specificValue = null) {
         removeFilter(filterType, specificValue);
     };
-    
+
     // Close filter options when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.filter-header') && !e.target.closest('.filter-options-section')) {
@@ -1229,23 +1229,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // Handle base product selection (existing functionality)
     document.querySelectorAll('.select-base-btn').forEach(button => {
         button.addEventListener('click', function() {
             const productId = this.dataset.productId;
             const productName = this.dataset.productName;
-            
+
             // Update modal content
             document.getElementById('selectedProductName').textContent = productName;
             document.getElementById('viewDetailsBtn').href = `/product/${productId}`;
             document.getElementById('startCoCreationBtn').href = `/cocreation?base_product=${productId}`;
-            
+
             // Show modal
             new bootstrap.Modal(document.getElementById('quickActionsModal')).show();
         });
     });
-    
+
     // Add smooth animations (existing functionality)
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -1255,48 +1255,48 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     document.querySelectorAll('.product-card').forEach(card => {
         observer.observe(card);
     });
-    
+
     // Universal Search Functionality - moved inside DOMContentLoaded for proper scope
     function initializeUniversalSearch() {
     const searchInput = document.getElementById('universalSearch');
     const searchResults = document.getElementById('searchResults');
     const clearButton = document.getElementById('clearSearch');
     let searchTimeout;
-    
+
     if (!searchInput) return; // Guard clause
-    
+
     // Search input handler
     searchInput.addEventListener('input', function() {
         const query = this.value.trim();
-        
+
         clearTimeout(searchTimeout);
-        
+
         if (query.length === 0) {
             hideSearchResults();
             clearButton.style.display = 'none';
             return;
         }
-        
+
         clearButton.style.display = 'block';
-        
+
         // Debounce search
         searchTimeout = setTimeout(() => {
             performSearch(query);
         }, 300);
     });
-    
+
     // Add Enter key handler for recipe number search
     searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             const query = this.value.trim();
-            
+
             if (query.length === 0) return;
-            
+
             // Check if query looks like a recipe number (contains digits)
             if (/\d/.test(query)) {
                 // Filter products by recipe number containing the query
@@ -1309,7 +1309,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // Clear button handler
     clearButton.addEventListener('click', function() {
         searchInput.value = '';
@@ -1317,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.style.display = 'none';
         searchInput.focus();
     });
-    
+
     // Click outside to close
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.search-container')) {
@@ -1329,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function performSearch(query) {
         const searchResults = document.getElementById('searchResults');
         const resultsContent = searchResults.querySelector('.search-results-content');
-        
+
         // Search through all available data
         const results = {
             categories: [],
@@ -1337,30 +1337,30 @@ document.addEventListener('DOMContentLoaded', function() {
             claims: [],
             recipeNumbers: []
         };
-        
+
         const lowerQuery = query.toLowerCase();
-        
+
         // Search categories
         allCategories.forEach(category => {
             if (category.toLowerCase().includes(lowerQuery)) {
                 results.categories.push(category);
             }
         });
-        
+
         // Search ingredients
         allIngredients.forEach(ingredient => {
             if (ingredient.toLowerCase().includes(lowerQuery)) {
                 results.ingredients.push(ingredient);
             }
         });
-        
+
         // Search claims
         allClaims.forEach(claim => {
             if (claim.toLowerCase().includes(lowerQuery)) {
                 results.claims.push(claim);
             }
         });
-        
+
         // Search recipe numbers and product names
         const uniqueRecipeNumbers = new Set();
         productsData.forEach(product => {
@@ -1369,10 +1369,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         results.recipeNumbers = Array.from(uniqueRecipeNumbers);
-        
+
         // Build results HTML
         let html = '';
-        
+
         if (results.categories.length > 0) {
             html += '<div class="search-category">Categories</div>';
             results.categories.forEach(category => {
@@ -1382,7 +1382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                          </div>`;
             });
         }
-        
+
         if (results.ingredients.length > 0) {
             html += '<div class="search-category">Key Ingredients</div>';
             results.ingredients.forEach(ingredient => {
@@ -1392,7 +1392,7 @@ document.addEventListener('DOMContentLoaded', function() {
                          </div>`;
             });
         }
-        
+
         if (results.claims.length > 0) {
             html += '<div class="search-category">Claims</div>';
             results.claims.forEach(claim => {
@@ -1402,10 +1402,10 @@ document.addEventListener('DOMContentLoaded', function() {
                          </div>`;
             });
         }
-        
+
         if (results.recipeNumbers.length > 0) {
             html += '<div class="search-category">Recipe Numbers</div>';
-            
+
             // Create placeholder items first
             results.recipeNumbers.forEach(recipeNum => {
                 html += `<div class="recipe-number-result-item loading" data-type="recipe" data-value="${recipeNum}" id="recipe-${recipeNum}">
@@ -1420,26 +1420,26 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                          </div>`;
             });
-            
+
             // Load product data asynchronously
             results.recipeNumbers.forEach(async (recipeNum) => {
                 try {
                     const productData = await getProductDataForRecipe(recipeNum);
                     const recipeElement = document.getElementById(`recipe-${recipeNum}`);
-                    
+
                     if (recipeElement && productData) {
                         const nameElement = recipeElement.querySelector('.recipe-name-display');
                         const imageContainer = recipeElement.querySelector('.recipe-image-right');
-                        
+
                         // Update name
                         nameElement.textContent = productData.name;
                         nameElement.classList.remove('loading-text');
-                        
+
                         // Update image
                         imageContainer.innerHTML = productData.image ? 
                             `<img src="${productData.image}" alt="${productData.name}" class="recipe-result-image" onerror="this.style.display='none'">` :
                             '<div class="recipe-image-placeholder"><i class="fas fa-utensils"></i></div>';
-                        
+
                         recipeElement.classList.remove('loading');
                     } else if (recipeElement) {
                         // Handle unknown recipe
@@ -1454,14 +1454,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-        
+
         if (html === '') {
             html = '<div class="search-no-results">No results found for "' + query + '"</div>';
         }
-        
+
         resultsContent.innerHTML = html;
         showSearchResults();
-        
+
         // Add click handlers to results
         resultsContent.querySelectorAll('.search-result-item, .recipe-number-result-item').forEach(item => {
             item.addEventListener('click', function() {
@@ -1502,7 +1502,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('universalSearch').value = '';
         hideSearchResults();
         document.getElementById('clearSearch').style.display = 'none';
-        
+
         // Handle different result types
         switch(type) {
             case 'category':
@@ -1558,7 +1558,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function hideSearchResults() {
         document.getElementById('searchResults').style.display = 'none';
     }
-    
+
     // Initialize Bootstrap tooltips for exclusive badges
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {

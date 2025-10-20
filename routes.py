@@ -3166,13 +3166,14 @@ def custom_pages_create():
     product_type = sanitize_input(product_type) if product_type else ''
     exclusivity = sanitize_input(exclusivity) if exclusivity else ''
     
-    # CRITICAL: Convert empty strings to None to prevent template rendering issues
-    category = category if category else None
-    ingredient = ingredient if ingredient else None
-    claim = claim if claim else None
-    recipe = recipe if recipe else None
-    product_type = product_type if product_type else None
-    exclusivity = exclusivity if exclusivity else None
+    # CRITICAL: Ensure empty values are truly empty strings, not None
+    # This prevents Jinja2 from rendering "None" as a string
+    category = category if category and category != 'None' else ''
+    ingredient = ingredient if ingredient and ingredient != 'None' else ''
+    claim = claim if claim and claim != 'None' else ''
+    recipe = recipe if recipe and recipe != 'None' else ''
+    product_type = product_type if product_type and product_type != 'None' else ''
+    exclusivity = exclusivity if exclusivity and exclusivity != 'None' else ''
     
     logging.debug(f"[CUSTOM_PAGES_CREATE] AFTER sanitization - claim: '{claim}', ingredient: '{ingredient}', category: '{category}'")
     
