@@ -3068,6 +3068,9 @@ def custom_pages_create():
             logging.error(f"Unexpected error processing nutritional claims for product {product.id}: {e}")
             product.parsed_nutritional_claims = []
         
+        # Check for unapproved raw materials
+        product.has_unapproved_material = contains_unapproved_material(product)
+        
         # Collect unique values
         if product.category:
             categories_set.add(product.category)

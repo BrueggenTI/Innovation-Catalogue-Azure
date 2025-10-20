@@ -50,20 +50,26 @@
         </div>
     </div>
 
-    <!-- Search Section -->
-    <div class="search-section py-3 bg-white border-bottom mb-3">
-        <div class="container-fluid">
+    <!-- Universal Search Section -->
+    <div class="search-section py-3 bg-white border-bottom">
+        <div class="container-fluid px-4">
             <div class="search-container position-relative">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="fas fa-search text-muted"></i>
                     </span>
-                    <input type="text" class="form-control border-start-0" id="recipeSearch" 
-                           placeholder="Search recipes by name..." 
+                    <input type="text" class="form-control border-start-0" id="universalSearch" 
+                           placeholder="{{ get_text('search_categories_ingredients', lang) }}" 
                            autocomplete="off">
-                    <button class="btn btn-outline-secondary" type="button" id="clearSearch" onclick="clearSearch()" style="display: none;">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                         <i class="fas fa-times"></i>
                     </button>
+                </div>
+                <!-- Search Results Dropdown -->
+                <div class="search-results" id="searchResults" style="display: none;">
+                    <div class="search-results-content">
+                        <!-- Results will be populated here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -110,6 +116,16 @@
                             <i class="fas fa-chevron-down filter-chevron ms-2"></i>
                         </h6>
                         <div class="filter-count text-muted small">{{ product_types|length }} {{ get_text('available', lang) }}</div>
+                    </div>
+                </div>
+                
+                <div class="col filter-col-equal">
+                    <div class="filter-header" data-filter="exclusivity">
+                        <h6 class="mb-2 fw-semibold text-dark">
+                            <i class="fas fa-star me-2" style="color: #661c31;"></i>Exclusivity
+                            <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                        </h6>
+                        <div class="filter-count text-muted small">Filter by status</div>
                     </div>
                 </div>
             </div>
@@ -200,39 +216,137 @@
                     {% endfor %}
                 </div>
             </div>
+            
+            <!-- Exclusivity Options (Modern Button Style) -->
+            <div class="filter-options" id="exclusivityOptions" style="display: none;">
+                <h6 class="fw-semibold mb-3 text-dark">Select Exclusivity</h6>
+                <div class="row g-2">
+                    <div class="col-auto">
+                        <button type="button" class="exclusivity-filter-btn" data-exclusivity="both">
+                            <i class="fas fa-layer-group me-2"></i>Both
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="exclusivity-filter-btn" data-exclusivity="exclusive">
+                            <i class="fas fa-star text-warning me-2"></i>Exclusive Only
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="exclusivity-filter-btn" data-exclusivity="non-exclusive">
+                            <i class="fas fa-cube me-2"></i>Non-Exclusive Only
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Recipe Grid -->
-    <div class="row g-3" id="recipesContainer">
+    <div class="row g-4" id="recipesContainer">
         {% for product in products %}
-        <div class="col-md-6 col-lg-3 recipe-item" 
+        <div class="col-lg-4 col-md-6 recipe-item" 
              data-product-id="{{ product.id }}"
              data-product-name="{{ product.name|lower }}"
              data-category="{{ product.category }}"
              data-product-type="{{ product.product_type }}"
+             data-exclusivity="{{ 'exclusive' if product.is_exclusive else 'non-exclusive' }}"
              data-ingredients="{{ product.flattened_ingredient_names|join('|') if product.flattened_ingredient_names else '' }}"
              data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
-            <div class="recipe-card" onclick="toggleRecipe({{ product.id }})">
-                <div class="recipe-checkbox">
-                    <i class="far fa-square unchecked-icon"></i>
-                    <i class="fas fa-check-square checked-icon" style="display: none;"></i>
+            <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" 
+                 style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %} cursor: pointer;" 
+                 onclick="toggleRecipe({{ product.id }})">
+                
+                <!-- Recipe Checkbox -->
+                <div class="recipe-checkbox" style="position: absolute; top: 12px; right: 12px; z-index: 20;">
+                    <i class="far fa-square unchecked-icon" style="font-size: 24px; color: white; text-shadow: 0 0 3px rgba(0,0,0,0.5);"></i>
+                    <i class="fas fa-check-square checked-icon" style="display: none; font-size: 24px; color: #661c31; text-shadow: 0 0 3px rgba(255,255,255,0.8);"></i>
                 </div>
-                <div class="recipe-image-container">
-                    {% if product.image_url %}
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="recipe-image">
-                    {% else %}
-                    <div class="recipe-image-placeholder">
-                        <i class="fas fa-utensils"></i>
+                
+                <!-- Wrapper for Image + Content (for Overlay area) -->
+                <div class="product-hoverable-area position-relative">
+                    <!-- Unapproved Material Hover Overlay -->
+                    {% if product.has_unapproved_material %}
+                    <div class="unapproved-material-overlay">
+                        <div class="unapproved-material-content">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>This recipe contains unapproved raw materials</p>
+                        </div>
                     </div>
                     {% endif %}
+                    
+                    <div class="product-image-container">
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
+                        
+                        <!-- Badges container -->
+                        <div class="product-badges-container" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 4px; flex-wrap: wrap; row-gap: 2px;">
+                            <!-- Category Badge (first) -->
+                            <div class="product-category-badge" style="position: static; order: 1;">{{ product.category }}</div>
+                            
+                            <!-- Recipe Status Badge (second) -->
+                            {% if product.recipe_number %}
+                                {% set recipe_digits = product.recipe_number.lstrip('0') %}
+                                {% if recipe_digits and recipe_digits[0] == '4' %}
+                                    <div class="recipe-status-badge bg-success text-white" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
+                                        {{ get_text('productive', lang) }}
+                                    </div>
+                                {% elif recipe_digits and recipe_digits[0] == '1' %}
+                                    <div class="recipe-status-badge bg-development" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
+                                        {{ get_text('development', lang) }}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            
+                            <!-- Exclusive Badge -->
+                            {% if product.is_exclusive %}
+                                {% set tooltip_text = get_text('exclusive_product', lang) %}
+                                {% if product.customer %}
+                                    {% set tooltip_text = get_text('exclusive_for_customer', lang) + ' <strong>' + (product.customer|e) + '</strong>' %}
+                                {% elif product.market %}
+                                    {% set tooltip_text = get_text('exclusive_for_market', lang) + ' <strong>' + (product.market|e) + '</strong>' %}
+                                {% endif %}
+                                <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
+                                     data-bs-toggle="tooltip" 
+                                     data-bs-placement="top" 
+                                     data-bs-html="true"
+                                     title="{{ tooltip_text|safe }}">
+                                    {{ get_text('exclusive', lang) }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body-content p-4">
+                        <h5 class="card-title fw-bold text-primary mb-3">{{ product.name }}</h5>
+                        <p class="card-text text-muted mb-3">{{ product.description[:120] }}...</p>
+                        
+                        <div class="product-highlights mb-3">
+                            {% if product.parsed_ingredients %}
+                                <div class="highlight-item mb-2">
+                                    <i class="fas fa-seedling text-success me-2"></i>
+                                    <span class="small ingredients-preview-text">
+                                        {% set ingredient_names = [] %}
+                                        {% for ingredient in product.parsed_ingredients[:3] %}
+                                            {% if ingredient is mapping and ingredient.name %}
+                                                {% set _ = ingredient_names.append(ingredient.name) %}
+                                            {% elif ingredient is string %}
+                                                {% set _ = ingredient_names.append(ingredient) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ ingredient_names|join(', ') }}
+                                        {% if product.parsed_ingredients|length > 3 %} +{{ product.parsed_ingredients|length - 3 }} {{ get_text('more', lang) }}{% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                            
+                            {% if product.parsed_nutritional_claims %}
+                                <div class="highlight-item">
+                                    <i class="fas fa-medal text-warning me-2"></i>
+                                    <span class="small">{{ product.parsed_nutritional_claims[:2]|join(', ') }}{% if product.parsed_nutritional_claims|length > 2 %} +{{ product.parsed_nutritional_claims|length - 2 }} {{ get_text('more', lang) }}{% endif %}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <div class="recipe-title">{{ product.name }}</div>
-                {% if product.category %}
-                <div class="recipe-category">
-                    <i class="fas fa-tag me-1"></i>{{ product.category }}
-                </div>
-                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -240,88 +354,263 @@
 </div>
 
 <style>
-.recipe-card {
-    position: relative;
+/* Equal width filter columns */
+.filter-col-equal {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Visual styling for selected filter buttons */
+.filter-option-btn.selected, .filter-option-btn.active {
+    background-color: #661c31 !important;
+    color: white !important;
+    border-color: #661c31 !important;
+    transform: scale(0.98);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.filter-option-btn.selected:hover, .filter-option-btn.active:hover {
+    background-color: #7d2242 !important;
+    border-color: #7d2242 !important;
+}
+
+.filter-option-btn, .filter-option-btn-compact {
+    transition: all 0.2s ease;
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.filter-option-btn:hover, .filter-option-btn-compact:hover {
+    background: #f0f0f0;
+    border-color: #661c31;
+}
+
+.filter-option-btn-compact.selected, .filter-option-btn-compact.active {
+    background: #661c31;
+    color: white;
+    border-color: #661c31;
+}
+
+/* Modern Exclusivity Filter Buttons */
+.exclusivity-filter-btn {
+    padding: 12px 24px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    padding: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
     background: white;
+    color: #495057;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
 }
 
-.recipe-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+.exclusivity-filter-btn:hover {
     border-color: #661c31;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.recipe-card.selected {
+.exclusivity-filter-btn.selected {
+    background: linear-gradient(135deg, #661c31 0%, #8B2748 100%);
+    color: white;
     border-color: #661c31;
-    background-color: #fff5f7;
-    box-shadow: 0 0 0 3px rgba(102, 28, 49, 0.1);
+    box-shadow: 0 4px 15px rgba(102, 28, 49, 0.3);
+    transform: translateY(-2px);
 }
 
-.recipe-checkbox {
+.exclusivity-filter-btn.selected:hover {
+    background: linear-gradient(135deg, #7d2242 0%, #A03052 100%);
+    box-shadow: 0 6px 20px rgba(102, 28, 49, 0.4);
+}
+
+/* Universal Search Styling */
+.search-results {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 10;
-    font-size: 20px;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    max-height: 500px;
+    overflow-y: auto;
+    z-index: 1000;
 }
 
-.recipe-card .unchecked-icon {
-    color: #999;
+.search-results-content {
+    padding: 12px;
 }
 
-.recipe-card.selected .unchecked-icon {
-    display: none;
+.search-category {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 16px 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.recipe-card.selected .checked-icon {
-    display: block !important;
-    color: #661c31;
+.search-category:first-child {
+    margin-top: 4px;
 }
 
-.recipe-image-container {
-    width: 100%;
-    aspect-ratio: 1;
-    overflow: hidden;
+.search-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    margin: 4px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-result-item:hover {
+    background: #e9ecef;
+    transform: translateX(4px);
+}
+
+.search-result-text {
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.search-result-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background: #661c31;
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.search-no-results {
+    padding: 24px;
+    text-align: center;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+.search-highlight {
+    background: linear-gradient(120deg, #fff3cd 0%, #ffeaa7 100%);
+    padding: 3px 6px;
     border-radius: 6px;
-    margin-bottom: 10px;
-    background-color: #f5f5f5;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.recipe-image {
+/* Modern, Minimalistic Recipe Number Results Styling */
+.recipe-number-result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    margin: 12px 0;
+    background: #ffffff;
+    border: 1px solid #f0f0f3;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.recipe-number-result-item:hover {
+    border-color: rgba(255, 65, 67, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(255, 65, 67, 0.12);
+    background: #fefefe;
+}
+
+.recipe-number-result-item.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.recipe-info-left {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recipe-number-display {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ff4143;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+}
+
+.recipe-name-display {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #2d3748;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+}
+
+.recipe-name-display.loading-text {
+    color: #a0aec0;
+    font-style: italic;
+}
+
+.recipe-image-right {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-left: 24px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.recipe-result-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.recipe-number-result-item:hover .recipe-result-image {
+    transform: scale(1.05);
 }
 
 .recipe-image-placeholder {
     width: 100%;
     height: 100%;
+    background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
-    color: #ccc;
+    color: #a0aec0;
+    font-size: 1.5rem;
 }
 
-.recipe-title {
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 1.3;
-    color: #333;
-    margin-bottom: 4px;
+.loading-placeholder {
+    background: linear-gradient(135deg, #f0f4f8 0%, #d6e3f0 100%);
+    animation: pulse 1.5s infinite;
 }
 
-.recipe-category {
-    font-size: 12px;
-    color: #661c31;
-    margin-top: 8px;
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
+/* Filter Styling */
 .filter-compact-container {
     max-height: 300px;
     overflow-y: auto;
@@ -341,35 +630,95 @@
     border-color: #661c31;
 }
 
-.filter-col-equal {
-    flex: 1;
-    min-width: 0;
-}
-
-.filter-option-btn, .filter-option-btn-compact {
-    background: white;
-    border: 1px solid #ddd;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-}
-
-.filter-option-btn:hover, .filter-option-btn-compact:hover {
-    background: #f0f0f0;
-    border-color: #661c31;
-}
-
-.filter-option-btn.active, .filter-option-btn-compact.active {
-    background: #661c31;
-    color: white;
-    border-color: #661c31;
-}
-
 .filter-chevron {
     font-size: 12px;
     transition: transform 0.2s;
+}
+
+/* Product Card Styling */
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer !important;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+}
+
+.product-card.selected {
+    border: 3px solid #661c31 !important;
+    background-color: #fff5f7;
+    box-shadow: 0 0 0 4px rgba(102, 28, 49, 0.2) !important;
+}
+
+.recipe-checkbox .unchecked-icon {
+    color: white;
+    text-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+.product-card.selected .recipe-checkbox .unchecked-icon {
+    display: none;
+}
+
+.product-card.selected .recipe-checkbox .checked-icon {
+    display: block !important;
+    color: #661c31;
+    text-shadow: 0 0 3px rgba(255,255,255,0.8);
+}
+
+.product-category-badge {
+    background-color: rgba(102, 28, 49, 0.9);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.bg-development {
+    background-color: #17a2b8 !important;
+}
+
+/* Unapproved Material Overlay */
+.unapproved-material-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 65, 67, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+    border-radius: 8px 8px 0 0;
+}
+
+.product-hoverable-area:hover .unapproved-material-overlay {
+    opacity: 1;
+}
+
+.unapproved-material-content {
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+.unapproved-material-content i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.unapproved-material-content p {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.5;
 }
 </style>
 
@@ -380,14 +729,21 @@ let activeFilters = {
     category: [],
     ingredient: [],
     claim: [],
-    product_type: []
+    product_type: [],
+    exclusivity: null
 };
-let searchQuery = '';
+
+// Data arrays for universal search
+const allCategories = {{ categories|tojson }};
+const allIngredients = {{ ingredients|tojson }};
+const allClaims = {{ claims|tojson }};
+const productsData = {{ products|tojson }};
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();
-    initializeSearch();
+    initializeUniversalSearch();
+    initializeTooltips();
 });
 
 function initializeFilters() {
@@ -406,6 +762,15 @@ function initializeFilters() {
             const filterType = this.getAttribute('data-filter');
             const filterValue = this.getAttribute('data-value');
             toggleFilter(filterType, filterValue, this);
+        });
+    });
+    
+    // Exclusivity filter button handlers
+    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const exclusivityValue = this.getAttribute('data-exclusivity');
+            toggleExclusivityFilter(exclusivityValue, this);
         });
     });
     
@@ -436,22 +801,221 @@ function initializeFilters() {
     }
 }
 
-function initializeSearch() {
-    const searchInput = document.getElementById('recipeSearch');
-    const clearBtn = document.getElementById('clearSearch');
+// Universal Search Functionality
+function initializeUniversalSearch() {
+    const searchInput = document.getElementById('universalSearch');
+    const searchResults = document.getElementById('searchResults');
+    const clearButton = document.getElementById('clearSearch');
+    let searchTimeout;
+    
+    if (!searchInput) return;
     
     searchInput.addEventListener('input', function() {
-        searchQuery = this.value.toLowerCase().trim();
-        clearBtn.style.display = searchQuery ? 'block' : 'none';
-        applyFilters();
+        const query = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length === 0) {
+            hideSearchResults();
+            clearButton.style.display = 'none';
+            return;
+        }
+        
+        clearButton.style.display = 'block';
+        
+        searchTimeout = setTimeout(() => {
+            performSearch(query);
+        }, 300);
+    });
+    
+    clearButton.addEventListener('click', function() {
+        searchInput.value = '';
+        hideSearchResults();
+        this.style.display = 'none';
+        searchInput.focus();
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            hideSearchResults();
+        }
     });
 }
 
-function clearSearch() {
-    document.getElementById('recipeSearch').value = '';
-    searchQuery = '';
+function performSearch(query) {
+    const searchResults = document.getElementById('searchResults');
+    const resultsContent = searchResults.querySelector('.search-results-content');
+    
+    const results = {
+        categories: [],
+        ingredients: [],
+        claims: []
+    };
+    
+    const lowerQuery = query.toLowerCase();
+    
+    allCategories.forEach(category => {
+        if (category.toLowerCase().includes(lowerQuery)) {
+            results.categories.push(category);
+        }
+    });
+    
+    allIngredients.forEach(ingredient => {
+        if (ingredient.toLowerCase().includes(lowerQuery)) {
+            results.ingredients.push(ingredient);
+        }
+    });
+    
+    allClaims.forEach(claim => {
+        if (claim.toLowerCase().includes(lowerQuery)) {
+            results.claims.push(claim);
+        }
+    });
+    
+    let html = '';
+    
+    if (results.categories.length > 0) {
+        html += '<div class="search-category">Categories</div>';
+        results.categories.forEach(category => {
+            html += `<div class="search-result-item" data-type="category" data-value="${category}">
+                        <span class="search-result-text">${highlightText(category, query)}</span>
+                        <span class="search-result-badge">Category</span>
+                     </div>`;
+        });
+    }
+    
+    if (results.ingredients.length > 0) {
+        html += '<div class="search-category">Key Ingredients</div>';
+        results.ingredients.forEach(ingredient => {
+            html += `<div class="search-result-item" data-type="ingredient" data-value="${ingredient}">
+                        <span class="search-result-text">${highlightText(ingredient, query)}</span>
+                        <span class="search-result-badge">Ingredient</span>
+                     </div>`;
+        });
+    }
+    
+    if (results.claims.length > 0) {
+        html += '<div class="search-category">Claims</div>';
+        results.claims.forEach(claim => {
+            html += `<div class="search-result-item" data-type="claim" data-value="${claim}">
+                        <span class="search-result-text">${highlightText(claim, query)}</span>
+                        <span class="search-result-badge">Claim</span>
+                     </div>`;
+        });
+    }
+    
+    if (html === '') {
+        html = '<div class="search-no-results">No results found for "' + query + '"</div>';
+    }
+    
+    resultsContent.innerHTML = html;
+    showSearchResults();
+    
+    resultsContent.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', function() {
+            selectSearchResult(this.dataset.type, this.dataset.value);
+        });
+    });
+}
+
+function highlightText(text, query) {
+    try {
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+    } catch (e) {
+        return text;
+    }
+}
+
+function selectSearchResult(type, value) {
+    document.getElementById('universalSearch').value = '';
+    hideSearchResults();
     document.getElementById('clearSearch').style.display = 'none';
+    
+    switch(type) {
+        case 'category':
+            if (!activeFilters.category.includes(value)) {
+                activeFilters.category.push(value);
+            }
+            break;
+        case 'ingredient':
+            if (!activeFilters.ingredient.includes(value)) {
+                activeFilters.ingredient.push(value);
+            }
+            break;
+        case 'claim':
+            if (!activeFilters.claim.includes(value)) {
+                activeFilters.claim.push(value);
+            }
+            break;
+    }
+    
+    updateButtonVisualState();
+    updateActiveFiltersDisplay();
     applyFilters();
+}
+
+function showSearchResults() {
+    document.getElementById('searchResults').style.display = 'block';
+}
+
+function hideSearchResults() {
+    document.getElementById('searchResults').style.display = 'none';
+}
+
+function updateButtonVisualState() {
+    document.querySelectorAll('.filter-option-btn[data-filter="ingredient"], .filter-option-btn-compact[data-filter="ingredient"]').forEach(btn => {
+        const value = btn.dataset.value;
+        if (activeFilters.ingredient.includes(value)) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+    
+    document.querySelectorAll('.filter-option-btn[data-filter="category"]').forEach(btn => {
+        const value = btn.dataset.value;
+        if (activeFilters.category.includes(value)) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+    
+    document.querySelectorAll('.filter-option-btn[data-filter="claim"], .filter-option-btn-compact[data-filter="claim"]').forEach(btn => {
+        const value = btn.dataset.value;
+        if (activeFilters.claim.includes(value)) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+    
+    document.querySelectorAll('.filter-option-btn[data-filter="product_type"]').forEach(btn => {
+        const value = btn.dataset.value;
+        if (activeFilters.product_type.includes(value)) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+    
+    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+        const value = btn.dataset.exclusivity;
+        if (value === activeFilters.exclusivity || (!activeFilters.exclusivity && value === 'both')) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+}
+
+function initializeTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 }
 
 function toggleFilterOptions(filterType) {
@@ -490,13 +1054,32 @@ function toggleFilter(filterType, filterValue, buttonElement) {
     if (index > -1) {
         activeFilters[filterType].splice(index, 1);
         buttonElement.classList.remove('active');
+        buttonElement.classList.remove('selected');
     } else {
         activeFilters[filterType].push(filterValue);
         buttonElement.classList.add('active');
+        buttonElement.classList.add('selected');
     }
     
     applyFilters();
     updateActiveFiltersDisplay();
+}
+
+function toggleExclusivityFilter(exclusivityValue, buttonElement) {
+    // Remove selected state from all exclusivity buttons
+    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    
+    if (exclusivityValue === 'both') {
+        activeFilters.exclusivity = null;
+    } else {
+        activeFilters.exclusivity = exclusivityValue;
+    }
+    
+    buttonElement.classList.add('selected');
+    updateActiveFiltersDisplay();
+    applyFilters();
 }
 
 function applyFilters() {
@@ -505,14 +1088,6 @@ function applyFilters() {
     
     allRecipes.forEach(recipe => {
         let visible = true;
-        
-        // Search filter
-        if (searchQuery) {
-            const recipeName = recipe.getAttribute('data-product-name');
-            if (!recipeName.includes(searchQuery)) {
-                visible = false;
-            }
-        }
         
         // Category filter
         if (activeFilters.category.length > 0) {
@@ -552,6 +1127,16 @@ function applyFilters() {
             }
         }
         
+        // Exclusivity filter
+        if (activeFilters.exclusivity && activeFilters.exclusivity !== 'both') {
+            const productExclusivity = recipe.getAttribute('data-exclusivity');
+            if (activeFilters.exclusivity === 'exclusive' && productExclusivity !== 'exclusive') {
+                visible = false;
+            } else if (activeFilters.exclusivity === 'non-exclusive' && productExclusivity !== 'non-exclusive') {
+                visible = false;
+            }
+        }
+        
         // Show/hide recipe
         if (visible) {
             recipe.style.display = 'block';
@@ -572,33 +1157,59 @@ function updateActiveFiltersDisplay() {
     let hasActiveFilters = false;
     activeFiltersDiv.innerHTML = '';
     
-    // Display all active filters
+    // Display all active filters (except exclusivity which is null/both by default)
     for (const [filterType, values] of Object.entries(activeFilters)) {
-        values.forEach(value => {
-            hasActiveFilters = true;
-            const badge = document.createElement('span');
-            badge.className = 'badge bg-secondary me-2';
-            badge.innerHTML = `${value} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
-            badge.querySelector('i').addEventListener('click', () => {
-                removeFilter(filterType, value);
+        if (filterType === 'exclusivity') {
+            if (values && values !== 'both') {
+                hasActiveFilters = true;
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-secondary me-2';
+                const displayValue = values === 'exclusive' ? 'Exclusive Only' : 'Non-Exclusive Only';
+                badge.innerHTML = `${displayValue} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
+                badge.querySelector('i').addEventListener('click', () => {
+                    removeFilter('exclusivity', null);
+                });
+                activeFiltersDiv.appendChild(badge);
+            }
+        } else if (Array.isArray(values)) {
+            values.forEach(value => {
+                hasActiveFilters = true;
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-secondary me-2';
+                badge.innerHTML = `${value} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
+                badge.querySelector('i').addEventListener('click', () => {
+                    removeFilter(filterType, value);
+                });
+                activeFiltersDiv.appendChild(badge);
             });
-            activeFiltersDiv.appendChild(badge);
-        });
+        }
     }
     
     activeFiltersSection.style.display = hasActiveFilters ? 'block' : 'none';
 }
 
 function removeFilter(filterType, filterValue) {
-    const index = activeFilters[filterType].indexOf(filterValue);
-    if (index > -1) {
-        activeFilters[filterType].splice(index, 1);
+    if (filterType === 'exclusivity') {
+        activeFilters.exclusivity = null;
+        // Reset exclusivity buttons
+        document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.getAttribute('data-exclusivity') === 'both') {
+                btn.classList.add('selected');
+            }
+        });
+    } else {
+        const index = activeFilters[filterType].indexOf(filterValue);
+        if (index > -1) {
+            activeFilters[filterType].splice(index, 1);
+        }
+        
+        // Remove active class from button
+        document.querySelectorAll(`[data-filter="${filterType}"][data-value="${filterValue}"]`).forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.remove('selected');
+        });
     }
-    
-    // Remove active class from button
-    document.querySelectorAll(`[data-filter="${filterType}"][data-value="${filterValue}"]`).forEach(btn => {
-        btn.classList.remove('active');
-    });
     
     applyFilters();
     updateActiveFiltersDisplay();
@@ -609,12 +1220,22 @@ function clearAllFilters() {
         category: [],
         ingredient: [],
         claim: [],
-        product_type: []
+        product_type: [],
+        exclusivity: null
     };
     
-    // Remove all active classes
+    // Remove all active classes from filter buttons
     document.querySelectorAll('.filter-option-btn, .filter-option-btn-compact').forEach(btn => {
         btn.classList.remove('active');
+        btn.classList.remove('selected');
+    });
+    
+    // Reset exclusivity buttons to "Both"
+    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        if (btn.getAttribute('data-exclusivity') === 'both') {
+            btn.classList.add('selected');
+        }
     });
     
     applyFilters();
