@@ -131,9 +131,10 @@ function removeCurrentPageFromHistory() {
 
 function getSmartBackNavigation() {
     const currentPath = window.location.pathname;
+    const urlParams = new URLSearchParams(window.location.search);
     const navigationHistory = JSON.parse(sessionStorage.getItem('navigationHistory') || '[]');
     
-    // If we have at least 2 entries in history (current + previous)
+    // Priority 1: If we have valid navigation history, use it
     if (navigationHistory.length >= 2) {
         // Get the second-to-last entry (the actual previous page)
         const previousPage = navigationHistory[navigationHistory.length - 2];
@@ -145,7 +146,18 @@ function getSmartBackNavigation() {
         };
     }
     
-    // Fallback navigation for when there's no history
+    // Priority 2: Check for context-aware navigation parameters (fallback for direct visits)
+    // If we're on a product detail page and came from a custom page
+    if (currentPath.startsWith('/product/') && urlParams.has('from_custom_page')) {
+        const customPageId = urlParams.get('from_custom_page');
+        return {
+            text: 'Custom Page',
+            url: `/custom-pages/view/${customPageId}`,
+            icon: 'fa-folder'
+        };
+    }
+    
+    // Priority 3: Default fallback navigation for when there's no history or context
     // This handles direct visits to pages
     if (currentPath.startsWith('/product/')) {
         return { text: 'Innovation Catalog', url: '/catalog', icon: 'fa-cogs' };
