@@ -244,7 +244,7 @@
     <!-- Recipe Grid -->
     <div class="row g-3" id="recipesContainer">
         {% for product in products %}
-        <div class="col-xl-3 col-lg-4 col-md-6 recipe-item" 
+        <div class="col-xl-4 col-lg-4 col-md-6 recipe-item" 
              data-product-id="{{ product.id }}"
              data-product-name="{{ product.name|lower }}"
              data-category="{{ product.category }}"
@@ -276,7 +276,7 @@
                     {% endif %}
                     
                     <div class="product-image-container">
-                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 100px; object-fit: cover;">
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 130px; object-fit: cover;">
                         
                         <!-- Badges container -->
                         <div class="product-badges-container" style="position: absolute; top: 6px; left: 6px; right: 40px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 2px; flex-wrap: wrap; row-gap: 2px;">
@@ -317,7 +317,7 @@
                         </div>
                     </div>
                     
-                    <div class="card-body-content p-2">
+                    <div class="card-body-content px-2 pb-2 pt-1">
                         <h6 class="card-title fw-bold text-primary mb-0" style="font-size: 12px; line-height: 1.2;">{{ product.name }}</h6>
                     </div>
                 </div>
