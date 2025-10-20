@@ -922,11 +922,15 @@ def cocreation():
 
     # Create new session
     session_id = str(uuid.uuid4())
+    
+    # Get the from_custom_page parameter to preserve navigation context
+    from_custom_page_id = request.args.get('from_custom_page', type=int)
 
     return render_template('cocreation.html', 
                          products=products,
                          session_id=session_id,
-                         base_product=base_product)
+                         base_product=base_product,
+                         from_custom_page_id=from_custom_page_id)
 
 @app.route('/cocreation/save_concept', methods=['POST'])
 @csrf.exempt
