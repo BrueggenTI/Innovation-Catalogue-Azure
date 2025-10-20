@@ -816,31 +816,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize filters from URL parameters (backend-provided selected values)
 function initializeFromURL() {
-    const urlCategory = '{{ selected_category if selected_category and selected_category.strip() else "" }}';
-    const urlIngredient = '{{ selected_ingredient if selected_ingredient and selected_ingredient.strip() else "" }}';
-    const urlClaim = '{{ selected_claim if selected_claim and selected_claim.strip() else "" }}';
-    const urlRecipe = '{{ selected_recipe if selected_recipe and selected_recipe.strip() else "" }}';
-    const urlProductType = '{{ selected_product_type if selected_product_type and selected_product_type.strip() else "" }}';
-    const urlExclusivity = '{{ selected_exclusivity if selected_exclusivity and selected_exclusivity.strip() else "" }}';
+    const urlCategory = '{{ selected_category if selected_category and selected_category != "" and selected_category != "None" else "" }}';
+    const urlIngredient = '{{ selected_ingredient if selected_ingredient and selected_ingredient != "" and selected_ingredient != "None" else "" }}';
+    const urlClaim = '{{ selected_claim if selected_claim and selected_claim != "" and selected_claim != "None" else "" }}';
+    const urlRecipe = '{{ selected_recipe if selected_recipe and selected_recipe != "" and selected_recipe != "None" else "" }}';
+    const urlProductType = '{{ selected_product_type if selected_product_type and selected_product_type != "" and selected_product_type != "None" else "" }}';
+    const urlExclusivity = '{{ selected_exclusivity if selected_exclusivity and selected_exclusivity != "" and selected_exclusivity != "None" else "" }}';
     
-    if (urlCategory && urlCategory.length > 0) {
+    // Only set filters if they have actual non-empty values
+    if (urlCategory && urlCategory.trim() !== '' && urlCategory !== 'None') {
         activeFilters.category = urlCategory;
     }
-    if (urlIngredient && urlIngredient.length > 0) {
+    if (urlIngredient && urlIngredient.trim() !== '' && urlIngredient !== 'None') {
         activeFilters.ingredient = urlIngredient.split('|').filter(i => i.trim().length > 0);
     }
-    if (urlClaim && urlClaim.length > 0) {
+    if (urlClaim && urlClaim.trim() !== '' && urlClaim !== 'None') {
         activeFilters.claim = urlClaim.split('|').filter(c => c.trim().length > 0);
     }
-    if (urlRecipe && urlRecipe.length > 0) {
+    if (urlRecipe && urlRecipe.trim() !== '' && urlRecipe !== 'None') {
         activeFilters.recipe = urlRecipe.split('|').filter(r => r.trim().length > 0);
     }
-    if (urlProductType && urlProductType.length > 0) {
+    if (urlProductType && urlProductType.trim() !== '' && urlProductType !== 'None') {
         activeFilters.product_type = urlProductType;
     }
-    if (urlExclusivity && urlExclusivity.length > 0) {
+    if (urlExclusivity && urlExclusivity.trim() !== '' && urlExclusivity !== 'None') {
         activeFilters.exclusivity = urlExclusivity;
     }
+    
+    console.log('Initialized filters from URL:', activeFilters);
 }
 
 function initializeFilters() {
@@ -1147,6 +1150,9 @@ function toggleFilterOptions(filterType) {
 }
 
 function toggleFilter(filterType, filterValue, buttonElement) {
+    console.log('toggleFilter called:', filterType, filterValue);
+    console.log('Before toggle - activeFilters:', JSON.parse(JSON.stringify(activeFilters)));
+    
     // Handle different filter types - category and product_type are single-select, others are multi-select
     if (filterType === 'category' || filterType === 'product_type') {
         // Single select - toggle on/off
@@ -1158,13 +1164,19 @@ function toggleFilter(filterType, filterValue, buttonElement) {
     } else {
         // Multi-select for ingredient and claim
         const index = activeFilters[filterType].indexOf(filterValue);
+        console.log('Index of', filterValue, 'in', filterType, ':', index);
         if (index > -1) {
+            // Remove from array
             activeFilters[filterType].splice(index, 1);
+            console.log('Removed', filterValue, 'from', filterType);
         } else {
+            // Add to array
             activeFilters[filterType].push(filterValue);
+            console.log('Added', filterValue, 'to', filterType);
         }
     }
     
+    console.log('After toggle - activeFilters:', JSON.parse(JSON.stringify(activeFilters)));
     redirectToBackend();
 }
 
