@@ -3166,6 +3166,14 @@ def custom_pages_create():
     product_type = sanitize_input(product_type) if product_type else ''
     exclusivity = sanitize_input(exclusivity) if exclusivity else ''
     
+    # CRITICAL: Convert empty strings to None to prevent template rendering issues
+    category = category if category else None
+    ingredient = ingredient if ingredient else None
+    claim = claim if claim else None
+    recipe = recipe if recipe else None
+    product_type = product_type if product_type else None
+    exclusivity = exclusivity if exclusivity else None
+    
     logging.debug(f"[CUSTOM_PAGES_CREATE] AFTER sanitization - claim: '{claim}', ingredient: '{ingredient}', category: '{category}'")
     
     # Pagination parameters
@@ -3175,23 +3183,23 @@ def custom_pages_create():
     # Build query - start with all products
     query = Product.query
 
-    # Only apply filters if they have actual non-empty values
-    if category and len(category) > 0:
+    # Only apply filters if they have actual non-empty values (not None and not empty string)
+    if category:
         query = query.filter(Product.category == category)
 
-    if ingredient and len(ingredient) > 0:
+    if ingredient:
         # Handle multiple ingredients (pipe-separated) with AND logic
         ingredients_list = [ing.strip() for ing in ingredient.split('|') if ing.strip()]
         for ing in ingredients_list:
             query = query.filter(Product.ingredients.contains(f'"{ing}"'))
 
-    if claim and len(claim) > 0:
+    if claim:
         # Handle multiple claims (pipe-separated) with AND logic  
         claims_list = [cl.strip() for cl in claim.split('|') if cl.strip()]
         for cl in claims_list:
             query = query.filter(Product.claims.contains(f'"{cl}"'))
 
-    if recipe and len(recipe) > 0:
+    if recipe:
         # Handle recipe number filtering
         recipe_list = [rc.strip() for rc in recipe.split('|') if rc.strip()]
         if len(recipe_list) == 1:
@@ -3201,10 +3209,10 @@ def custom_pages_create():
             recipe_conditions = [Product.recipe_number.contains(rc) for rc in recipe_list]
             query = query.filter(or_(*recipe_conditions))
     
-    if product_type and len(product_type) > 0:
+    if product_type:
         query = query.filter(Product.product_type == product_type)
     
-    if exclusivity and len(exclusivity) > 0:
+    if exclusivity:
         if exclusivity == 'exclusive':
             query = query.filter(Product.is_exclusive == True)
         elif exclusivity == 'non-exclusive':
