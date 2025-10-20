@@ -1178,24 +1178,32 @@ function toggleFilter(filterType, filterValue, buttonElement) {
         console.log('Current array:', activeFilters[filterType]);
         console.log('Array length:', activeFilters[filterType].length);
         
-        // Check each item in the array
+        // Normalize the filter value for comparison (trim whitespace)
+        const normalizedValue = filterValue.trim();
+        
+        // Find index using manual search with normalization
+        let index = -1;
         for (let i = 0; i < activeFilters[filterType].length; i++) {
-            const item = activeFilters[filterType][i];
-            console.log(`  [${i}]: "${item}" (length: ${item.length})`);
-            console.log(`  Exact match: ${item === filterValue}`);
-            console.log(`  Trimmed match: ${item.trim() === filterValue.trim()}`);
+            const item = activeFilters[filterType][i].trim();
+            console.log(`  [${i}]: "${activeFilters[filterType][i]}" (trimmed: "${item}")`);
+            console.log(`  Comparing with: "${normalizedValue}"`);
+            console.log(`  Match: ${item === normalizedValue}`);
+            if (item === normalizedValue) {
+                index = i;
+                console.log(`  FOUND at index ${i}!`);
+                break;
+            }
         }
         
-        const index = activeFilters[filterType].indexOf(filterValue);
-        console.log('indexOf result:', index);
+        console.log('Final index:', index);
         
         if (index > -1) {
             // Remove from array
             activeFilters[filterType].splice(index, 1);
             console.log('REMOVED from array');
         } else {
-            // Add to array
-            activeFilters[filterType].push(filterValue);
+            // Add to array (store normalized value)
+            activeFilters[filterType].push(normalizedValue);
             console.log('ADDED to array');
         }
     }
