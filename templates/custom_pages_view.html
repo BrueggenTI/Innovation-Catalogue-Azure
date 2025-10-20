@@ -941,7 +941,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Global function for clear all filters
     window.clearAllFilters = function() {
         // Redirect to custom page without any parameters
-        window.location.href = '{{ url_for("view_custom_page", page_id=custom_page.id) }}';
+        window.location.href = '{{ url_for("custom_pages_view", page_id=custom_page.id) }}';
     };
     
     // New function to redirect to backend with current filters
@@ -954,7 +954,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (activeFilters.product_type) params.set('product_type', activeFilters.product_type);
         if (activeFilters.exclusivity && activeFilters.exclusivity !== 'both') params.set('exclusivity', activeFilters.exclusivity);
         
-        const newUrl = '{{ url_for("view_custom_page", page_id=custom_page.id) }}' + (params.toString() ? '?' + params.toString() : '');
+        const newUrl = '{{ url_for("custom_pages_view", page_id=custom_page.id) }}' + (params.toString() ? '?' + params.toString() : '');
         window.location.href = newUrl;
     }
     
