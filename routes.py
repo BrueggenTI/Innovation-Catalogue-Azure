@@ -3151,7 +3151,49 @@ def custom_pages_view(page_id):
     except:
         product_ids = []
     
-    products = Product.query.filter(Product.id.in_(product_ids)).all() if product_ids else []
+    # Get filter parameters with sanitization - only use non-empty values
+    category = request.args.get('category', '').strip()
+    ingredient = request.args.get('ingredient', '').strip()
+    claim = request.args.get('claim', '').strip()
+    product_type = request.args.get('product_type', '').strip()
+    exclusivity = request.args.get('exclusivity', '').strip()
+    
+    # Sanitize only if they have actual values
+    category = sanitize_input(category) if category else ''
+    ingredient = sanitize_input(ingredient) if ingredient else ''
+    claim = sanitize_input(claim) if claim else ''
+    product_type = sanitize_input(product_type) if product_type else ''
+    exclusivity = sanitize_input(exclusivity) if exclusivity else ''
+    
+    # Build query - start with products in this custom page
+    query = Product.query.filter(Product.id.in_(product_ids)) if product_ids else Product.query.filter(Product.id.in_([]))
+    
+    # Apply filters
+    if category and len(category) > 0:
+        query = query.filter(Product.category == category)
+    
+    if ingredient and len(ingredient) > 0:
+        # Handle multiple ingredients (pipe-separated) with AND logic
+        ingredients_list = [ing.strip() for ing in ingredient.split('|') if ing.strip()]
+        for ing in ingredients_list:
+            query = query.filter(Product.ingredients.contains(f'"{ing}"'))
+    
+    if claim and len(claim) > 0:
+        # Handle multiple claims (pipe-separated) with AND logic
+        claims_list = [cl.strip() for cl in claim.split('|') if cl.strip()]
+        for cl in claims_list:
+            query = query.filter(Product.claims.contains(f'"{cl}"'))
+    
+    if product_type and len(product_type) > 0:
+        query = query.filter(Product.product_type == product_type)
+    
+    if exclusivity and len(exclusivity) > 0:
+        if exclusivity == 'exclusive':
+            query = query.filter(Product.is_exclusive == True)
+        elif exclusivity == 'non-exclusive':
+            query = query.filter(Product.is_exclusive == False)
+    
+    products = query.order_by(Product.created_at.desc()).all()
     
     # Helper function to recursively extract all ingredient names including nested children
     def extract_all_ingredient_names(ingredients_list):
@@ -3238,6 +3280,13 @@ def custom_pages_view(page_id):
     claims = sorted(list(claims_set))
     product_types = sorted(list(product_types_set))
     
+    # Ensure completely empty strings for template variables
+    final_category = category if category and category.strip() and category != 'None' else ''
+    final_ingredient = ingredient if ingredient and ingredient.strip() and ingredient != 'None' else ''
+    final_claim = claim if claim and claim.strip() and claim != 'None' else ''
+    final_product_type = product_type if product_type and product_type.strip() and product_type != 'None' else ''
+    final_exclusivity = exclusivity if exclusivity and exclusivity.strip() and exclusivity != 'None' else ''
+    
     return render_template('custom_pages_view.html',
                          custom_page=custom_page,
                          products=products,
@@ -3245,6 +3294,11 @@ def custom_pages_view(page_id):
                          ingredients=ingredients,
                          claims=claims,
                          product_types=product_types,
+                         selected_category=final_category,
+                         selected_ingredient=final_ingredient,
+                         selected_claim=final_claim,
+                         selected_product_type=final_product_type,
+                         selected_exclusivity=final_exclusivity,
                          get_text=get_text,
                          lang=lang)
 
