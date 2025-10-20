@@ -837,6 +837,149 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize search functionality
     initializeUniversalSearch();
 
+    // Recipe Selection Management
+    let selectedRecipes = new Set();
+    
+    // Load selected recipes from sessionStorage
+    const storedSelection = sessionStorage.getItem('customPageSelection');
+    if (storedSelection) {
+        try {
+            const parsedSelection = JSON.parse(storedSelection);
+            selectedRecipes = new Set(parsedSelection);
+            updateSelectedRecipesUI();
+        } catch (e) {
+            console.error('Failed to load selection from sessionStorage:', e);
+        }
+    }
+
+    // Toggle recipe selection
+    window.toggleRecipe = function(productId) {
+        if (selectedRecipes.has(productId)) {
+            selectedRecipes.delete(productId);
+        } else {
+            selectedRecipes.add(productId);
+        }
+        
+        // Update UI
+        updateRecipeCardUI(productId);
+        updateSelectedCount();
+        updateSaveButtonState();
+        
+        // Save to sessionStorage
+        sessionStorage.setItem('customPageSelection', JSON.stringify([...selectedRecipes]));
+    };
+
+    // Update single recipe card UI
+    function updateRecipeCardUI(productId) {
+        const card = document.querySelector(`.recipe-item[data-product-id="${productId}"] .product-card`);
+        if (!card) return;
+        
+        if (selectedRecipes.has(productId)) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+    }
+
+    // Update all recipe cards UI (for page load)
+    function updateSelectedRecipesUI() {
+        selectedRecipes.forEach(productId => {
+            updateRecipeCardUI(productId);
+        });
+        updateSelectedCount();
+        updateSaveButtonState();
+    }
+
+    // Update selected count display
+    function updateSelectedCount() {
+        const countElement = document.getElementById('selectedCount');
+        if (countElement) {
+            countElement.textContent = selectedRecipes.size;
+        }
+    }
+
+    // Update save button state
+    function updateSaveButtonState() {
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn) {
+            if (selectedRecipes.size > 0) {
+                saveBtn.disabled = false;
+            } else {
+                saveBtn.disabled = true;
+            }
+        }
+    }
+
+    // Open save custom page modal
+    window.saveCustomPage = function() {
+        if (selectedRecipes.size === 0) {
+            alert('Please select at least one recipe before saving.');
+            return;
+        }
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('savePageModal'));
+        modal.show();
+    };
+
+    // Submit custom page to backend
+    window.submitCustomPage = function() {
+        const title = document.getElementById('pageTitle').value.trim();
+        const description = document.getElementById('pageDescription').value.trim();
+        
+        if (!title) {
+            alert('Please enter a title for your custom page.');
+            return;
+        }
+        
+        if (selectedRecipes.size === 0) {
+            alert('Please select at least one recipe.');
+            return;
+        }
+        
+        // Disable submit button to prevent double submission
+        const submitBtn = document.getElementById('submitPageBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+        
+        // Prepare data
+        const data = {
+            name: title,
+            description: description,
+            product_ids: [...selectedRecipes]
+        };
+        
+        // Send to backend
+        fetch('/custom-pages/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Clear selection from sessionStorage
+                sessionStorage.removeItem('customPageSelection');
+                
+                // Show success message and redirect
+                alert('Custom page saved successfully!');
+                window.location.href = '/custom-pages';
+            } else {
+                alert('Error: ' + (data.error || 'Failed to save custom page'));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save Custom Page';
+            }
+        })
+        .catch(error => {
+            console.error('Error saving custom page:', error);
+            alert('Failed to save custom page. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save Custom Page';
+        });
+    };
+
     // Make functions globally accessible for inline onclick handlers
     window.removeFilter = removeFilter;
 
