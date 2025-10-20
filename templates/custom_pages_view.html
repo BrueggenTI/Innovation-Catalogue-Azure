@@ -679,6 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Make functions globally accessible for inline onclick handlers
     window.removeFilter = removeFilter;
+    window.selectFilter = selectFilter;
     
     // Filter header click handlers
     document.querySelectorAll('.filter-header').forEach(header => {
@@ -690,18 +691,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Filter option button handlers
     document.querySelectorAll('.filter-option-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             const filterType = this.dataset.filter;
             const filterValue = this.dataset.value;
+            console.log('Filter button clicked:', filterType, filterValue);
             selectFilter(filterType, filterValue);
         });
     });
     
     // Compact filter button handlers (for ingredients and claims)
     document.querySelectorAll('.filter-option-btn-compact').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             const filterType = this.dataset.filter;
             const filterValue = this.dataset.value;
+            console.log('Compact filter button clicked:', filterType, filterValue);
             selectFilter(filterType, filterValue);
         });
     });
@@ -806,25 +813,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function selectFilter(filterType, value) {
+        console.log('selectFilter called:', filterType, value);
+        console.log('Current activeFilters:', JSON.stringify(activeFilters));
+        
         if (filterType === 'ingredient') {
             // Handle multiple ingredient selection
-            const ingredientIndex = activeFilters.ingredient.indexOf(value);
+            const trimmedValue = value.trim();
+            const ingredientIndex = activeFilters.ingredient.indexOf(trimmedValue);
+            console.log('Ingredient index:', ingredientIndex);
             if (ingredientIndex > -1) {
                 // Remove ingredient if already selected
                 activeFilters.ingredient.splice(ingredientIndex, 1);
+                console.log('Removed ingredient:', trimmedValue);
             } else {
                 // Add ingredient if not selected
-                activeFilters.ingredient.push(value);
+                activeFilters.ingredient.push(trimmedValue);
+                console.log('Added ingredient:', trimmedValue);
             }
         } else if (filterType === 'claim') {
             // Handle multiple claim selection
-            const claimIndex = activeFilters.claim.indexOf(value);
+            const trimmedValue = value.trim();
+            const claimIndex = activeFilters.claim.indexOf(trimmedValue);
+            console.log('Claim index:', claimIndex);
+            console.log('Active claims:', activeFilters.claim);
             if (claimIndex > -1) {
                 // Remove claim if already selected
                 activeFilters.claim.splice(claimIndex, 1);
+                console.log('Removed claim:', trimmedValue);
             } else {
                 // Add claim if not selected
-                activeFilters.claim.push(value);
+                activeFilters.claim.push(trimmedValue);
+                console.log('Added claim:', trimmedValue);
             }
         } else {
             // Handle single selection for category filter
@@ -834,6 +853,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeFilters[filterType] = value;
             }
         }
+        
+        console.log('Updated activeFilters:', JSON.stringify(activeFilters));
         
         // Redirect to backend with updated filters for server-side processing
         redirectToBackend();
