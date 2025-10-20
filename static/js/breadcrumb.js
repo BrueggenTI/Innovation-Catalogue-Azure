@@ -139,11 +139,14 @@ function getSmartBackNavigation() {
         // Get the second-to-last entry (the actual previous page)
         const previousPage = navigationHistory[navigationHistory.length - 2];
         
-        return {
-            text: previousPage.title,
-            url: previousPage.path,
-            icon: getIconForPath(previousPage.path)
-        };
+        // Validate that previousPage has required properties
+        if (previousPage && previousPage.path && previousPage.title) {
+            return {
+                text: previousPage.title,
+                url: previousPage.path,
+                icon: getIconForPath(previousPage.path)
+            };
+        }
     }
     
     // Priority 2: Check for context-aware navigation parameters (fallback for direct visits)
