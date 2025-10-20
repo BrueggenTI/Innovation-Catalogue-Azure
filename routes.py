@@ -3147,11 +3147,65 @@ def custom_pages_create():
     if Product.query.count() == 0:
         init_products()
     
+    # Get filter parameters with sanitization - only use non-empty values
+    category = request.args.get('category', '').strip()
+    ingredient = request.args.get('ingredient', '').strip()
+    claim = request.args.get('claim', '').strip()
+    recipe = request.args.get('recipe', '').strip()
+    product_type = request.args.get('product_type', '').strip()
+    exclusivity = request.args.get('exclusivity', '').strip()
+    
+    # Sanitize only if they have actual values
+    category = sanitize_input(category) if category else ''
+    ingredient = sanitize_input(ingredient) if ingredient else ''
+    claim = sanitize_input(claim) if claim else ''
+    recipe = sanitize_input(recipe) if recipe else ''
+    product_type = sanitize_input(product_type) if product_type else ''
+    exclusivity = sanitize_input(exclusivity) if exclusivity else ''
+    
     # Pagination parameters
     page = request.args.get('page', 1, type=int)
     per_page = 30  # 30 recipes per page
     
-    all_products = Product.query.all()
+    # Build query - start with all products
+    query = Product.query
+
+    # Only apply filters if they have actual non-empty values
+    if category and len(category) > 0:
+        query = query.filter(Product.category == category)
+
+    if ingredient and len(ingredient) > 0:
+        # Handle multiple ingredients (pipe-separated) with AND logic
+        ingredients_list = [ing.strip() for ing in ingredient.split('|') if ing.strip()]
+        for ing in ingredients_list:
+            query = query.filter(Product.ingredients.contains(f'"{ing}"'))
+
+    if claim and len(claim) > 0:
+        # Handle multiple claims (pipe-separated) with AND logic  
+        claims_list = [cl.strip() for cl in claim.split('|') if cl.strip()]
+        for cl in claims_list:
+            query = query.filter(Product.claims.contains(f'"{cl}"'))
+
+    if recipe and len(recipe) > 0:
+        # Handle recipe number filtering
+        recipe_list = [rc.strip() for rc in recipe.split('|') if rc.strip()]
+        if len(recipe_list) == 1:
+            query = query.filter(Product.recipe_number.contains(recipe_list[0]))
+        elif len(recipe_list) > 1:
+            from sqlalchemy import or_
+            recipe_conditions = [Product.recipe_number.contains(rc) for rc in recipe_list]
+            query = query.filter(or_(*recipe_conditions))
+    
+    if product_type and len(product_type) > 0:
+        query = query.filter(Product.product_type == product_type)
+    
+    if exclusivity and len(exclusivity) > 0:
+        if exclusivity == 'exclusive':
+            query = query.filter(Product.is_exclusive == True)
+        elif exclusivity == 'non-exclusive':
+            query = query.filter(Product.is_exclusive == False)
+
+    all_filtered_products = query.order_by(Product.created_at.desc()).all()
     
     # Helper function to recursively extract all ingredient names including nested children
     def extract_all_ingredient_names(ingredients_list):
@@ -3170,12 +3224,13 @@ def custom_pages_create():
         return names
     
     # Parse JSON fields and collect unique values for filters
+    # IMPORTANT: Only collect from FILTERED products to show only relevant options
     categories_set = set()
     ingredients_set = set()
     claims_set = set()
     product_types_set = set()
     
-    for product in all_products:
+    for product in all_filtered_products:
         try:
             if product.ingredients:
                 product.parsed_ingredients = json.loads(product.ingredients)
@@ -3232,14 +3287,14 @@ def custom_pages_create():
         if product.product_type:
             product_types_set.add(product.product_type)
     
-    # Convert sets to sorted lists
+    # Convert sets to sorted lists - these are DYNAMIC based on filtered results
     categories = sorted(list(categories_set))
     ingredients = sorted(list(ingredients_set))
     claims = sorted(list(claims_set))
     product_types = sorted(list(product_types_set))
     
-    # Calculate pagination
-    total_products = len(all_products)
+    # Calculate pagination based on FILTERED products
+    total_products = len(all_filtered_products)
     total_pages = (total_products + per_page - 1) // per_page  # Ceiling division
     
     # Ensure page is within valid range
@@ -3248,10 +3303,10 @@ def custom_pages_create():
     elif page > total_pages and total_pages > 0:
         page = total_pages
     
-    # Get products for current page
+    # Get products for current page from FILTERED products
     start_idx = (page - 1) * per_page
     end_idx = start_idx + per_page
-    products = all_products[start_idx:end_idx]
+    products = all_filtered_products[start_idx:end_idx]
     
     # Pagination info
     pagination = {
@@ -3271,6 +3326,12 @@ def custom_pages_create():
                          ingredients=ingredients,
                          claims=claims,
                          product_types=product_types,
+                         selected_category=category,
+                         selected_ingredient=ingredient,
+                         selected_claim=claim,
+                         selected_recipe=recipe,
+                         selected_product_type=product_type,
+                         selected_exclusivity=exclusivity,
                          get_text=get_text,
                          lang=lang,
                          pagination=pagination)

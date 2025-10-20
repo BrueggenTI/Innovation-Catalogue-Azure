@@ -246,7 +246,7 @@
     <nav aria-label="Recipe pagination" class="mb-4">
         <ul class="pagination justify-content-center">
             <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                <a class="page-link" href="{% if pagination.has_prev %}{{ url_for('custom_pages_create', page=pagination.prev_page) }}{% else %}#{% endif %}">
+                <a class="page-link" href="{% if pagination.has_prev %}{{ url_for('custom_pages_create', category=selected_category, ingredient=selected_ingredient, claim=selected_claim, recipe=selected_recipe, product_type=selected_product_type, exclusivity=selected_exclusivity, page=pagination.prev_page) }}{% else %}#{% endif %}">
                     <i class="fas fa-chevron-left"></i> Previous
                 </a>
             </li>
@@ -255,14 +255,14 @@
                 {% if page_num == pagination.page %}
                     <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
                 {% elif page_num <= 3 or page_num > pagination.total_pages - 3 or (page_num >= pagination.page - 1 and page_num <= pagination.page + 1) %}
-                    <li class="page-item"><a class="page-link" href="{{ url_for('custom_pages_create', page=page_num) }}">{{ page_num }}</a></li>
+                    <li class="page-item"><a class="page-link" href="{{ url_for('custom_pages_create', category=selected_category, ingredient=selected_ingredient, claim=selected_claim, recipe=selected_recipe, product_type=selected_product_type, exclusivity=selected_exclusivity, page=page_num) }}">{{ page_num }}</a></li>
                 {% elif page_num == 4 or page_num == pagination.total_pages - 3 %}
                     <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
             {% endfor %}
             
             <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                <a class="page-link" href="{% if pagination.has_next %}{{ url_for('custom_pages_create', page=pagination.next_page) }}{% else %}#{% endif %}">
+                <a class="page-link" href="{% if pagination.has_next %}{{ url_for('custom_pages_create', category=selected_category, ingredient=selected_ingredient, claim=selected_claim, recipe=selected_recipe, product_type=selected_product_type, exclusivity=selected_exclusivity, page=pagination.next_page) }}{% else %}#{% endif %}">
                     Next <i class="fas fa-chevron-right"></i>
                 </a>
             </li>
@@ -775,14 +775,15 @@
 </style>
 
 <script>
-// Store selected recipes and active filters
+// Store selected recipes and active filters - Backend-based filtering
 let selectedRecipes = new Set();
 let activeFilters = {
-    category: [],
+    category: '',
     ingredient: [],
     claim: [],
-    product_type: [],
-    exclusivity: null
+    recipe: [],
+    product_type: '',
+    exclusivity: ''
 };
 
 // Data arrays for universal search
@@ -805,10 +806,42 @@ const productsData = [
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    initializeFromURL();
     initializeFilters();
     initializeUniversalSearch();
     initializeTooltips();
+    updateButtonVisualState();
+    updateActiveFiltersDisplay();
 });
+
+// Initialize filters from URL parameters (backend-provided selected values)
+function initializeFromURL() {
+    const urlCategory = '{{ selected_category if selected_category and selected_category.strip() else "" }}';
+    const urlIngredient = '{{ selected_ingredient if selected_ingredient and selected_ingredient.strip() else "" }}';
+    const urlClaim = '{{ selected_claim if selected_claim and selected_claim.strip() else "" }}';
+    const urlRecipe = '{{ selected_recipe if selected_recipe and selected_recipe.strip() else "" }}';
+    const urlProductType = '{{ selected_product_type if selected_product_type and selected_product_type.strip() else "" }}';
+    const urlExclusivity = '{{ selected_exclusivity if selected_exclusivity and selected_exclusivity.strip() else "" }}';
+    
+    if (urlCategory && urlCategory.length > 0) {
+        activeFilters.category = urlCategory;
+    }
+    if (urlIngredient && urlIngredient.length > 0) {
+        activeFilters.ingredient = urlIngredient.split('|').filter(i => i.trim().length > 0);
+    }
+    if (urlClaim && urlClaim.length > 0) {
+        activeFilters.claim = urlClaim.split('|').filter(c => c.trim().length > 0);
+    }
+    if (urlRecipe && urlRecipe.length > 0) {
+        activeFilters.recipe = urlRecipe.split('|').filter(r => r.trim().length > 0);
+    }
+    if (urlProductType && urlProductType.length > 0) {
+        activeFilters.product_type = urlProductType;
+    }
+    if (urlExclusivity && urlExclusivity.length > 0) {
+        activeFilters.exclusivity = urlExclusivity;
+    }
+}
 
 function initializeFilters() {
     // Filter header click handlers
@@ -999,9 +1032,7 @@ function selectSearchResult(type, value) {
     
     switch(type) {
         case 'category':
-            if (!activeFilters.category.includes(value)) {
-                activeFilters.category.push(value);
-            }
+            activeFilters.category = value;
             break;
         case 'ingredient':
             if (!activeFilters.ingredient.includes(value)) {
@@ -1015,9 +1046,7 @@ function selectSearchResult(type, value) {
             break;
     }
     
-    updateButtonVisualState();
-    updateActiveFiltersDisplay();
-    applyFilters();
+    redirectToBackend();
 }
 
 function showSearchResults() {
@@ -1029,6 +1058,7 @@ function hideSearchResults() {
 }
 
 function updateButtonVisualState() {
+    // Update ingredient buttons (multi-select)
     document.querySelectorAll('.filter-option-btn[data-filter="ingredient"], .filter-option-btn-compact[data-filter="ingredient"]').forEach(btn => {
         const value = btn.dataset.value;
         if (activeFilters.ingredient.includes(value)) {
@@ -1038,15 +1068,17 @@ function updateButtonVisualState() {
         }
     });
     
+    // Update category buttons (single-select)
     document.querySelectorAll('.filter-option-btn[data-filter="category"]').forEach(btn => {
         const value = btn.dataset.value;
-        if (activeFilters.category.includes(value)) {
+        if (activeFilters.category === value) {
             btn.classList.add('selected');
         } else {
             btn.classList.remove('selected');
         }
     });
     
+    // Update claim buttons (multi-select)
     document.querySelectorAll('.filter-option-btn[data-filter="claim"], .filter-option-btn-compact[data-filter="claim"]').forEach(btn => {
         const value = btn.dataset.value;
         if (activeFilters.claim.includes(value)) {
@@ -1056,15 +1088,17 @@ function updateButtonVisualState() {
         }
     });
     
+    // Update product_type buttons (single-select)
     document.querySelectorAll('.filter-option-btn[data-filter="product_type"]').forEach(btn => {
         const value = btn.dataset.value;
-        if (activeFilters.product_type.includes(value)) {
+        if (activeFilters.product_type === value) {
             btn.classList.add('selected');
         } else {
             btn.classList.remove('selected');
         }
     });
     
+    // Update exclusivity buttons
     document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
         const value = btn.dataset.exclusivity;
         if (value === activeFilters.exclusivity || (!activeFilters.exclusivity && value === 'both')) {
@@ -1113,106 +1147,55 @@ function toggleFilterOptions(filterType) {
 }
 
 function toggleFilter(filterType, filterValue, buttonElement) {
-    const index = activeFilters[filterType].indexOf(filterValue);
-    
-    if (index > -1) {
-        activeFilters[filterType].splice(index, 1);
-        buttonElement.classList.remove('active');
-        buttonElement.classList.remove('selected');
+    // Handle different filter types - category and product_type are single-select, others are multi-select
+    if (filterType === 'category' || filterType === 'product_type') {
+        // Single select - toggle on/off
+        if (activeFilters[filterType] === filterValue) {
+            activeFilters[filterType] = '';
+        } else {
+            activeFilters[filterType] = filterValue;
+        }
     } else {
-        activeFilters[filterType].push(filterValue);
-        buttonElement.classList.add('active');
-        buttonElement.classList.add('selected');
+        // Multi-select for ingredient and claim
+        const index = activeFilters[filterType].indexOf(filterValue);
+        if (index > -1) {
+            activeFilters[filterType].splice(index, 1);
+        } else {
+            activeFilters[filterType].push(filterValue);
+        }
     }
     
-    applyFilters();
-    updateActiveFiltersDisplay();
+    redirectToBackend();
 }
 
 function toggleExclusivityFilter(exclusivityValue, buttonElement) {
-    // Remove selected state from all exclusivity buttons
-    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    
     if (exclusivityValue === 'both') {
-        activeFilters.exclusivity = null;
+        activeFilters.exclusivity = '';
     } else {
         activeFilters.exclusivity = exclusivityValue;
     }
     
-    buttonElement.classList.add('selected');
-    updateActiveFiltersDisplay();
-    applyFilters();
+    redirectToBackend();
 }
 
-function applyFilters() {
-    const allRecipes = document.querySelectorAll('.recipe-item');
-    let visibleCount = 0;
+// Backend-based filtering - redirect to backend with current filter parameters
+function redirectToBackend() {
+    const params = new URLSearchParams();
+    if (activeFilters.category) params.set('category', activeFilters.category);
+    if (activeFilters.ingredient.length > 0) params.set('ingredient', activeFilters.ingredient.join('|'));
+    if (activeFilters.claim.length > 0) params.set('claim', activeFilters.claim.join('|'));
+    if (activeFilters.recipe.length > 0) params.set('recipe', activeFilters.recipe.join('|'));
+    if (activeFilters.product_type) params.set('product_type', activeFilters.product_type);
+    if (activeFilters.exclusivity && activeFilters.exclusivity !== 'both') params.set('exclusivity', activeFilters.exclusivity);
     
-    allRecipes.forEach(recipe => {
-        let visible = true;
-        
-        // Category filter
-        if (activeFilters.category.length > 0) {
-            const productCategory = recipe.getAttribute('data-category');
-            if (!activeFilters.category.includes(productCategory)) {
-                visible = false;
-            }
-        }
-        
-        // Product type filter
-        if (activeFilters.product_type.length > 0) {
-            const productType = recipe.getAttribute('data-product-type');
-            if (!activeFilters.product_type.includes(productType)) {
-                visible = false;
-            }
-        }
-        
-        // Ingredient filter
-        if (activeFilters.ingredient.length > 0) {
-            const productIngredients = recipe.getAttribute('data-ingredients').split('|');
-            const hasAllIngredients = activeFilters.ingredient.every(ing => 
-                productIngredients.includes(ing)
-            );
-            if (!hasAllIngredients) {
-                visible = false;
-            }
-        }
-        
-        // Claim filter
-        if (activeFilters.claim.length > 0) {
-            const productClaims = recipe.getAttribute('data-claims').split('|');
-            const hasAllClaims = activeFilters.claim.every(claim => 
-                productClaims.includes(claim)
-            );
-            if (!hasAllClaims) {
-                visible = false;
-            }
-        }
-        
-        // Exclusivity filter
-        if (activeFilters.exclusivity && activeFilters.exclusivity !== 'both') {
-            const productExclusivity = recipe.getAttribute('data-exclusivity');
-            if (activeFilters.exclusivity === 'exclusive' && productExclusivity !== 'exclusive') {
-                visible = false;
-            } else if (activeFilters.exclusivity === 'non-exclusive' && productExclusivity !== 'non-exclusive') {
-                visible = false;
-            }
-        }
-        
-        // Show/hide recipe
-        if (visible) {
-            recipe.style.display = 'block';
-            visibleCount++;
-        } else {
-            recipe.style.display = 'none';
-        }
-    });
-    
-    // Update visible count
-    document.getElementById('visibleCount').textContent = visibleCount;
+    const newUrl = '/custom-pages/create' + (params.toString() ? '?' + params.toString() : '');
+    window.location.href = newUrl;
 }
+
+// Clear all filters - redirect to base URL
+window.clearAllFilters = function() {
+    window.location.href = '/custom-pages/create';
+};
 
 function updateActiveFiltersDisplay() {
     const activeFiltersDiv = document.getElementById('activeFilters');
@@ -1221,45 +1204,59 @@ function updateActiveFiltersDisplay() {
     let hasActiveFilters = false;
     activeFiltersDiv.innerHTML = '';
     
-    // Display all active filters (except exclusivity which is null/both by default)
+    // Display all active filters
     for (const [filterType, values] of Object.entries(activeFilters)) {
         if (filterType === 'exclusivity') {
-            if (values && values !== 'both') {
+            if (values && values !== 'both' && values !== '') {
                 hasActiveFilters = true;
                 const filterBtn = document.createElement('button');
                 filterBtn.className = 'active-filter-btn me-2';
                 const displayValue = values === 'exclusive' ? 'Exclusive Only' : 'Non-Exclusive Only';
                 filterBtn.innerHTML = `
                     ${displayValue}
-                    <span class="remove-filter" onclick="removeFilter('exclusivity', null)">
+                    <span class="remove-filter">
                         <i class="fas fa-times"></i>
                     </span>
                 `;
-                filterBtn.addEventListener('click', function(e) {
-                    if (!e.target.closest('.remove-filter')) {
-                        removeFilter('exclusivity', null);
-                    }
+                filterBtn.querySelector('.remove-filter').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    removeFilter('exclusivity', null);
                 });
                 activeFiltersDiv.appendChild(filterBtn);
             }
-        } else if (Array.isArray(values)) {
+        } else if (Array.isArray(values) && values.length > 0) {
             values.forEach(value => {
                 hasActiveFilters = true;
                 const filterBtn = document.createElement('button');
                 filterBtn.className = 'active-filter-btn me-2';
                 filterBtn.innerHTML = `
                     ${value}
-                    <span class="remove-filter" onclick="removeFilter('${filterType}', '${value}')">
+                    <span class="remove-filter">
                         <i class="fas fa-times"></i>
                     </span>
                 `;
-                filterBtn.addEventListener('click', function(e) {
-                    if (!e.target.closest('.remove-filter')) {
-                        removeFilter(filterType, value);
-                    }
+                filterBtn.querySelector('.remove-filter').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    removeFilter(filterType, value);
                 });
                 activeFiltersDiv.appendChild(filterBtn);
             });
+        } else if (typeof values === 'string' && values !== '') {
+            // Single-select filters like category and product_type
+            hasActiveFilters = true;
+            const filterBtn = document.createElement('button');
+            filterBtn.className = 'active-filter-btn me-2';
+            filterBtn.innerHTML = `
+                ${values}
+                <span class="remove-filter">
+                    <i class="fas fa-times"></i>
+                </span>
+            `;
+            filterBtn.querySelector('.remove-filter').addEventListener('click', function(e) {
+                e.stopPropagation();
+                removeFilter(filterType, values);
+            });
+            activeFiltersDiv.appendChild(filterBtn);
         }
     }
     
@@ -1268,56 +1265,19 @@ function updateActiveFiltersDisplay() {
 
 function removeFilter(filterType, filterValue) {
     if (filterType === 'exclusivity') {
-        activeFilters.exclusivity = null;
-        // Reset exclusivity buttons
-        document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
-            btn.classList.remove('selected');
-            if (btn.getAttribute('data-exclusivity') === 'both') {
-                btn.classList.add('selected');
-            }
-        });
-    } else {
+        activeFilters.exclusivity = '';
+    } else if (Array.isArray(activeFilters[filterType])) {
+        // Multi-select filters (ingredient, claim)
         const index = activeFilters[filterType].indexOf(filterValue);
         if (index > -1) {
             activeFilters[filterType].splice(index, 1);
         }
-        
-        // Remove active class from button
-        document.querySelectorAll(`[data-filter="${filterType}"][data-value="${filterValue}"]`).forEach(btn => {
-            btn.classList.remove('active');
-            btn.classList.remove('selected');
-        });
+    } else {
+        // Single-select filters (category, product_type)
+        activeFilters[filterType] = '';
     }
     
-    applyFilters();
-    updateActiveFiltersDisplay();
-}
-
-function clearAllFilters() {
-    activeFilters = {
-        category: [],
-        ingredient: [],
-        claim: [],
-        product_type: [],
-        exclusivity: null
-    };
-    
-    // Remove all active classes from filter buttons
-    document.querySelectorAll('.filter-option-btn, .filter-option-btn-compact').forEach(btn => {
-        btn.classList.remove('active');
-        btn.classList.remove('selected');
-    });
-    
-    // Reset exclusivity buttons to "Both"
-    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
-        btn.classList.remove('selected');
-        if (btn.getAttribute('data-exclusivity') === 'both') {
-            btn.classList.add('selected');
-        }
-    });
-    
-    applyFilters();
-    updateActiveFiltersDisplay();
+    redirectToBackend();
 }
 
 function toggleRecipe(productId) {
