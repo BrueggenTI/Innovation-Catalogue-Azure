@@ -124,6 +124,9 @@
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             {% endif %}
+                            <li><a class="dropdown-item" href="{{ url_for('custom_pages_list') }}">
+                                <i class="fas fa-book me-2"></i>My Custom Recipe Pages
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('profile') }}">
                                 <i class="fas fa-user-edit me-2"></i>{{ get_text('edit_profile', lang) if lang else 'Profile' }}
                             </a></li>

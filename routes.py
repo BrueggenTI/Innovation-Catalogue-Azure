@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, session
 from app import app, db, csrf
-from models import Product, ConceptSession, Trend, User
+from models import Product, ConceptSession, Trend, User, CustomRecipePage
 from data.products import init_products
 from data.trends import init_trends
 from utils.pdf_generator import generate_concept_pdf
@@ -2946,6 +2946,173 @@ def delete_trend(trend_id):
         db.session.rollback()
         logging.error(f"Error deleting trend {trend_id}: {str(e)}")
         return jsonify({'success': False, 'error': 'Failed to delete report'}), 500
+
+@app.route('/custom-pages')
+@login_required
+def custom_pages_list():
+    """List all custom recipe pages for the current user"""
+    init_user_session()
+    lang = session.get('language', 'en')
+    user_id = session.get('user_id')
+    
+    if not user_id:
+        flash('Please log in to view your custom pages.', 'warning')
+        return redirect(url_for('login'))
+    
+    custom_pages = CustomRecipePage.query.filter_by(user_id=user_id).order_by(CustomRecipePage.created_at.desc()).all()
+    
+    # Parse product_ids for each page
+    for page in custom_pages:
+        try:
+            page.product_ids_list = json.loads(page.product_ids)
+            page.recipe_count = len(page.product_ids_list)
+        except:
+            page.product_ids_list = []
+            page.recipe_count = 0
+    
+    return render_template('custom_pages_list.html', 
+                         custom_pages=custom_pages,
+                         get_text=get_text,
+                         lang=lang)
+
+@app.route('/custom-pages/create')
+@login_required
+def custom_pages_create():
+    """Show recipe selection page for creating custom page"""
+    init_user_session()
+    lang = session.get('language', 'en')
+    
+    if Product.query.count() == 0:
+        init_products()
+    
+    products = Product.query.all()
+    
+    # Parse JSON fields for display
+    for product in products:
+        try:
+            if product.ingredients:
+                product.ingredients_list = json.loads(product.ingredients)
+            else:
+                product.ingredients_list = []
+        except:
+            product.ingredients_list = []
+    
+    return render_template('custom_pages_create.html',
+                         products=products,
+                         get_text=get_text,
+                         lang=lang)
+
+@app.route('/custom-pages/save', methods=['POST'])
+@login_required
+def custom_pages_save():
+    """Save a new custom recipe page"""
+    init_user_session()
+    user_id = session.get('user_id')
+    
+    if not user_id:
+        return jsonify({'success': False, 'error': 'User not authenticated'}), 401
+    
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        product_ids = data.get('product_ids', [])
+        
+        if not name:
+            return jsonify({'success': False, 'error': 'Page name is required'}), 400
+        
+        if not product_ids or len(product_ids) == 0:
+            return jsonify({'success': False, 'error': 'Please select at least one recipe'}), 400
+        
+        custom_page = CustomRecipePage(
+            name=name,
+            user_id=user_id,
+            product_ids=json.dumps(product_ids)
+        )
+        
+        db.session.add(custom_page)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Custom page created successfully',
+            'page_id': custom_page.id
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error saving custom page: {e}")
+        return jsonify({'success': False, 'error': 'Failed to save custom page'}), 500
+
+@app.route('/custom-pages/view/<int:page_id>')
+@login_required
+def custom_pages_view(page_id):
+    """View a specific custom recipe page"""
+    init_user_session()
+    lang = session.get('language', 'en')
+    user_id = session.get('user_id')
+    
+    custom_page = CustomRecipePage.query.get_or_404(page_id)
+    
+    if custom_page.user_id != user_id and not session.get('is_master_user'):
+        flash('You do not have permission to view this page.', 'danger')
+        return redirect(url_for('custom_pages_list'))
+    
+    try:
+        product_ids = json.loads(custom_page.product_ids)
+    except:
+        product_ids = []
+    
+    products = Product.query.filter(Product.id.in_(product_ids)).all() if product_ids else []
+    
+    # Parse JSON fields
+    for product in products:
+        try:
+            if product.ingredients:
+                product.ingredients_list = json.loads(product.ingredients)
+            else:
+                product.ingredients_list = []
+                
+            if product.claims:
+                product.claims_list = json.loads(product.claims)
+            else:
+                product.claims_list = []
+                
+            if product.nutritional_claims:
+                product.nutritional_claims_list = json.loads(product.nutritional_claims)
+            else:
+                product.nutritional_claims_list = []
+        except:
+            product.ingredients_list = []
+            product.claims_list = []
+            product.nutritional_claims_list = []
+    
+    return render_template('custom_pages_view.html',
+                         custom_page=custom_page,
+                         products=products,
+                         get_text=get_text,
+                         lang=lang)
+
+@app.route('/custom-pages/delete/<int:page_id>', methods=['DELETE'])
+@login_required
+def custom_pages_delete(page_id):
+    """Delete a custom recipe page"""
+    user_id = session.get('user_id')
+    
+    try:
+        custom_page = CustomRecipePage.query.get_or_404(page_id)
+        
+        if custom_page.user_id != user_id and not session.get('is_master_user'):
+            return jsonify({'success': False, 'error': 'Permission denied'}), 403
+        
+        db.session.delete(custom_page)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Custom page deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error deleting custom page: {e}")
+        return jsonify({'success': False, 'error': 'Failed to delete custom page'}), 500
 
 @app.errorhandler(404)
 def not_found_error(error):

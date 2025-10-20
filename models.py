@@ -89,3 +89,13 @@ class ResearchSource(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     research_job = db.relationship('ResearchJob', backref='sources')
+
+class CustomRecipePage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_ids = db.Column(db.Text, nullable=False)  # JSON array of product IDs
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = db.relationship('User', backref='custom_recipe_pages')
