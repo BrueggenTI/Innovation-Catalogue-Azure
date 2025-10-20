@@ -3351,6 +3351,7 @@ def custom_pages_create():
                          pagination=pagination)
 
 @app.route('/custom-pages/save', methods=['POST'])
+@csrf.exempt
 @login_required
 def custom_pages_save():
     """Save a new custom recipe page"""
