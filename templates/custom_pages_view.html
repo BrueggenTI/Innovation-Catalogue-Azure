@@ -174,7 +174,7 @@
              data-product-type="{{ product.product_type }}"
              data-ingredients="{{ product.parsed_ingredients|map(attribute='name')|join('|') if product.parsed_ingredients else '' }}"
              data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
-            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="text-decoration-none">
+            <a href="{{ url_for('product_detail', id=product.id) }}" class="text-decoration-none">
                 <div class="product-card h-100">
                     <div class="product-image-container">
                         {% if product.image_url %}
