@@ -116,6 +116,16 @@
                     <div class="filter-count text-muted small">{{ product_types|length }} {{ get_text('available', lang) }}</div>
                 </div>
             </div>
+            
+            <div class="col filter-col-equal">
+                <div class="filter-header" data-filter="exclusivity">
+                    <h6 class="mb-2 fw-semibold text-dark">
+                        <i class="fas fa-star me-2" style="color: #661c31;"></i>Exclusivity
+                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                    </h6>
+                    <div class="filter-count text-muted small">Filter by status</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -204,6 +214,28 @@
                 {% endfor %}
             </div>
         </div>
+        
+        <!-- Exclusivity Options (Modern Button Style) -->
+        <div class="filter-options" id="exclusivityOptions" style="display: none;">
+            <h6 class="fw-semibold mb-3 text-dark">Select Exclusivity</h6>
+            <div class="row g-2">
+                <div class="col-auto">
+                    <button type="button" class="exclusivity-filter-btn" data-exclusivity="both">
+                        <i class="fas fa-layer-group me-2"></i>Both
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="exclusivity-filter-btn" data-exclusivity="exclusive">
+                        <i class="fas fa-star text-warning me-2"></i>Exclusive Only
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="exclusivity-filter-btn" data-exclusivity="non-exclusive">
+                        <i class="fas fa-cube me-2"></i>Non-Exclusive Only
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -215,55 +247,113 @@
     {% else %}
     <div class="row g-4" id="productsContainer">
         {% for product in products %}
-        <div class="col-md-6 col-lg-4 col-xl-3 product-item" 
+        <div class="col-lg-4 col-md-6 product-item" 
              data-product-id="{{ product.id }}"
              data-category="{{ product.category }}"
              data-product-type="{{ product.product_type }}"
              data-ingredients="{{ product.flattened_ingredient_names|join('|') if product.flattened_ingredient_names else '' }}"
-             data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
-            <a href="{{ url_for('product_detail', id=product.id, from_custom_page=custom_page.id) }}" class="text-decoration-none">
-                <div class="product-card h-100">
-                    <div class="product-image-container">
-                        {% if product.image_url %}
-                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
-                        {% else %}
-                        <div class="product-image-placeholder">
-                            <i class="fas fa-utensils fa-3x text-muted"></i>
+             data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}"
+             data-exclusivity="{{ 'exclusive' if product.is_exclusive else 'non-exclusive' }}">
+            <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %}">
+                
+                <!-- Wrapper für Bild + Content (für Overlay-Bereich) -->
+                <div class="product-hoverable-area position-relative">
+                    <!-- Unapproved Material Hover Overlay - über Bild und Content -->
+                    {% if product.has_unapproved_material %}
+                    <div class="unapproved-material-overlay">
+                        <div class="unapproved-material-content">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>This recipe contains unapproved raw materials</p>
                         </div>
-                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="product-image-container">
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
                         
-                        {% if product.is_exclusive %}
-                        <span class="badge-exclusive">
-                            <i class="fas fa-star me-1"></i>Exclusive
-                        </span>
-                        {% endif %}
+                        <!-- Badges container to prevent overlap -->
+                        <div class="product-badges-container" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 4px; flex-wrap: wrap; row-gap: 2px;">
+                            <!-- Category Badge (first) -->
+                            <div class="product-category-badge" style="position: static; order: 1;">{{ product.category }}</div>
+                            
+                            <!-- Recipe Status Badge (second) -->
+                            {% if product.recipe_number %}
+                                {% set recipe_digits = product.recipe_number.lstrip('0') %}
+                                {% if recipe_digits and recipe_digits[0] == '4' %}
+                                    <div class="recipe-status-badge bg-success text-white" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
+                                        {{ get_text('productive', lang) }}
+                                    </div>
+                                {% elif recipe_digits and recipe_digits[0] == '1' %}
+                                    <div class="recipe-status-badge bg-development" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
+                                        {{ get_text('development', lang) }}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            
+                            <!-- Exclusive Badge (wraps to next line if needed) -->
+                            {% if product.is_exclusive %}
+                                {% set tooltip_text = get_text('exclusive_product', lang) %}
+                                {% if product.customer %}
+                                    {% set tooltip_text = get_text('exclusive_for_customer', lang) + ' <strong>' + (product.customer|e) + '</strong>' %}
+                                {% elif product.market %}
+                                    {% set tooltip_text = get_text('exclusive_for_market', lang) + ' <strong>' + (product.market|e) + '</strong>' %}
+                                {% endif %}
+                                <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
+                                     data-bs-toggle="tooltip" 
+                                     data-bs-placement="top" 
+                                     data-bs-html="true"
+                                     title="{{ tooltip_text|safe }}">
+                                    {{ get_text('exclusive', lang) }}
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                     
-                    <div class="product-content">
-                        <h5 class="product-name">{{ product.name }}</h5>
+                    <div class="card-body-content p-4">
+                        <h5 class="card-title fw-bold text-primary mb-3">{{ product.name }}</h5>
+                        <p class="card-text text-muted mb-3">{{ product.description[:120] }}...</p>
                         
-                        <div class="product-category mb-2">
-                            <i class="fas fa-tag me-1"></i>{{ product.category }}
-                        </div>
-                        
-                        {% if product.description %}
-                        <p class="product-description">{{ product.description[:120] }}{% if product.description|length > 120 %}...{% endif %}</p>
-                        {% endif %}
-                        
-                        {% if product.recipe_number %}
-                        <div class="recipe-number-badge">
-                            <i class="fas fa-file-alt me-1"></i>Recipe: {{ product.recipe_number }}
-                        </div>
-                        {% endif %}
-                        
-                        <div class="product-footer mt-3">
-                            <button class="btn btn-sm btn-outline-secondary w-100">
-                                View Details <i class="fas fa-arrow-right ms-2"></i>
-                            </button>
+                        <div class="product-highlights mb-3">
+                            {% if product.parsed_ingredients %}
+                                <div class="highlight-item mb-2">
+                                    <i class="fas fa-seedling text-success me-2"></i>
+                                    <span class="small ingredients-preview-text">
+                                        {% set ingredient_names = [] %}
+                                        {% for ingredient in product.parsed_ingredients[:3] %}
+                                            {% if ingredient is mapping and ingredient.name %}
+                                                {% set _ = ingredient_names.append(ingredient.name) %}
+                                            {% elif ingredient is string %}
+                                                {% set _ = ingredient_names.append(ingredient) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ ingredient_names|join(', ') }}
+                                        {% if product.parsed_ingredients|length > 3 %} +{{ product.parsed_ingredients|length - 3 }} {{ get_text('more', lang) }}{% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                            
+                            {% if product.parsed_nutritional_claims %}
+                                <div class="highlight-item">
+                                    <i class="fas fa-medal text-warning me-2"></i>
+                                    <span class="small">{{ product.parsed_nutritional_claims[:2]|join(', ') }}{% if product.parsed_nutritional_claims|length > 2 %} +{{ product.parsed_nutritional_claims|length - 2 }} {{ get_text('more', lang) }}{% endif %}</span>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-            </a>
+                
+                <!-- Buttons außerhalb des hoverable-area Wrappers -->
+                <div class="card-body p-4 pt-0">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('product_detail', id=product.id, from_custom_page=custom_page.id) }}" class="btn btn-outline-primary rounded-pill">
+                            <i class="fas fa-info-circle me-2"></i>{{ get_text('view_details', lang) }}
+                        </a>
+                        <a href="{{ url_for('cocreation', base_product_id=product.id) }}" class="btn btn-primary rounded-pill">
+                            <i class="fas fa-plus me-2"></i>{{ get_text('use_as_base_product', lang) }}
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -271,95 +361,60 @@
 </div>
 
 <style>
-.product-card {
+/* Equal width filter columns */
+.filter-col-equal {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Modern Exclusivity Filter Buttons */
+.exclusivity-filter-btn {
+    padding: 12px 24px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
     background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    color: #495057;
+    font-weight: 500;
+    font-size: 14px;
     transition: all 0.3s ease;
-    border: 1px solid #e0e0e0;
-}
-
-.product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-}
-
-.product-image-container {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1;
-    overflow: hidden;
-    background-color: #f5f5f5;
-}
-
-.product-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.product-image-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
+    cursor: pointer;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    white-space: nowrap;
 }
 
-.badge-exclusive {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background-color: #661c31;
+.exclusivity-filter-btn:hover {
+    border-color: #661c31;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.15);
+}
+
+.exclusivity-filter-btn.selected {
+    background: #661c31;
     color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    border-color: #661c31;
+    box-shadow: 0 4px 12px rgba(102, 28, 49, 0.25);
 }
 
-.product-content {
-    padding: 20px;
+.exclusivity-filter-btn.selected:hover {
+    background: #7d2242;
+    border-color: #7d2242;
 }
 
-.product-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 8px;
-    line-height: 1.3;
-    min-height: 48px;
-}
-
-.product-category {
-    color: #661c31;
+.exclusivity-filter-btn .fas {
     font-size: 14px;
-    font-weight: 600;
 }
 
-.product-description {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.5;
-    margin-bottom: 12px;
-}
-
-.recipe-number-badge {
-    display: inline-block;
-    background-color: #f0f0f0;
-    color: #666;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.product-footer {
-    border-top: 1px solid #e0e0e0;
-    padding-top: 12px;
+/* Ingredients Preview - Fixed 2 Lines */
+.ingredients-preview-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4em;
+    max-height: 2.8em;
+    text-overflow: ellipsis;
 }
 
 .filter-compact-container {
@@ -374,7 +429,8 @@ let activeFilters = {
     category: [],
     ingredient: [],
     claim: [],
-    product_type: []
+    product_type: [],
+    exclusivity: ''
 };
 let searchQuery = '';
 
@@ -400,6 +456,22 @@ function initializeFilters() {
             const filterType = this.getAttribute('data-filter');
             const filterValue = this.getAttribute('data-value');
             toggleFilter(filterType, filterValue, this);
+        });
+    });
+    
+    // Exclusivity button handlers
+    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const value = this.getAttribute('data-exclusivity');
+            activeFilters.exclusivity = value;
+            
+            // Update visual state
+            document.querySelectorAll('.exclusivity-filter-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            
+            applyFilters();
+            updateActiveFiltersDisplay();
         });
     });
     
@@ -503,7 +575,7 @@ function applyFilters() {
         
         // Search filter
         if (searchQuery) {
-            const productName = product.querySelector('.product-name')?.textContent.toLowerCase() || '';
+            const productName = product.querySelector('.card-title')?.textContent.toLowerCase() || '';
             if (!productName.includes(searchQuery)) {
                 visible = false;
             }
@@ -521,6 +593,14 @@ function applyFilters() {
         if (activeFilters.product_type.length > 0) {
             const productType = product.getAttribute('data-product-type');
             if (!activeFilters.product_type.includes(productType)) {
+                visible = false;
+            }
+        }
+        
+        // Exclusivity filter
+        if (activeFilters.exclusivity && activeFilters.exclusivity !== 'both') {
+            const productExclusivity = product.getAttribute('data-exclusivity');
+            if (productExclusivity !== activeFilters.exclusivity) {
                 visible = false;
             }
         }
@@ -569,31 +649,52 @@ function updateActiveFiltersDisplay() {
     
     // Display all active filters
     for (const [filterType, values] of Object.entries(activeFilters)) {
-        values.forEach(value => {
+        if (Array.isArray(values)) {
+            values.forEach(value => {
+                hasActiveFilters = true;
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-secondary me-2';
+                badge.innerHTML = `${value} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
+                badge.querySelector('i').addEventListener('click', () => {
+                    removeFilter(filterType, value);
+                });
+                activeFiltersDiv.appendChild(badge);
+            });
+        } else if (values && values !== '' && values !== 'both') {
             hasActiveFilters = true;
             const badge = document.createElement('span');
             badge.className = 'badge bg-secondary me-2';
-            badge.innerHTML = `${value} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
+            let displayText = values;
+            if (filterType === 'exclusivity') {
+                displayText = values === 'exclusive' ? 'Exclusive Only' : 'Non-Exclusive Only';
+            }
+            badge.innerHTML = `${displayText} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
             badge.querySelector('i').addEventListener('click', () => {
-                removeFilter(filterType, value);
+                removeFilter(filterType);
             });
             activeFiltersDiv.appendChild(badge);
-        });
+        }
     }
     
     activeFiltersSection.style.display = hasActiveFilters ? 'block' : 'none';
 }
 
 function removeFilter(filterType, filterValue) {
-    const index = activeFilters[filterType].indexOf(filterValue);
-    if (index > -1) {
-        activeFilters[filterType].splice(index, 1);
+    if (filterType === 'exclusivity') {
+        activeFilters.exclusivity = '';
+        document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+    } else if (Array.isArray(activeFilters[filterType])) {
+        const index = activeFilters[filterType].indexOf(filterValue);
+        if (index > -1) {
+            activeFilters[filterType].splice(index, 1);
+        }
+        // Remove active class from button
+        document.querySelectorAll(`[data-filter="${filterType}"][data-value="${filterValue}"]`).forEach(btn => {
+            btn.classList.remove('active');
+        });
     }
-    
-    // Remove active class from button
-    document.querySelectorAll(`[data-filter="${filterType}"][data-value="${filterValue}"]`).forEach(btn => {
-        btn.classList.remove('active');
-    });
     
     applyFilters();
     updateActiveFiltersDisplay();
@@ -604,12 +705,18 @@ function clearAllFilters() {
         category: [],
         ingredient: [],
         claim: [],
-        product_type: []
+        product_type: [],
+        exclusivity: ''
     };
     
     // Remove all active classes
     document.querySelectorAll('.filter-option-btn, .filter-option-btn-compact').forEach(btn => {
         btn.classList.remove('active');
+    });
+    
+    // Remove selected class from exclusivity buttons
+    document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
+        btn.classList.remove('selected');
     });
     
     applyFilters();
