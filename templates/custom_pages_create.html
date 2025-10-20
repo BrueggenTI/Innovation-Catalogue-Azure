@@ -3,23 +3,29 @@
 {% block title %}Create Custom Recipe Page - Brüggen Innovation Platform{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-5">
+<div class="container-fluid px-4 py-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="display-5 fw-bold mb-3">Create Custom Recipe Page</h1>
-            <p class="lead text-muted">
-                Select recipes to include in your custom overview
-            </p>
+            <div class="d-flex align-items-center mb-3">
+                <a href="{{ url_for('custom_pages_list') }}" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="display-5 fw-bold mb-0">Create Custom Recipe Page</h1>
+                    <p class="text-muted small mb-0">Select recipes to include in your custom overview</p>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Selection Summary Bar -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h5 class="mb-1">Selected Recipes: <span id="selectedCount">0</span></h5>
+                            <h5 class="mb-1">Selected Recipes: <span id="selectedCount">0</span> | Visible: <span id="visibleCount">{{ products|length }}</span></h5>
                             <p class="text-muted small mb-0">Click on recipes below to add them to your custom page</p>
                         </div>
                         <button class="btn btn-lg" style="background-color: #661c31; color: white;" onclick="saveCustomPage()" id="saveBtn" disabled>
@@ -31,10 +37,161 @@
         </div>
     </div>
 
-    <div class="row g-3">
+    <!-- Active Filters Section -->
+    <div class="active-filters-section py-3 bg-white border-bottom" id="activeFiltersSection" style="display: none;">
+        <div class="container-fluid px-4">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="fw-semibold text-muted me-3">{{ get_text('active_filters', lang) }}</span>
+                <div id="activeFilters" class="d-flex flex-wrap gap-2"></div>
+                <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" onclick="clearAllFilters()">
+                    <i class="fas fa-times me-1"></i>{{ get_text('clear_all', lang) }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section py-3 bg-white border-bottom mb-3">
+        <div class="container-fluid">
+            <div class="search-container position-relative">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" id="recipeSearch" 
+                           placeholder="Search recipes by name..." 
+                           autocomplete="off">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch" onclick="clearSearch()" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Interface Section -->
+    <div class="filters-section py-4 bg-light border-bottom mb-4">
+        <div class="container-fluid">
+            <div class="row g-3">
+                <div class="col filter-col-equal">
+                    <div class="filter-header" data-filter="category">
+                        <h6 class="mb-2 fw-semibold text-dark">
+                            <i class="fas fa-tags me-2" style="color: #661c31;"></i>{{ get_text('category', lang) }}
+                            <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                        </h6>
+                        <div class="filter-count text-muted small">{{ categories|length }} {{ get_text('available', lang) }}</div>
+                    </div>
+                </div>
+                
+                <div class="col filter-col-equal">
+                    <div class="filter-header" data-filter="ingredient">
+                        <h6 class="mb-2 fw-semibold text-dark">
+                            <i class="fas fa-seedling me-2" style="color: #661c31;"></i>{{ get_text('key_ingredient', lang) }}
+                            <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                        </h6>
+                        <div class="filter-count text-muted small">{{ ingredients|length }} {{ get_text('available', lang) }}</div>
+                    </div>
+                </div>
+                
+                <div class="col filter-col-equal">
+                    <div class="filter-header" data-filter="claim">
+                        <h6 class="mb-2 fw-semibold text-dark">
+                            <i class="fas fa-medal me-2" style="color: #661c31;"></i>{{ get_text('claims', lang) }}
+                            <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                        </h6>
+                        <div class="filter-count text-muted small">{{ claims|length }} {{ get_text('available', lang) }}</div>
+                    </div>
+                </div>
+                
+                <div class="col filter-col-equal">
+                    <div class="filter-header" data-filter="product_type">
+                        <h6 class="mb-2 fw-semibold text-dark">
+                            <i class="fas fa-flask me-2" style="color: #661c31;"></i>Product Type
+                            <i class="fas fa-chevron-down filter-chevron ms-2"></i>
+                        </h6>
+                        <div class="filter-count text-muted small">{{ product_types|length }} {{ get_text('available', lang) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expandable Filter Options -->
+    <div class="filter-options-section bg-white border-bottom mb-4" id="filterOptionsSection" style="display: none;">
+        <div class="container-fluid px-4 py-4">
+            <!-- Category Options -->
+            <div class="filter-options" id="categoryOptions" style="display: none;">
+                <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_category', lang) }}</h6>
+                <div class="row g-2">
+                    {% for category in categories %}
+                    <div class="col-auto">
+                        <button type="button" class="filter-option-btn" data-filter="category" data-value="{{ category }}">
+                            {{ category }}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Ingredient Options -->
+            <div class="filter-options" id="ingredientOptions" style="display: none;">
+                <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_key_ingredient', lang) }}</h6>
+                <div class="filter-compact-container">
+                    <div class="row g-2">
+                        {% for ingredient in ingredients %}
+                        <div class="col-auto">
+                            <button type="button" class="filter-option-btn-compact" data-filter="ingredient" data-value="{{ ingredient }}">
+                                {{ ingredient }}
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Claim Options -->
+            <div class="filter-options" id="claimOptions" style="display: none;">
+                <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_claims', lang) }}</h6>
+                <div class="filter-compact-container">
+                    <div class="row g-2">
+                        {% for claim in claims %}
+                        <div class="col-auto">
+                            <button type="button" class="filter-option-btn-compact" data-filter="claim" data-value="{{ claim }}">
+                                {{ claim }}
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Type Options -->
+            <div class="filter-options" id="product_typeOptions" style="display: none;">
+                <h6 class="fw-semibold mb-3 text-dark">Select Product Type</h6>
+                <div class="row g-2">
+                    {% for ptype in product_types %}
+                    <div class="col-auto">
+                        <button type="button" class="filter-option-btn" data-filter="product_type" data-value="{{ ptype }}">
+                            {{ ptype }}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Grid -->
+    <div class="row g-3" id="recipesContainer">
         {% for product in products %}
-        <div class="col-md-6 col-lg-3">
-            <div class="recipe-card" data-product-id="{{ product.id }}" onclick="toggleRecipe({{ product.id }})">
+        <div class="col-md-6 col-lg-3 recipe-item" 
+             data-product-id="{{ product.id }}"
+             data-product-name="{{ product.name|lower }}"
+             data-category="{{ product.category }}"
+             data-product-type="{{ product.product_type }}"
+             data-ingredients="{{ product.flattened_ingredient_names|join('|') if product.flattened_ingredient_names else '' }}"
+             data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
+            <div class="recipe-card" onclick="toggleRecipe({{ product.id }})">
                 <div class="recipe-checkbox">
                     <i class="far fa-square unchecked-icon"></i>
                     <i class="fas fa-check-square checked-icon" style="display: none;"></i>
@@ -49,6 +206,11 @@
                     {% endif %}
                 </div>
                 <div class="recipe-title">{{ product.name }}</div>
+                {% if product.category %}
+                <div class="recipe-category">
+                    <i class="fas fa-tag me-1"></i>{{ product.category }}
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -125,23 +287,294 @@
 }
 
 .recipe-title {
-    font-size: 14px;
     font-weight: 600;
-    color: #333;
-    text-align: center;
+    font-size: 14px;
     line-height: 1.3;
-    min-height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.recipe-category {
+    font-size: 12px;
+    color: #661c31;
+    margin-top: 8px;
+}
+
+.filter-compact-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.filter-header {
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    background: white;
+    border: 1px solid #e0e0e0;
+}
+
+.filter-header:hover {
+    background: #f8f9fa;
+    border-color: #661c31;
+}
+
+.filter-col-equal {
+    flex: 1;
+    min-width: 0;
+}
+
+.filter-option-btn, .filter-option-btn-compact {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.filter-option-btn:hover, .filter-option-btn-compact:hover {
+    background: #f0f0f0;
+    border-color: #661c31;
+}
+
+.filter-option-btn.active, .filter-option-btn-compact.active {
+    background: #661c31;
+    color: white;
+    border-color: #661c31;
+}
+
+.filter-chevron {
+    font-size: 12px;
+    transition: transform 0.2s;
 }
 </style>
 
 <script>
+// Store selected recipes and active filters
 let selectedRecipes = new Set();
+let activeFilters = {
+    category: [],
+    ingredient: [],
+    claim: [],
+    product_type: []
+};
+let searchQuery = '';
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters();
+    initializeSearch();
+});
+
+function initializeFilters() {
+    // Filter header click handlers
+    document.querySelectorAll('.filter-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const filterType = this.getAttribute('data-filter');
+            toggleFilterOptions(filterType);
+        });
+    });
+    
+    // Filter option button handlers
+    document.querySelectorAll('.filter-option-btn, .filter-option-btn-compact').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const filterType = this.getAttribute('data-filter');
+            const filterValue = this.getAttribute('data-value');
+            toggleFilter(filterType, filterValue, this);
+        });
+    });
+}
+
+function initializeSearch() {
+    const searchInput = document.getElementById('recipeSearch');
+    const clearBtn = document.getElementById('clearSearch');
+    
+    searchInput.addEventListener('input', function() {
+        searchQuery = this.value.toLowerCase().trim();
+        clearBtn.style.display = searchQuery ? 'block' : 'none';
+        applyFilters();
+    });
+}
+
+function clearSearch() {
+    document.getElementById('recipeSearch').value = '';
+    searchQuery = '';
+    document.getElementById('clearSearch').style.display = 'none';
+    applyFilters();
+}
+
+function toggleFilterOptions(filterType) {
+    const optionsSection = document.getElementById('filterOptionsSection');
+    const optionsDiv = document.getElementById(filterType + 'Options');
+    const header = document.querySelector(`[data-filter="${filterType}"]`);
+    
+    if (optionsDiv.style.display === 'none') {
+        // Hide all other filter options
+        document.querySelectorAll('.filter-options').forEach(opt => {
+            opt.style.display = 'none';
+        });
+        
+        // Show selected filter options
+        optionsDiv.style.display = 'block';
+        optionsSection.style.display = 'block';
+        
+        // Update chevrons
+        document.querySelectorAll('.filter-chevron').forEach(ch => {
+            ch.classList.remove('fa-chevron-up');
+            ch.classList.add('fa-chevron-down');
+        });
+        header.querySelector('.filter-chevron').classList.remove('fa-chevron-down');
+        header.querySelector('.filter-chevron').classList.add('fa-chevron-up');
+    } else {
+        optionsDiv.style.display = 'none';
+        optionsSection.style.display = 'none';
+        header.querySelector('.filter-chevron').classList.remove('fa-chevron-up');
+        header.querySelector('.filter-chevron').classList.add('fa-chevron-down');
+    }
+}
+
+function toggleFilter(filterType, filterValue, buttonElement) {
+    const index = activeFilters[filterType].indexOf(filterValue);
+    
+    if (index > -1) {
+        activeFilters[filterType].splice(index, 1);
+        buttonElement.classList.remove('active');
+    } else {
+        activeFilters[filterType].push(filterValue);
+        buttonElement.classList.add('active');
+    }
+    
+    applyFilters();
+    updateActiveFiltersDisplay();
+}
+
+function applyFilters() {
+    const allRecipes = document.querySelectorAll('.recipe-item');
+    let visibleCount = 0;
+    
+    allRecipes.forEach(recipe => {
+        let visible = true;
+        
+        // Search filter
+        if (searchQuery) {
+            const recipeName = recipe.getAttribute('data-product-name');
+            if (!recipeName.includes(searchQuery)) {
+                visible = false;
+            }
+        }
+        
+        // Category filter
+        if (activeFilters.category.length > 0) {
+            const productCategory = recipe.getAttribute('data-category');
+            if (!activeFilters.category.includes(productCategory)) {
+                visible = false;
+            }
+        }
+        
+        // Product type filter
+        if (activeFilters.product_type.length > 0) {
+            const productType = recipe.getAttribute('data-product-type');
+            if (!activeFilters.product_type.includes(productType)) {
+                visible = false;
+            }
+        }
+        
+        // Ingredient filter
+        if (activeFilters.ingredient.length > 0) {
+            const productIngredients = recipe.getAttribute('data-ingredients').split('|');
+            const hasAllIngredients = activeFilters.ingredient.every(ing => 
+                productIngredients.includes(ing)
+            );
+            if (!hasAllIngredients) {
+                visible = false;
+            }
+        }
+        
+        // Claim filter
+        if (activeFilters.claim.length > 0) {
+            const productClaims = recipe.getAttribute('data-claims').split('|');
+            const hasAllClaims = activeFilters.claim.every(claim => 
+                productClaims.includes(claim)
+            );
+            if (!hasAllClaims) {
+                visible = false;
+            }
+        }
+        
+        // Show/hide recipe
+        if (visible) {
+            recipe.style.display = 'block';
+            visibleCount++;
+        } else {
+            recipe.style.display = 'none';
+        }
+    });
+    
+    // Update visible count
+    document.getElementById('visibleCount').textContent = visibleCount;
+}
+
+function updateActiveFiltersDisplay() {
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const activeFiltersSection = document.getElementById('activeFiltersSection');
+    
+    let hasActiveFilters = false;
+    activeFiltersDiv.innerHTML = '';
+    
+    // Display all active filters
+    for (const [filterType, values] of Object.entries(activeFilters)) {
+        values.forEach(value => {
+            hasActiveFilters = true;
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-secondary me-2';
+            badge.innerHTML = `${value} <i class="fas fa-times ms-1" style="cursor: pointer;"></i>`;
+            badge.querySelector('i').addEventListener('click', () => {
+                removeFilter(filterType, value);
+            });
+            activeFiltersDiv.appendChild(badge);
+        });
+    }
+    
+    activeFiltersSection.style.display = hasActiveFilters ? 'block' : 'none';
+}
+
+function removeFilter(filterType, filterValue) {
+    const index = activeFilters[filterType].indexOf(filterValue);
+    if (index > -1) {
+        activeFilters[filterType].splice(index, 1);
+    }
+    
+    // Remove active class from button
+    document.querySelectorAll(`[data-filter="${filterType}"][data-value="${filterValue}"]`).forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    applyFilters();
+    updateActiveFiltersDisplay();
+}
+
+function clearAllFilters() {
+    activeFilters = {
+        category: [],
+        ingredient: [],
+        claim: [],
+        product_type: []
+    };
+    
+    // Remove all active classes
+    document.querySelectorAll('.filter-option-btn, .filter-option-btn-compact').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    applyFilters();
+    updateActiveFiltersDisplay();
+}
 
 function toggleRecipe(productId) {
-    const card = document.querySelector(`[data-product-id="${productId}"]`);
+    const card = document.querySelector(`[data-product-id="${productId}"] .recipe-card`);
     
     if (selectedRecipes.has(productId)) {
         selectedRecipes.delete(productId);
@@ -151,10 +584,10 @@ function toggleRecipe(productId) {
         card.classList.add('selected');
     }
     
-    updateSelectedCount();
+    updateSelectionCount();
 }
 
-function updateSelectedCount() {
+function updateSelectionCount() {
     document.getElementById('selectedCount').textContent = selectedRecipes.size;
     document.getElementById('saveBtn').disabled = selectedRecipes.size === 0;
 }

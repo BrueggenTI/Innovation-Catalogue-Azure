@@ -172,7 +172,7 @@
              data-product-id="{{ product.id }}"
              data-category="{{ product.category }}"
              data-product-type="{{ product.product_type }}"
-             data-ingredients="{{ product.parsed_ingredients|map(attribute='name')|join('|') if product.parsed_ingredients else '' }}"
+             data-ingredients="{{ product.flattened_ingredient_names|join('|') if product.flattened_ingredient_names else '' }}"
              data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
             <a href="{{ url_for('product_detail', id=product.id) }}" class="text-decoration-none">
                 <div class="product-card h-100">
