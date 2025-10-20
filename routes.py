@@ -740,6 +740,9 @@ def product_detail(id):
     init_user_session()
     product = Product.query.get_or_404(id)
     
+    # Get the from_custom_page parameter to handle navigation context
+    from_custom_page_id = request.args.get('from_custom_page', type=int)
+    
     if request.method == 'POST':
         # Handle exclusive recipe form submission
         product.is_exclusive = 'is_exclusive' in request.form
@@ -757,6 +760,9 @@ def product_detail(id):
             db.session.rollback()
             flash('Fehler beim Speichern der Einstellungen.', 'error')
         
+        # Preserve the from_custom_page parameter on redirect
+        if from_custom_page_id:
+            return redirect(url_for('product_detail', id=id, from_custom_page=from_custom_page_id))
         return redirect(url_for('product_detail', id=id))
 
     # Parse JSON fields
@@ -774,7 +780,8 @@ def product_detail(id):
                          certifications=certifications,
                          nutritional_info=nutritional_info,
                          allergens=allergens,
-                         claims=claims)
+                         claims=claims,
+                         from_custom_page_id=from_custom_page_id)
 
 @app.route('/product/<int:id>/update-exclusive-info', methods=['POST'])
 @login_required
