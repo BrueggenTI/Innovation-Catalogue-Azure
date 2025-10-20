@@ -795,56 +795,39 @@ const allIngredients = {{ ingredients|tojson }};
 const allClaims = {{ claims|tojson }};
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Modern Filter System - initialize filters as empty by default
+    // Modern Filter System - initialize filters as COMPLETELY EMPTY by default
     let activeFilters = {
         category: '',
         ingredient: [], // Changed to array for multiple ingredients
-        claim: [], // Changed to array for multiple claims
+        claim: [], // Changed to array for multiple claims - MUST START EMPTY
         recipeNumber: [], // Add recipe number filtering
         product_type: '', // Product or Development
         exclusivity: '' // exclusive, non-exclusive, or both
     };
 
-    // Only set filters if they have actual meaningful values from URL
-    const urlCategory = '{{ selected_category if selected_category and selected_category.strip() and selected_category != "None" else "" }}';
-    const urlIngredient = '{{ selected_ingredient if selected_ingredient and selected_ingredient.strip() and selected_ingredient != "None" else "" }}';
-    const urlClaim = '{{ selected_claim if selected_claim and selected_claim.strip() and selected_claim != "None" else "" }}';
-    const urlProductType = '{{ selected_product_type if selected_product_type and selected_product_type.strip() and selected_product_type != "None" else "" }}';
-    const urlExclusivity = '{{ selected_exclusivity if selected_exclusivity and selected_exclusivity.strip() and selected_exclusivity != "None" else "" }}';
-
-    if (urlCategory && urlCategory.trim().length > 0) {
-        activeFilters.category = urlCategory.trim();
-    }
-    if (urlIngredient && urlIngredient.trim().length > 0) {
-        // Handle pipe-separated ingredients from URL
-        activeFilters.ingredient = urlIngredient.split('|').map(ing => ing.trim()).filter(ing => ing.length > 0);
-    }
-    if (urlClaim && urlClaim.trim().length > 0) {
-        // Handle pipe-separated claims from URL
-        activeFilters.claim = urlClaim.split('|').map(cl => cl.trim()).filter(cl => cl.length > 0);
-    }
-    if (urlProductType && urlProductType.trim().length > 0) {
-        activeFilters.product_type = urlProductType.trim();
-    }
-    if (urlExclusivity && urlExclusivity.trim().length > 0) {
-        activeFilters.exclusivity = urlExclusivity.trim();
-    }
-
     let currentOpenFilter = null;
 
-    // Parse URL parameters and set initial filters
+    // Parse URL parameters ONLY - ignore template variables completely
+    // This ensures filters are ONLY set when explicitly present in URL
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('category')) {
+
+    if (urlParams.has('category') && urlParams.get('category')) {
         activeFilters.category = urlParams.get('category');
     }
-    if (urlParams.get('ingredient')) {
+    if (urlParams.has('ingredient') && urlParams.get('ingredient')) {
         activeFilters.ingredient = urlParams.get('ingredient').split('|').filter(i => i.trim());
     }
-    if (urlParams.get('claim')) {
+    if (urlParams.has('claim') && urlParams.get('claim')) {
         activeFilters.claim = urlParams.get('claim').split('|').filter(c => c.trim());
     }
-    if (urlParams.get('recipe')) {
+    if (urlParams.has('recipe') && urlParams.get('recipe')) {
         activeFilters.recipeNumber = urlParams.get('recipe').split('|').filter(r => r.trim());
+    }
+    if (urlParams.has('product_type') && urlParams.get('product_type')) {
+        activeFilters.product_type = urlParams.get('product_type');
+    }
+    if (urlParams.has('exclusivity') && urlParams.get('exclusivity')) {
+        activeFilters.exclusivity = urlParams.get('exclusivity');
     }
 
     // Initialize active filters on page load
@@ -1619,7 +1602,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <script>
-// Update modal selected count when modal is shown
+// Update selected count when modal is shown
 document.getElementById('savePageModal').addEventListener('show.bs.modal', function () {
     document.getElementById('modalSelectedCount').textContent = selectedRecipes.size;
 });
