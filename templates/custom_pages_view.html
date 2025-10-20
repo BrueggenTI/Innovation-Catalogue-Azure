@@ -219,7 +219,7 @@
              data-product-type="{{ product.product_type }}"
              data-ingredients="{{ product.flattened_ingredient_names|join('|') if product.flattened_ingredient_names else '' }}"
              data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
-            <a href="{{ url_for('product_detail', id=product.id) }}" class="text-decoration-none">
+            <a href="{{ url_for('product_detail', id=product.id, from_custom_page=custom_page.id) }}" class="text-decoration-none">
                 <div class="product-card h-100">
                     <div class="product-image-container">
                         {% if product.image_url %}
