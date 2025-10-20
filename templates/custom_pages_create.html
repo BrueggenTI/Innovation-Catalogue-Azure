@@ -252,102 +252,85 @@
              data-exclusivity="{{ 'exclusive' if product.is_exclusive else 'non-exclusive' }}"
              data-ingredients="{{ product.flattened_ingredient_names|join('|') if product.flattened_ingredient_names else '' }}"
              data-claims="{{ product.parsed_claims|join('|') if product.parsed_claims else '' }}">
-            <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" 
-                 style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %} cursor: pointer;" 
-                 onclick="toggleRecipe({{ product.id }})">
-                
-                <!-- Recipe Checkbox -->
-                <div class="recipe-checkbox" style="position: absolute; top: 12px; right: 12px; z-index: 20;">
-                    <i class="far fa-square unchecked-icon" style="font-size: 24px; color: white; text-shadow: 0 0 3px rgba(0,0,0,0.5);"></i>
-                    <i class="fas fa-check-square checked-icon" style="display: none; font-size: 24px; color: #661c31; text-shadow: 0 0 3px rgba(255,255,255,0.8);"></i>
-                </div>
-                
-                <!-- Wrapper for Image + Content (for Overlay area) -->
-                <div class="product-hoverable-area position-relative">
-                    <!-- Unapproved Material Hover Overlay -->
-                    {% if product.has_unapproved_material %}
-                    <div class="unapproved-material-overlay">
-                        <div class="unapproved-material-content">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p>This recipe contains unapproved raw materials</p>
-                        </div>
-                    </div>
-                    {% endif %}
+            
+            <a href="{{ url_for('product_detail', id=product.id) }}" class="text-decoration-none">
+                <div class="card product-card h-100 shadow-sm d-flex flex-column {% if product.has_unapproved_material %}unapproved-material-card{% endif %}" 
+                     style="{% if product.has_unapproved_material %}border: 1px solid #ff4143;{% else %}border: 0;{% endif %} cursor: pointer;">
                     
-                    <div class="product-image-container">
-                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
-                        
-                        <!-- Badges container -->
-                        <div class="product-badges-container" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 4px; flex-wrap: wrap; row-gap: 2px;">
-                            <!-- Category Badge (first) -->
-                            <div class="product-category-badge" style="position: static; order: 1;">{{ product.category }}</div>
-                            
-                            <!-- Recipe Status Badge (second) -->
-                            {% if product.recipe_number %}
-                                {% set recipe_digits = product.recipe_number.lstrip('0') %}
-                                {% if recipe_digits and recipe_digits[0] == '4' %}
-                                    <div class="recipe-status-badge bg-success text-white" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
-                                        {{ get_text('productive', lang) }}
-                                    </div>
-                                {% elif recipe_digits and recipe_digits[0] == '1' %}
-                                    <div class="recipe-status-badge bg-development" style="border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 2;">
-                                        {{ get_text('development', lang) }}
-                                    </div>
-                                {% endif %}
-                            {% endif %}
-                            
-                            <!-- Exclusive Badge -->
-                            {% if product.is_exclusive %}
-                                {% set tooltip_text = get_text('exclusive_product', lang) %}
-                                {% if product.customer %}
-                                    {% set tooltip_text = get_text('exclusive_for_customer', lang) + ' <strong>' + (product.customer|e) + '</strong>' %}
-                                {% elif product.market %}
-                                    {% set tooltip_text = get_text('exclusive_for_market', lang) + ' <strong>' + (product.market|e) + '</strong>' %}
-                                {% endif %}
-                                <div class="exclusive-badge-card position-relative" style="background-color: #ffc107; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
-                                     data-bs-toggle="tooltip" 
-                                     data-bs-placement="top" 
-                                     data-bs-html="true"
-                                     title="{{ tooltip_text|safe }}">
-                                    {{ get_text('exclusive', lang) }}
-                                </div>
-                            {% endif %}
-                        </div>
+                    <!-- Recipe Checkbox -->
+                    <div class="recipe-checkbox" style="position: absolute; top: 8px; right: 8px; z-index: 20;" onclick="event.preventDefault(); event.stopPropagation(); toggleRecipe({{ product.id }})">
+                        <i class="far fa-square unchecked-icon" style="font-size: 20px; color: white; text-shadow: 0 0 3px rgba(0,0,0,0.5);"></i>
+                        <i class="fas fa-check-square checked-icon" style="display: none; font-size: 20px; color: #661c31; text-shadow: 0 0 3px rgba(255,255,255,0.8);"></i>
                     </div>
                     
-                    <div class="card-body-content p-4">
-                        <h5 class="card-title fw-bold text-primary mb-3">{{ product.name }}</h5>
-                        <p class="card-text text-muted mb-3">{{ product.description[:120] }}...</p>
+                    <!-- Wrapper for Image + Content (for Overlay area) -->
+                    <div class="product-hoverable-area position-relative">
+                        <!-- Unapproved Material Hover Overlay -->
+                        {% if product.has_unapproved_material %}
+                        <div class="unapproved-material-overlay">
+                            <div class="unapproved-material-content">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>This recipe contains unapproved raw materials</p>
+                            </div>
+                        </div>
+                        {% endif %}
                         
-                        <div class="product-highlights mb-3">
-                            {% if product.parsed_ingredients %}
-                                <div class="highlight-item mb-2">
-                                    <i class="fas fa-seedling text-success me-2"></i>
-                                    <span class="small ingredients-preview-text">
-                                        {% set ingredient_names = [] %}
-                                        {% for ingredient in product.parsed_ingredients[:3] %}
-                                            {% if ingredient is mapping and ingredient.name %}
-                                                {% set _ = ingredient_names.append(ingredient.name) %}
-                                            {% elif ingredient is string %}
-                                                {% set _ = ingredient_names.append(ingredient) %}
-                                            {% endif %}
-                                        {% endfor %}
-                                        {{ ingredient_names|join(', ') }}
-                                        {% if product.parsed_ingredients|length > 3 %} +{{ product.parsed_ingredients|length - 3 }} {{ get_text('more', lang) }}{% endif %}
-                                    </span>
-                                </div>
-                            {% endif %}
+                        <div class="product-image-container">
+                            <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 140px; object-fit: cover;">
                             
-                            {% if product.parsed_nutritional_claims %}
-                                <div class="highlight-item">
-                                    <i class="fas fa-medal text-warning me-2"></i>
-                                    <span class="small">{{ product.parsed_nutritional_claims[:2]|join(', ') }}{% if product.parsed_nutritional_claims|length > 2 %} +{{ product.parsed_nutritional_claims|length - 2 }} {{ get_text('more', lang) }}{% endif %}</span>
-                                </div>
-                            {% endif %}
+                            <!-- Badges container -->
+                            <div class="product-badges-container" style="position: absolute; top: 8px; left: 8px; right: 8px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 3px; flex-wrap: wrap; row-gap: 2px;">
+                                <!-- Category Badge (first) -->
+                                <div class="product-category-badge-compact" style="position: static; order: 1;">{{ product.category }}</div>
+                                
+                                <!-- Recipe Status Badge (second) -->
+                                {% if product.recipe_number %}
+                                    {% set recipe_digits = product.recipe_number.lstrip('0') %}
+                                    {% if recipe_digits and recipe_digits[0] == '4' %}
+                                        <div class="recipe-status-badge-compact bg-success text-white" style="border-radius: 3px; padding: 4px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; order: 2;">
+                                            {{ get_text('productive', lang) }}
+                                        </div>
+                                    {% elif recipe_digits and recipe_digits[0] == '1' %}
+                                        <div class="recipe-status-badge-compact bg-development" style="border-radius: 3px; padding: 4px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; order: 2;">
+                                            {{ get_text('development', lang) }}
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <!-- Exclusive Badge -->
+                                {% if product.is_exclusive %}
+                                    {% set tooltip_text = get_text('exclusive_product', lang) %}
+                                    {% if product.customer %}
+                                        {% set tooltip_text = get_text('exclusive_for_customer', lang) + ' <strong>' + (product.customer|e) + '</strong>' %}
+                                    {% elif product.market %}
+                                        {% set tooltip_text = get_text('exclusive_for_market', lang) + ' <strong>' + (product.market|e) + '</strong>' %}
+                                    {% endif %}
+                                    <div class="exclusive-badge-card-compact position-relative" style="background-color: #ffc107; color: #000; border-radius: 3px; padding: 4px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; order: 3; flex-basis: auto; cursor: pointer;" 
+                                         data-bs-toggle="tooltip" 
+                                         data-bs-placement="top" 
+                                         data-bs-html="true"
+                                         title="{{ tooltip_text|safe }}">
+                                        {{ get_text('exclusive', lang) }}
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Claims Badges -->
+                                {% if product.parsed_claims %}
+                                    {% for claim in product.parsed_claims[:3] %}
+                                        <div class="claim-badge-compact" style="background-color: rgba(23, 162, 184, 0.9); color: white; border-radius: 3px; padding: 4px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; order: 4;">
+                                            {{ claim }}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body-content p-2">
+                            <h6 class="card-title fw-bold text-primary mb-0" style="font-size: 14px; line-height: 1.3;">{{ product.name }}</h6>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         {% endfor %}
     </div>
@@ -652,6 +635,10 @@
     box-shadow: 0 0 0 4px rgba(102, 28, 49, 0.2) !important;
 }
 
+.recipe-checkbox {
+    cursor: pointer;
+}
+
 .recipe-checkbox .unchecked-icon {
     color: white;
     text-shadow: 0 0 3px rgba(0,0,0,0.5);
@@ -673,6 +660,16 @@
     padding: 6px 14px;
     border-radius: 4px;
     font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.product-category-badge-compact {
+    background-color: rgba(102, 28, 49, 0.9);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -1255,7 +1252,7 @@ function clearAllFilters() {
 }
 
 function toggleRecipe(productId) {
-    const card = document.querySelector(`[data-product-id="${productId}"] .recipe-card`);
+    const card = document.querySelector(`[data-product-id="${productId}"] .product-card`);
     
     if (selectedRecipes.has(productId)) {
         selectedRecipes.delete(productId);
