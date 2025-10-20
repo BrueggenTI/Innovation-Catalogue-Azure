@@ -3091,6 +3091,7 @@ def custom_pages_save():
     try:
         data = request.get_json()
         name = data.get('name', '').strip()
+        description = data.get('description', '').strip()
         product_ids = data.get('product_ids', [])
         
         if not name:
@@ -3101,6 +3102,7 @@ def custom_pages_save():
         
         custom_page = CustomRecipePage(
             name=name,
+            description=description if description else None,
             user_id=user_id,
             product_ids=json.dumps(product_ids)
         )

@@ -133,13 +133,24 @@
                 </div>
             </div>
             
-            <!-- Ingredient Options -->
+            <!-- Ingredient Options with Search -->
             <div class="filter-options" id="ingredientOptions" style="display: none;">
                 <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_key_ingredient', lang) }}</h6>
+                
+                <!-- Search Bar -->
+                <div class="filter-search-container mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="ingredientFilterSearch" placeholder="Search ingredients...">
+                    </div>
+                </div>
+                
                 <div class="filter-compact-container">
-                    <div class="row g-2">
+                    <div class="row g-2" id="ingredientList">
                         {% for ingredient in ingredients %}
-                        <div class="col-auto">
+                        <div class="col-auto filter-item" data-filter-text="{{ ingredient|lower }}">
                             <button type="button" class="filter-option-btn-compact" data-filter="ingredient" data-value="{{ ingredient }}">
                                 {{ ingredient }}
                             </button>
@@ -149,13 +160,24 @@
                 </div>
             </div>
             
-            <!-- Claim Options -->
+            <!-- Claim Options with Search -->
             <div class="filter-options" id="claimOptions" style="display: none;">
                 <h6 class="fw-semibold mb-3 text-dark">{{ get_text('select_claims', lang) }}</h6>
+                
+                <!-- Search Bar -->
+                <div class="filter-search-container mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="claimFilterSearch" placeholder="Search claims...">
+                    </div>
+                </div>
+                
                 <div class="filter-compact-container">
-                    <div class="row g-2">
+                    <div class="row g-2" id="claimList">
                         {% for claim in claims %}
-                        <div class="col-auto">
+                        <div class="col-auto filter-item" data-filter-text="{{ claim|lower }}">
                             <button type="button" class="filter-option-btn-compact" data-filter="claim" data-value="{{ claim }}">
                                 {{ claim }}
                             </button>
@@ -386,6 +408,32 @@ function initializeFilters() {
             toggleFilter(filterType, filterValue, this);
         });
     });
+    
+    // Ingredient filter search
+    const ingredientFilterSearch = document.getElementById('ingredientFilterSearch');
+    if (ingredientFilterSearch) {
+        ingredientFilterSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const items = document.querySelectorAll('#ingredientList .filter-item');
+            items.forEach(item => {
+                const filterText = item.getAttribute('data-filter-text');
+                item.style.display = filterText.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+    }
+    
+    // Claim filter search
+    const claimFilterSearch = document.getElementById('claimFilterSearch');
+    if (claimFilterSearch) {
+        claimFilterSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const items = document.querySelectorAll('#claimList .filter-item');
+            items.forEach(item => {
+                const filterText = item.getAttribute('data-filter-text');
+                item.style.display = filterText.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+    }
 }
 
 function initializeSearch() {
@@ -598,18 +646,33 @@ function saveCustomPage() {
         return;
     }
     
-    const name = prompt('Enter a name for your custom page:');
-    if (!name || name.trim() === '') {
+    // Open the modal instead of prompt
+    const modal = new bootstrap.Modal(document.getElementById('savePageModal'));
+    modal.show();
+}
+
+function submitCustomPage() {
+    const name = document.getElementById('pageTitle').value.trim();
+    const description = document.getElementById('pageDescription').value.trim();
+    
+    if (!name) {
+        alert('Please enter a title for your custom page');
         return;
     }
     
     const data = {
-        name: name.trim(),
+        name: name,
+        description: description,
         product_ids: Array.from(selectedRecipes)
     };
     
     // Get CSRF token from meta tag
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // Disable the submit button to prevent double-clicks
+    const submitBtn = document.getElementById('submitPageBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
     
     fetch('/custom-pages/save', {
         method: 'POST',
@@ -625,12 +688,75 @@ function saveCustomPage() {
             window.location.href = `/custom-pages/view/${data.page_id}`;
         } else {
             alert('Error: ' + data.error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Save Custom Page';
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('Failed to save custom page');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Save Custom Page';
     });
 }
 </script>
+
+<!-- Save Page Modal -->
+<div class="modal fade" id="savePageModal" tabindex="-1" aria-labelledby="savePageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none;">
+            <div class="modal-header" style="background-color: #661c31; color: white; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold" id="savePageModalLabel">
+                    <i class="fas fa-save me-2"></i>Save Custom Recipe Page
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <label for="pageTitle" class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                    <input type="text" 
+                           class="form-control form-control-lg" 
+                           id="pageTitle" 
+                           placeholder="e.g., Customer XY Selection, Summer Collection 2025"
+                           required
+                           style="border-radius: 8px;">
+                </div>
+                <div class="mb-3">
+                    <label for="pageDescription" class="form-label fw-semibold">Description (Optional)</label>
+                    <textarea class="form-control" 
+                              id="pageDescription" 
+                              rows="4" 
+                              placeholder="Add notes about this collection..."
+                              style="border-radius: 8px;"></textarea>
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Add any additional information or context for this recipe collection
+                    </div>
+                </div>
+                <div class="alert alert-light border d-flex align-items-center" style="border-radius: 8px;">
+                    <i class="fas fa-check-circle text-success me-2" style="font-size: 20px;"></i>
+                    <div>
+                        <strong><span id="modalSelectedCount">0</span> recipes selected</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal" style="border-radius: 8px;">
+                    Cancel
+                </button>
+                <button type="button" class="btn px-4" id="submitPageBtn" onclick="submitCustomPage()" style="background-color: #661c31; color: white; border-radius: 8px;">
+                    <i class="fas fa-save me-2"></i>Save Custom Page
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update modal selected count when modal is shown
+document.getElementById('savePageModal').addEventListener('show.bs.modal', function () {
+    document.getElementById('modalSelectedCount').textContent = selectedRecipes.size;
+});
+</script>
+
 {% endblock %}

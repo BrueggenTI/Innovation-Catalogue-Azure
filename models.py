@@ -93,6 +93,7 @@ class ResearchSource(db.Model):
 class CustomRecipePage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)  # Optional description for the custom page
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_ids = db.Column(db.Text, nullable=False)  # JSON array of product IDs
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
