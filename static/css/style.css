@@ -4500,36 +4500,36 @@ body.modal-open {
    ============================================ */
 
 .shortcut-nav-wrapper {
-    position: absolute;
-    bottom: -30px; /* Half-circle below header */
+    position: fixed;
+    top: 70px; /* Height of the header */
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1050;
+    z-index: 999;
     pointer-events: none;
-    width: 60px;
-    height: 30px;
-    overflow: hidden;
 }
 
 .shortcut-circle {
     position: absolute;
-    top: -30px;
-    left: 0;
+    top: -30px; /* Half above, half below header */
+    left: 50%;
+    transform: translateX(-50%);
     width: 60px;
     height: 60px;
     background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);
     border-radius: 50%;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     cursor: pointer;
     pointer-events: auto;
     box-shadow: 
-        0 8px 20px rgba(102, 28, 49, 0.3),
-        0 4px 10px rgba(102, 28, 49, 0.2);
+        0 8px 20px rgba(102, 28, 49, 0.25),
+        0 4px 10px rgba(102, 28, 49, 0.15),
+        0 0 0 0 rgba(102, 28, 49, 0.3);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     opacity: 1;
-    padding-bottom: 8px;
 }
 
 .shortcut-circle i {
@@ -4539,24 +4539,24 @@ body.modal-open {
 }
 
 .shortcut-circle:hover {
-    transform: scale(1.05);
+    transform: translateX(-50%) scale(1.05);
     box-shadow: 
-        0 12px 28px rgba(102, 28, 49, 0.4),
-        0 6px 14px rgba(102, 28, 49, 0.25);
+        0 12px 28px rgba(102, 28, 49, 0.35),
+        0 6px 14px rgba(102, 28, 49, 0.2),
+        0 0 0 0 rgba(102, 28, 49, 0.4);
 }
 
 /* Menu Container */
 .shortcut-menu {
-    position: relative;
-    top: 0;
-    left: 0;
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: 16px;
     opacity: 0;
     pointer-events: none;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    justify-content: center;
-    transform: none;
 }
 
 /* Show menu on hover */
@@ -4567,7 +4567,7 @@ body.modal-open {
 
 .shortcut-nav-wrapper:hover .shortcut-circle {
     opacity: 0;
-    transform: scale(0.5);
+    transform: translateX(-50%) scale(0.5);
     pointer-events: none;
 }
 
@@ -4707,13 +4707,14 @@ body.modal-open {
 @keyframes pulse {
     0%, 100% {
         box-shadow: 
-            0 8px 20px rgba(102, 28, 49, 0.3),
-            0 4px 10px rgba(102, 28, 49, 0.2);
+            0 8px 20px rgba(102, 28, 49, 0.25),
+            0 4px 10px rgba(102, 28, 49, 0.15),
+            0 0 0 0 rgba(102, 28, 49, 0.3);
     }
     50% {
         box-shadow: 
-            0 8px 20px rgba(102, 28, 49, 0.3),
-            0 4px 10px rgba(102, 28, 49, 0.2),
+            0 8px 20px rgba(102, 28, 49, 0.25),
+            0 4px 10px rgba(102, 28, 49, 0.15),
             0 0 0 8px rgba(102, 28, 49, 0);
     }
 }
