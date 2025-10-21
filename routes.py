@@ -1272,11 +1272,43 @@ def save_cocreation_draft():
             }), 401
         
         from models import CoCreationDraft
+        import json
+        
+        # Parse the configuration to extract structured data
+        try:
+            config = json.loads(product_config)
+        except:
+            config = {}
         
         draft = CoCreationDraft()
         draft.user_id = user_id
         draft.draft_name = draft_name
         draft.product_config = product_config
+        
+        # Extract and store base product information
+        draft.base_product_id = config.get('baseProduct')
+        draft.base_product_name = config.get('baseProductName')
+        
+        # Extract and store custom ingredients
+        custom_ingredients = config.get('customIngredients', [])
+        draft.custom_ingredients = json.dumps(custom_ingredients) if custom_ingredients else None
+        
+        # Extract and store ingredient ratios
+        ingredient_ratios = config.get('ingredientRatios', {})
+        draft.ingredient_ratios = json.dumps(ingredient_ratios) if ingredient_ratios else None
+        
+        # Extract and store nutritional claims
+        nutritional_claims = config.get('nutritionalClaims', [])
+        draft.nutritional_claims = json.dumps(nutritional_claims) if nutritional_claims else None
+        
+        # Extract and store certifications
+        certifications = config.get('certifications', [])
+        draft.certifications = json.dumps(certifications) if certifications else None
+        
+        # Extract and store client information
+        draft.client_name = config.get('clientName')
+        draft.client_email = config.get('clientEmail')
+        draft.notes = config.get('notes')
         
         db.session.add(draft)
         db.session.commit()
@@ -1289,6 +1321,7 @@ def save_cocreation_draft():
     
     except Exception as e:
         logging.error(f"Error saving draft: {str(e)}")
+        db.session.rollback()
         return jsonify({
             'success': False,
             'error': f'Error saving draft: {str(e)}'
@@ -1300,6 +1333,7 @@ def load_cocreation_draft(draft_id):
     try:
         init_user_session()
         from models import CoCreationDraft
+        import json
         user_id = session.get('user_id')
         
         draft = CoCreationDraft.query.filter_by(id=draft_id, user_id=user_id).first()
@@ -1316,6 +1350,18 @@ def load_cocreation_draft(draft_id):
                 'id': draft.id,
                 'draft_name': draft.draft_name,
                 'product_config': draft.product_config,
+                
+                # Include all structured data fields
+                'base_product_id': draft.base_product_id,
+                'base_product_name': draft.base_product_name,
+                'custom_ingredients': json.loads(draft.custom_ingredients) if draft.custom_ingredients else [],
+                'ingredient_ratios': json.loads(draft.ingredient_ratios) if draft.ingredient_ratios else {},
+                'nutritional_claims': json.loads(draft.nutritional_claims) if draft.nutritional_claims else [],
+                'certifications': json.loads(draft.certifications) if draft.certifications else [],
+                'client_name': draft.client_name,
+                'client_email': draft.client_email,
+                'notes': draft.notes,
+                
                 'created_at': draft.created_at.isoformat() if draft.created_at else None,
                 'updated_at': draft.updated_at.isoformat() if draft.updated_at else None
             }

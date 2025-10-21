@@ -105,8 +105,29 @@ class CoCreationDraft(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     draft_name = db.Column(db.String(200), nullable=False)
+    
+    # Base product information
+    base_product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)
+    base_product_name = db.Column(db.String(200), nullable=True)
+    
+    # Custom ingredients and ratios
+    custom_ingredients = db.Column(db.Text, nullable=True)  # JSON array of ingredient names
+    ingredient_ratios = db.Column(db.Text, nullable=True)  # JSON object with ingredient percentages/grams
+    
+    # Claims and certifications
+    nutritional_claims = db.Column(db.Text, nullable=True)  # JSON array of selected claims
+    certifications = db.Column(db.Text, nullable=True)  # JSON array of selected certifications
+    
+    # Client information
+    client_name = db.Column(db.String(200), nullable=True)
+    client_email = db.Column(db.String(200), nullable=True)
+    notes = db.Column(db.Text, nullable=True)  # Special notes/requirements
+    
+    # Full configuration as JSON (for backwards compatibility and future flexibility)
     product_config = db.Column(db.Text, nullable=False)  # JSON string of Co-Creation configuration
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user = db.relationship('User', backref='cocreation_drafts')
+    base_product = db.relationship('Product', backref='cocreation_drafts')
