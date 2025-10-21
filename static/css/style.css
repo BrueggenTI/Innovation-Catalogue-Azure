@@ -4501,10 +4501,10 @@ body.modal-open {
 
 .shortcut-nav-wrapper {
     position: fixed;
-    top: 120px; /* Larger initial distance from top */
+    top: 125px; /* Larger initial distance from top */
     left: 50%;
     transform: translateX(-50%);
-    z-index: 999; /* Lower than header so it appears below */
+    z-index: 1050; /* Higher than header to appear on top */
     pointer-events: none;
     opacity: 1;
     visibility: visible;
