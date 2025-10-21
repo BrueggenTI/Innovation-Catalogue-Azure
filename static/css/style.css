@@ -1132,50 +1132,51 @@ a:hover {
     opacity: 0.08;
 }
 
-/* Minimalistischer Toggle Switch - inspiriert vom Referenzbild */
+/* Minimalistischer Toggle Switch - eckiges Design */
 .visibility-settings-menu .form-check-input {
-    width: 52px;
-    height: 28px;
+    width: 44px;
+    height: 22px;
     cursor: pointer;
-    background-color: #E8E8E8;
+    background-color: #ECECEC;
     border: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 3px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     flex-shrink: 0;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .visibility-settings-menu .form-check-input:checked {
     background-color: #ff4143;
-    box-shadow: 0 2px 12px rgba(255, 65, 67, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 6px rgba(255, 65, 67, 0.2);
 }
 
 .visibility-settings-menu .form-check-input:focus {
-    box-shadow: 0 0 0 4px rgba(255, 65, 67, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 0 0 3px rgba(255, 65, 67, 0.12);
     outline: none;
 }
 
 .visibility-settings-menu .form-check-input:hover:not(:disabled):not(:checked) {
-    background-color: #D8D8D8;
+    background-color: #DCDCDC;
 }
 
-/* Weißer Kreis im Toggle */
+/* Weißer Slider - eckiges Design */
 .visibility-settings-menu .form-check-input::before {
     content: '';
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 22px;
-    height: 22px;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
     background-color: #ffffff;
-    border-radius: 50%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .visibility-settings-menu .form-check-input:checked::before {
-    transform: translateX(24px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.12);
+    transform: translateX(22px);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
 }
 
 .visibility-settings-menu .form-label {
