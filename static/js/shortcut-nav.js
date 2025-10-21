@@ -1,6 +1,6 @@
 /**
  * Shortcut Navigation Circle - Interactive Behavior
- * Modern 2025 Design with smooth animations
+ * Modern 2025 Design - Statisch ohne Scroll-Effekte
  */
 
 document.addEventListener('DOMContentLoaded', function() {
