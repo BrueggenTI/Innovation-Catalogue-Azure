@@ -50,27 +50,22 @@
         </div>
     </div>
 
-    <!-- Universal Search Section -->
+    <!-- Recipe Search Section -->
     <div class="search-section py-3 bg-white border-bottom">
         <div class="container-fluid px-4">
-            <div class="search-container position-relative">
+            <div class="mb-3">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="fas fa-search text-muted"></i>
                     </span>
-                    <input type="text" class="form-control border-start-0" id="universalSearch" 
-                           placeholder="Search for recipe name or number" 
+                    <input type="text" class="form-control border-start-0" id="recipe-search-input" 
+                           placeholder="Search by recipe name or number..." 
                            autocomplete="off">
-                    <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                    <button class="btn btn-outline-secondary" type="button" id="clear-recipe-search" style="display: none;">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <!-- Search Results Dropdown -->
-                <div class="search-results" id="universalSearchResults" style="display: none;">
-                    <div class="search-results-content">
-                        <!-- Results will be populated here -->
-                    </div>
-                </div>
+                <div class="text-muted small mt-2" id="recipe-search-results-count"></div>
             </div>
         </div>
     </div>
@@ -279,6 +274,7 @@
         <div class="col-xl-4 col-lg-4 col-md-6 recipe-item" 
              data-product-id="{{ product.id }}"
              data-product-name="{{ product.name|lower }}"
+             data-recipe-number="{{ product.recipe_number|default('') }}"
              data-category="{{ product.category }}"
              data-product-type="{{ product.product_type }}"
              data-exclusivity="{{ 'exclusive' if product.is_exclusive else 'non-exclusive' }}"
@@ -1386,304 +1382,70 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(card);
     });
 
-    // Universal Search Functionality - moved inside DOMContentLoaded for proper scope
-    function initializeUniversalSearch() {
-    const searchInput = document.getElementById('universalSearch');
-    const searchResults = document.getElementById('universalSearchResults');
-    const clearButton = document.getElementById('clearSearch');
-    let searchTimeout;
+    // Recipe Search Functionality - Inline Filtering
+    function initializeRecipeSearch() {
+        const searchInput = document.getElementById('recipe-search-input');
+        const clearBtn = document.getElementById('clear-recipe-search');
+        const resultsCount = document.getElementById('recipe-search-results-count');
+        const visibleCountSpan = document.getElementById('visibleCount');
+        
+        if (!searchInput) return;
 
-    if (!searchInput) return; // Guard clause
+        const filterRecipes = () => {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const recipeItems = document.querySelectorAll('.recipe-item');
+            let visibleCount = 0;
 
-    // Search input handler
-    searchInput.addEventListener('input', function() {
-        const query = this.value.trim();
+            recipeItems.forEach(item => {
+                const productName = item.dataset.productName || '';
+                const recipeNumber = (item.dataset.recipeNumber || '').toLowerCase();
+                
+                // Check if the product name or recipe number contains the search term
+                const matches = productName.includes(searchTerm) || recipeNumber.includes(searchTerm);
 
-        clearTimeout(searchTimeout);
+                if (searchTerm === '' || matches) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
 
-        if (query.length === 0) {
-            hideSearchResults();
-            clearButton.style.display = 'none';
-            return;
-        }
-
-        clearButton.style.display = 'block';
-
-        // Debounce search
-        searchTimeout = setTimeout(() => {
-            performSearch(query);
-        }, 300);
-    });
-
-    // Add Enter key handler for recipe number search
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const query = this.value.trim();
-
-            if (query.length === 0) return;
-
-            // Check if query looks like a recipe number (contains digits)
-            if (/\d/.test(query)) {
-                // Filter products by recipe number containing the query
-                const params = new URLSearchParams();
-                params.set('recipe', query);
-                window.location.href = '/custom-pages/create?' + params.toString();
-            } else {
-                // For non-recipe searches, perform normal search
-                performSearch(query);
+            // Update results count
+            if (resultsCount) {
+                if (searchTerm === '') {
+                    resultsCount.textContent = '';
+                } else {
+                    resultsCount.textContent = `${visibleCount} recipe${visibleCount !== 1 ? 's' : ''} found`;
+                }
             }
-        }
-    });
 
-    // Clear button handler
-    clearButton.addEventListener('click', function() {
-        searchInput.value = '';
-        hideSearchResults();
-        this.style.display = 'none';
-        searchInput.focus();
-    });
+            // Update visible count in header
+            if (visibleCountSpan) {
+                visibleCountSpan.textContent = visibleCount;
+            }
 
-    // Click outside to close
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.search-container')) {
-            hideSearchResults();
-        }
-    });
-}
-
-    function performSearch(query) {
-        const searchResults = document.getElementById('searchResults');
-        const resultsContent = searchResults.querySelector('.search-results-content');
-
-        // Search through all available data
-        const results = {
-            categories: [],
-            ingredients: [],
-            claims: [],
-            recipeNumbers: []
+            // Show/hide clear button
+            if (clearBtn) {
+                clearBtn.style.display = searchTerm ? 'block' : 'none';
+            }
         };
 
-        const lowerQuery = query.toLowerCase();
+        // Bind search input event
+        searchInput.addEventListener('input', filterRecipes);
 
-        // Search categories
-        allCategories.forEach(category => {
-            if (category.toLowerCase().includes(lowerQuery)) {
-                results.categories.push(category);
-            }
-        });
-
-        // Search ingredients
-        allIngredients.forEach(ingredient => {
-            if (ingredient.toLowerCase().includes(lowerQuery)) {
-                results.ingredients.push(ingredient);
-            }
-        });
-
-        // Search claims
-        allClaims.forEach(claim => {
-            if (claim.toLowerCase().includes(lowerQuery)) {
-                results.claims.push(claim);
-            }
-        });
-
-        // Search recipe numbers and product names
-        const uniqueRecipeNumbers = new Set();
-        productsData.forEach(product => {
-            if (product.recipeNumber && product.recipeNumber.toLowerCase().includes(lowerQuery)) {
-                uniqueRecipeNumbers.add(product.recipeNumber);
-            }
-        });
-        results.recipeNumbers = Array.from(uniqueRecipeNumbers);
-
-        // Build results HTML
-        let html = '';
-
-        if (results.categories.length > 0) {
-            html += '<div class="search-category">Categories</div>';
-            results.categories.forEach(category => {
-                html += `<div class="search-result-item" data-type="category" data-value="${category}">
-                            <span class="search-result-text">${highlightText(category, query)}</span>
-                            <span class="search-result-badge">Category</span>
-                         </div>`;
+        // Bind clear button event
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                filterRecipes();
+                searchInput.focus();
             });
-        }
-
-        if (results.ingredients.length > 0) {
-            html += '<div class="search-category">Key Ingredients</div>';
-            results.ingredients.forEach(ingredient => {
-                html += `<div class="search-result-item" data-type="ingredient" data-value="${ingredient}">
-                            <span class="search-result-text">${highlightText(ingredient, query)}</span>
-                            <span class="search-result-badge">Ingredient</span>
-                         </div>`;
-            });
-        }
-
-        if (results.claims.length > 0) {
-            html += '<div class="search-category">Claims</div>';
-            results.claims.forEach(claim => {
-                html += `<div class="search-result-item" data-type="claim" data-value="${claim}">
-                            <span class="search-result-text">${highlightText(claim, query)}</span>
-                            <span class="search-result-badge">Claim</span>
-                         </div>`;
-            });
-        }
-
-        if (results.recipeNumbers.length > 0) {
-            html += '<div class="search-category">Recipe Numbers</div>';
-
-            // Create placeholder items first
-            results.recipeNumbers.forEach(recipeNum => {
-                html += `<div class="recipe-number-result-item loading" data-type="recipe" data-value="${recipeNum}" id="recipe-${recipeNum}">
-                            <div class="recipe-info-left">
-                                <div class="recipe-number-display">${highlightText(recipeNum, query)}</div>
-                                <div class="recipe-name-display loading-text">Loading...</div>
-                            </div>
-                            <div class="recipe-image-right">
-                                <div class="recipe-image-placeholder loading-placeholder">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                </div>
-                            </div>
-                         </div>`;
-            });
-
-            // Load product data asynchronously
-            results.recipeNumbers.forEach(async (recipeNum) => {
-                try {
-                    const productData = await getProductDataForRecipe(recipeNum);
-                    const recipeElement = document.getElementById(`recipe-${recipeNum}`);
-
-                    if (recipeElement && productData) {
-                        const nameElement = recipeElement.querySelector('.recipe-name-display');
-                        const imageContainer = recipeElement.querySelector('.recipe-image-right');
-
-                        // Update name
-                        nameElement.textContent = productData.name;
-                        nameElement.classList.remove('loading-text');
-
-                        // Update image
-                        imageContainer.innerHTML = productData.image ? 
-                            `<img src="${productData.image}" alt="${productData.name}" class="recipe-result-image" onerror="this.style.display='none'">` :
-                            '<div class="recipe-image-placeholder"><i class="fas fa-utensils"></i></div>';
-
-                        recipeElement.classList.remove('loading');
-                    } else if (recipeElement) {
-                        // Handle unknown recipe
-                        const nameElement = recipeElement.querySelector('.recipe-name-display');
-                        nameElement.textContent = 'Recipe not found';
-                        nameElement.classList.remove('loading-text');
-                        nameElement.style.color = '#6c757d';
-                        recipeElement.classList.remove('loading');
-                    }
-                } catch (error) {
-                    console.error('Error loading product data for recipe:', recipeNum, error);
-                }
-            });
-        }
-
-        if (html === '') {
-            html = '<div class="search-no-results">No results found for "' + query + '"</div>';
-        }
-
-        resultsContent.innerHTML = html;
-        showSearchResults();
-
-        // Add click handlers to results
-        resultsContent.querySelectorAll('.search-result-item, .recipe-number-result-item').forEach(item => {
-            item.addEventListener('click', function() {
-                selectSearchResult(this.dataset.type, this.dataset.value);
-            });
-        });
-    }
-
-    async function getProductDataForRecipe(recipeNumber) {
-        try {
-            const response = await fetch(`/api/recipe-number/${recipeNumber}/product`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    return data.product;
-                }
-            }
-        } catch (error) {
-            console.error('Failed to fetch product data for recipe:', recipeNumber, error);
-        }
-        return null;
-    }
-
-    function highlightText(text, query) {
-        try {
-            // Escape special regex characters to prevent injection
-            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`(${escapedQuery})`, 'gi');
-            return text.replace(regex, '<span class="search-highlight">$1</span>');
-        } catch (e) {
-            // Fallback if regex fails
-            return text;
         }
     }
 
-    function selectSearchResult(type, value) {
-        // Clear search
-        document.getElementById('universalSearch').value = '';
-        hideSearchResults();
-        document.getElementById('clearSearch').style.display = 'none';
-
-        // Handle different result types
-        switch(type) {
-            case 'category':
-                activeFilters.category = value;
-                // Apply filters by redirecting to backend
-                updateButtonVisualState();
-                updateActiveFiltersDisplay();
-                redirectToBackend();
-                break;
-            case 'ingredient':
-                if (!activeFilters.ingredient.includes(value)) {
-                    activeFilters.ingredient.push(value);
-                }
-                // Apply filters by redirecting to backend
-                updateButtonVisualState();
-                updateActiveFiltersDisplay();
-                redirectToBackend();
-                break;
-            case 'claim':
-                if (!activeFilters.claim.includes(value)) {
-                    activeFilters.claim.push(value);
-                }
-                // Apply filters by redirecting to backend
-                updateButtonVisualState();
-                updateActiveFiltersDisplay();
-                redirectToBackend();
-                break;
-            case 'recipe':
-                // For recipe clicks, navigate directly to the product detail page
-                const productData = productsData.find(p => p.recipeNumber === value);
-                if (productData) {
-                    window.location.href = `/product/${productData.id}`;
-                } else {
-                    // Fallback: filter by recipe number if direct navigation fails
-                    if (!activeFilters.recipeNumber) {
-                        activeFilters.recipeNumber = [];
-                    }
-                    if (!activeFilters.recipeNumber.includes(value)) {
-                        activeFilters.recipeNumber.push(value);
-                    }
-                    updateButtonVisualState();
-                    updateActiveFiltersDisplay();
-                    redirectToBackend();
-                }
-                break;
-        }
-    }
-
-    function showSearchResults() {
-        document.getElementById('searchResults').style.display = 'block';
-    }
-
-    function hideSearchResults() {
-        document.getElementById('searchResults').style.display = 'none';
-    }
+    // Initialize recipe search
+    initializeRecipeSearch();
 
     // Initialize Bootstrap tooltips for exclusive badges
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
