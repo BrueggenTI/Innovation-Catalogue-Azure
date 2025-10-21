@@ -150,6 +150,27 @@
         </div>
     </nav>
 
+    <!-- Shortcut Navigation Circle -->
+    <div class="shortcut-nav-wrapper">
+        <div class="shortcut-circle" id="shortcutCircle">
+            <i class="fas fa-grip-lines"></i>
+        </div>
+        <div class="shortcut-menu" id="shortcutMenu">
+            <a href="{{ url_for('catalog') }}" class="shortcut-btn" data-label="Innovation Catalog">
+                <i class="fas fa-lightbulb"></i>
+                <span class="shortcut-label">Innovation Catalog</span>
+            </a>
+            <a href="{{ url_for('trends') }}" class="shortcut-btn" data-label="Food Trends">
+                <i class="fas fa-chart-line"></i>
+                <span class="shortcut-label">Food Trends</span>
+            </a>
+            <a href="{{ url_for('cocreation') }}" class="shortcut-btn" data-label="Co-Creation">
+                <i class="fas fa-flask"></i>
+                <span class="shortcut-label">Co-Creation</span>
+            </a>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="main-content">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -188,6 +209,7 @@
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
     <script src="{{ url_for('static', filename='js/breadcrumb.js') }}"></script>
     <script src="{{ url_for('static', filename='js/visibility-settings.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/shortcut-nav.js') }}"></script>
     <!-- <script src="{{ url_for('static', filename='js/image-handler.js') }}"></script> -->
     
     {% block scripts %}{% endblock %}

@@ -4494,3 +4494,231 @@ body.modal-open {
     text-overflow: ellipsis;
     line-height: 1.5;
 }
+
+/* ============================================
+   Shortcut Navigation Circle - Modern 2025 Design
+   ============================================ */
+
+.shortcut-nav-wrapper {
+    position: fixed;
+    top: 70px; /* Height of the header */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    pointer-events: none;
+}
+
+.shortcut-circle {
+    position: absolute;
+    top: -30px; /* Half above, half below header */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 
+        0 8px 20px rgba(102, 28, 49, 0.25),
+        0 4px 10px rgba(102, 28, 49, 0.15),
+        0 0 0 0 rgba(102, 28, 49, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    opacity: 1;
+}
+
+.shortcut-circle i {
+    color: white;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.shortcut-circle:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 
+        0 12px 28px rgba(102, 28, 49, 0.35),
+        0 6px 14px rgba(102, 28, 49, 0.2),
+        0 0 0 0 rgba(102, 28, 49, 0.4);
+}
+
+/* Menu Container */
+.shortcut-menu {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Show menu on hover */
+.shortcut-nav-wrapper:hover .shortcut-menu {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.shortcut-nav-wrapper:hover .shortcut-circle {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.5);
+    pointer-events: none;
+}
+
+/* Individual Shortcut Buttons */
+.shortcut-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
+    border-radius: 20px;
+    text-decoration: none;
+    color: #661c31;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(102, 28, 49, 0.1);
+    overflow: hidden;
+    transform: translateY(0);
+    opacity: 0;
+    animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.shortcut-btn:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.shortcut-btn:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.shortcut-btn:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.shortcut-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 28, 49, 0.05) 0%, rgba(255, 65, 67, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.shortcut-btn:hover::before {
+    opacity: 1;
+}
+
+.shortcut-btn i {
+    font-size: 26px;
+    margin-bottom: 6px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+}
+
+.shortcut-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+    letter-spacing: 0.3px;
+    position: relative;
+    z-index: 1;
+    max-width: 70px;
+    transition: all 0.3s ease;
+}
+
+.shortcut-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+        0 12px 24px rgba(102, 28, 49, 0.15),
+        0 6px 12px rgba(102, 28, 49, 0.1);
+    border-color: rgba(102, 28, 49, 0.3);
+    color: #661c31;
+}
+
+.shortcut-btn:hover i {
+    transform: scale(1.15);
+}
+
+.shortcut-btn:active {
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .shortcut-circle {
+        width: 50px;
+        height: 50px;
+        top: -25px;
+    }
+    
+    .shortcut-circle i {
+        font-size: 16px;
+    }
+    
+    .shortcut-menu {
+        gap: 12px;
+        top: -25px;
+    }
+    
+    .shortcut-btn {
+        width: 70px;
+        height: 70px;
+        border-radius: 16px;
+    }
+    
+    .shortcut-btn i {
+        font-size: 22px;
+    }
+    
+    .shortcut-label {
+        font-size: 10px;
+    }
+}
+
+/* Pulse animation for attention */
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 
+            0 8px 20px rgba(102, 28, 49, 0.25),
+            0 4px 10px rgba(102, 28, 49, 0.15),
+            0 0 0 0 rgba(102, 28, 49, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 8px 20px rgba(102, 28, 49, 0.25),
+            0 4px 10px rgba(102, 28, 49, 0.15),
+            0 0 0 8px rgba(102, 28, 49, 0);
+    }
+}
+
+.shortcut-circle.pulse {
+    animation: pulse 2s infinite;
+}
