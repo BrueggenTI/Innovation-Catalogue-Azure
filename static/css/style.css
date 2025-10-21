@@ -4501,7 +4501,7 @@ body.modal-open {
 
 .shortcut-nav-wrapper {
     position: absolute;
-    bottom: -30px; /* Position so circle is half outside header */
+    bottom: -45px; /* Position circle further down */
     left: 50%;
     transform: translateX(-50%);
     z-index: 1050;
