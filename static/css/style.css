@@ -5645,7 +5645,7 @@ body.modal-open {
     }
 }
 
-/* Tablet - 2 Spalten Grid */
+/* Tablet - Filter Optimierung */
 @media (min-width: 576px) and (max-width: 991px) {
     /* Filter - bessere Nutzung des Platzes */
     .filter-options {
@@ -5657,38 +5657,6 @@ body.modal-open {
     .filter-option-btn {
         flex: 0 1 auto;
         min-width: 140px;
-    }
-    
-    /* Produktkarten - 2 Spalten */
-    .products-section .row {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--brg-spacing-03);
-    }
-}
-
-/* Desktop - 3-4 Spalten Grid */
-@media (min-width: 992px) and (max-width: 1399px) {
-    /* Produktkarten - 3 Spalten */
-    .products-section .row {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--brg-spacing-04);
-    }
-    
-    /* Filter - horizontales Layout */
-    .filter-options {
-        gap: var(--brg-spacing-02);
-        justify-content: flex-start;
-    }
-}
-
-/* Extra Wide - 4 Spalten Grid */
-@media (min-width: 1400px) {
-    .products-section .row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: var(--brg-spacing-04);
     }
 }
 
@@ -5872,23 +5840,7 @@ body.modal-open {
     }
 }
 
-/* Tablet - 2 Spalten für Trends */
-@media (min-width: 768px) and (max-width: 991px) {
-    .trends-section .row {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--brg-spacing-04);
-    }
-}
-
-/* Desktop - 3 Spalten für Trends */
-@media (min-width: 992px) {
-    .trends-section .row {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--brg-spacing-04);
-    }
-}
+/* Trends bleiben responsive über Bootstrap Grid - keine Überschreibungen */
 
 /* ============================================
    CO-CREATION LAB RESPONSIVE
@@ -5915,13 +5867,7 @@ body.modal-open {
         padding: var(--brg-spacing-03);
     }
     
-    /* Base Product Selection - Grid */
-    .base-products-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--brg-spacing-02);
-    }
-    
+    /* Base Product Cards - kompakter */
     .base-product-card {
         padding: var(--brg-spacing-02);
         min-height: 120px;
@@ -5954,16 +5900,8 @@ body.modal-open {
     }
 }
 
-/* Sehr kleine Bildschirme - Single Column */
+/* Sehr kleine Bildschirme - Kompakte Ansicht */
 @media (max-width: 575px) {
-    .base-products-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .base-product-card {
-        width: 100%;
-    }
-    
     /* Buttons - Volle Breite */
     .workspace-panel .btn,
     .preview-panel .btn {
@@ -5991,18 +5929,7 @@ body.modal-open {
         overflow-y: auto;
     }
     
-    /* Base Products - 3-4 Spalten Grid */
-    .base-products-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--brg-spacing-03);
-    }
-}
-
-@media (min-width: 1400px) {
-    .base-products-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
+    /* Base Products Grid - KEINE Überschreibung, Bootstrap Grid bleibt */
 }
 
 /* ============================================
