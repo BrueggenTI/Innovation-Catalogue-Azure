@@ -13,29 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
     wrapper.style.opacity = '1';
     wrapper.style.visibility = 'visible';
     
-    // Handle scroll event to adjust position with smooth animation
-    // Button bleibt bei 125px bis scrollY >= 95px (dann 30px Abstand zum oberen Rand)
-    let ticking = false;
-    
-    function updateScrollPosition() {
-        const scrollY = window.scrollY;
-        
-        if (scrollY >= 95) {
-            wrapper.classList.add('scrolled');
-        } else {
-            wrapper.classList.remove('scrolled');
-        }
-        
-        ticking = false;
-    }
-    
-    window.addEventListener('scroll', function() {
-        if (!ticking) {
-            window.requestAnimationFrame(updateScrollPosition);
-            ticking = true;
-        }
-    }, { passive: true });
-    
     // Add pulse animation on first load to attract attention
     setTimeout(() => {
         shortcutCircle.classList.add('pulse');
