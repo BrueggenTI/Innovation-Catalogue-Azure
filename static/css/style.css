@@ -2590,8 +2590,8 @@ div[id="trendsSearchResults"] .search-category {
     transition: var(--brg-transition);
     position: relative;
     text-align: center;
-    min-height: 240px;
-    height: 240px;
+    min-height: 160px;
+    height: 160px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -2612,7 +2612,7 @@ div[id="trendsSearchResults"] .search-category {
 
 .product-image-small {
     width: 100%;
-    height: 110px;
+    height: 70px;
     border-radius: 0;
     overflow: hidden;
     margin: 0;
@@ -2637,15 +2637,15 @@ div[id="trendsSearchResults"] .search-category {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: var(--brg-spacing-03);
+    padding: var(--brg-spacing-02);
 }
 
 .product-info h6 {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--brg-color-text-primary);
-    margin-bottom: 6px;
-    line-height: 1.3;
+    margin-bottom: 4px;
+    line-height: 1.2;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -2673,25 +2673,25 @@ div[id="trendsSearchResults"] .search-category {
 .product-category-badge-inline {
     background-color: #661c31;
     color: white;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 9px;
     font-weight: 600;
     text-transform: capitalize;
     display: inline-block;
-    margin: 0 auto 4px auto;
+    margin: 0 auto 2px auto;
     width: fit-content;
     min-width: auto;
 }
 
 .recipe-number-badge {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--brg-color-text-secondary);
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .recipe-number-badge i {
-    font-size: 9px;
+    font-size: 8px;
 }
 
 .product-info {
