@@ -4501,13 +4501,18 @@ body.modal-open {
 
 .shortcut-nav-wrapper {
     position: fixed;
-    top: 80px; /* 10px below header (70px) for better visibility */
+    top: 120px; /* Larger initial distance from top */
     left: 50%;
     transform: translateX(-50%);
     z-index: 1050; /* Higher than header to appear on top */
     pointer-events: none;
     opacity: 1;
     visibility: visible;
+    transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shortcut-nav-wrapper.scrolled {
+    top: 60px; /* Reduced distance when scrolled */
 }
 
 .shortcut-circle {

@@ -13,6 +13,19 @@ document.addEventListener('DOMContentLoaded', function() {
     wrapper.style.opacity = '1';
     wrapper.style.visibility = 'visible';
     
+    // Handle scroll event to adjust position
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(function() {
+            if (window.scrollY > 50) {
+                wrapper.classList.add('scrolled');
+            } else {
+                wrapper.classList.remove('scrolled');
+            }
+        }, 10);
+    });
+    
     // Add pulse animation on first load to attract attention
     setTimeout(() => {
         shortcutCircle.classList.add('pulse');
