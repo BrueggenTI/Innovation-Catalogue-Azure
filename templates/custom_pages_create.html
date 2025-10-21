@@ -51,23 +51,28 @@
     </div>
 
     <!-- Recipe Search Section -->
-    <div class="search-section py-3 bg-white border-bottom">
+    <div class="search-section py-4 bg-white border-bottom">
         <div class="container-fluid px-4">
-            <div class="mb-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0">
-                        <i class="fas fa-search text-muted"></i>
-                    </span>
-                    <input type="text" class="form-control border-start-0" id="recipe-search-input" 
+            <div class="modern-search-container">
+                <div class="modern-search-wrapper">
+                    <div class="search-icon-wrapper">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" 
+                           class="modern-search-input" 
+                           id="recipe-search-input" 
                            placeholder="Search by recipe name or number..." 
                            value="{{ search_query if search_query else '' }}"
                            autocomplete="off">
-                    <button class="btn btn-outline-secondary" type="button" id="clear-recipe-search" style="{% if search_query %}display: block;{% else %}display: none;{% endif %}">
+                    <button class="modern-clear-btn" 
+                            type="button" 
+                            id="clear-recipe-search" 
+                            style="{% if search_query %}opacity: 1; pointer-events: auto;{% else %}opacity: 0; pointer-events: none;{% endif %}">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <div class="text-muted small mt-2" id="recipe-search-results-count">
-                    {% if search_query %}Searching for: "{{ search_query }}"{% endif %}
+                <div class="search-results-info" id="recipe-search-results-count">
+                    {% if search_query %}<i class="fas fa-filter me-1"></i>Searching for: "{{ search_query }}"{% endif %}
                 </div>
             </div>
         </div>
@@ -391,6 +396,98 @@
 </div>
 
 <style>
+/* Modern Search Bar Styling */
+.modern-search-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.modern-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 50px;
+    padding: 4px 4px 4px 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.modern-search-wrapper:focus-within {
+    background: white;
+    border-color: #661c31;
+    box-shadow: 0 4px 20px rgba(102, 28, 49, 0.12);
+    transform: translateY(-1px);
+}
+
+.search-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.modern-search-wrapper:focus-within .search-icon-wrapper {
+    color: #661c31;
+}
+
+.modern-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px 16px;
+    font-size: 15px;
+    color: #2d3748;
+    outline: none;
+    font-weight: 400;
+}
+
+.modern-search-input::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+}
+
+.modern-clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #e9ecef;
+    border-radius: 50%;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 8px;
+}
+
+.modern-clear-btn:hover {
+    background: #661c31;
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.modern-clear-btn:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+.search-results-info {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 14px;
+    color: #718096;
+    font-weight: 500;
+    min-height: 20px;
+}
+
+.search-results-info i {
+    color: #661c31;
+}
+
 /* Equal width filter columns */
 .filter-col-equal {
     flex: 1;
@@ -1415,9 +1512,15 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.trim();
             
-            // Show/hide clear button
+            // Show/hide clear button with smooth transition
             if (clearBtn) {
-                clearBtn.style.display = searchTerm ? 'block' : 'none';
+                if (searchTerm) {
+                    clearBtn.style.opacity = '1';
+                    clearBtn.style.pointerEvents = 'auto';
+                } else {
+                    clearBtn.style.opacity = '0';
+                    clearBtn.style.pointerEvents = 'none';
+                }
             }
             
             // Debounce the search
@@ -1438,7 +1541,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 searchInput.value = '';
-                clearBtn.style.display = 'none';
+                clearBtn.style.opacity = '0';
+                clearBtn.style.pointerEvents = 'none';
                 performSearch();
             });
         }
