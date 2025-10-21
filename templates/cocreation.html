@@ -114,7 +114,7 @@
 
                         <div class="row g-3" id="products-grid">
                             {% for product in products %}
-                                <div class="col-md-3 product-card-col">
+                                <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 product-card-col">
                                     <div class="base-product-card {% if base_product and product.id == base_product.id %}selected{% endif %}" 
                                          data-product-id="{{ product.id }}" 
                                          data-product-name="{{ product.name }}"
