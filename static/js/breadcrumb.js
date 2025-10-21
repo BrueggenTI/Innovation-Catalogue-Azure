@@ -197,6 +197,12 @@ function getSmartBackNavigation() {
     } else if (currentPath.startsWith('/trend/')) {
         return { text: 'Trends & Insights', url: '/trends', icon: 'fa-chart-line' };
     } else if (currentPath === '/cocreation') {
+        // Check if we're loading a draft (has draft_id parameter)
+        if (urlParams.has('draft_id')) {
+            return { text: 'My Co-Creation Drafts', url: '/cocreation/drafts', icon: 'fa-save' };
+        }
+        return { text: 'Dashboard', url: '/', icon: 'fa-home' };
+    } else if (currentPath === '/cocreation/drafts') {
         return { text: 'Dashboard', url: '/', icon: 'fa-home' };
     } else if (currentPath === '/catalog' || currentPath === '/trends' || currentPath === '/custom-pages') {
         return { text: 'Dashboard', url: '/', icon: 'fa-home' };
