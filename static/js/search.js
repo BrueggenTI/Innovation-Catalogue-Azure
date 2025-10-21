@@ -165,13 +165,8 @@ function displaySearchResults(results, query, inputId = 'globalSearch') {
         html += '</div>';
     }
 
-    // Display recipes
+    // Display recipes (without section title)
     if (groupedResults.recipes.length > 0) {
-        html += `<div class="search-section">
-            <h6 class="search-section-title">
-                <i class="fas fa-utensils me-2"></i>Rezepte
-            </h6>`;
-        
         groupedResults.recipes.forEach(result => {
             html += `
                 <div class="search-result-item" onclick="navigateToResult('${result.url}')">
@@ -191,8 +186,6 @@ function displaySearchResults(results, query, inputId = 'globalSearch') {
                 </div>
             `;
         });
-        
-        html += '</div>';
     }
     
     // Display trends
