@@ -1563,15 +1563,19 @@ a:hover {
     border-bottom: 1px solid var(--brg-color-border-subtle);
 }
 
-/* Ultra-spezifische Regel für ALLE Kategorien-Überschriften in Suchergebnissen */
-.search-results .search-category,
-.search-results-content .search-category,
-div.search-results .search-category,
+/* Spezifische Regel nur für Trends-Seite Kategorien-Überschriften */
 .trendsSearchResults .search-category,
 #trendsSearchResults .search-category,
 #trendsSearchResults .search-results-content .search-category,
 div[id="trendsSearchResults"] .search-category {
     color: white !important;
+}
+
+/* Standard search-category styling für alle anderen Seiten */
+.search-category {
+    color: #495057 !important;
+    background: #f8f9fa;
+    font-weight: 600;
 }
 
 /* Ultra-spezifische Regel für Bootstrap text-dark Override in Suchvorschlägen */
