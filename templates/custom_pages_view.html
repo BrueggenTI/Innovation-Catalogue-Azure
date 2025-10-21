@@ -1258,7 +1258,8 @@ document.addEventListener('DOMContentLoaded', function() {
             categories: [],
             ingredients: [],
             claims: [],
-            recipeNumbers: []
+            recipeNumbers: [],
+            products: []
         };
         
         const lowerQuery = query.toLowerCase();
@@ -1284,14 +1285,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Search recipe numbers and product names
+        // Search product names and recipe numbers
         const uniqueRecipeNumbers = new Set();
+        const uniqueProducts = new Map();
+        
         productsData.forEach(product => {
+            // Search in recipe numbers
             if (product.recipeNumber && product.recipeNumber.toLowerCase().includes(lowerQuery)) {
                 uniqueRecipeNumbers.add(product.recipeNumber);
             }
+            // Search in product names
+            if (product.name && product.name.toLowerCase().includes(lowerQuery)) {
+                uniqueProducts.set(product.id, {
+                    id: product.id,
+                    name: product.name,
+                    recipeNumber: product.recipeNumber
+                });
+            }
         });
+        
         results.recipeNumbers = Array.from(uniqueRecipeNumbers);
+        results.products = Array.from(uniqueProducts.values());
         
         // Build results HTML
         let html = '';
@@ -1322,6 +1336,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 html += `<div class="search-result-item" data-type="claim" data-value="${claim}">
                             <span class="search-result-text">${highlightText(claim, query)}</span>
                             <span class="search-result-badge">Claim</span>
+                         </div>`;
+            });
+        }
+        
+        // Show product name matches
+        if (results.products.length > 0) {
+            html += '<div class="search-category">Products</div>';
+            results.products.forEach(product => {
+                const productUrl = '{{ url_for("product_detail", id=0, from_custom_page=custom_page.id) }}'.replace('/0', `/${product.id}`);
+                html += `<div class="search-result-item" onclick="window.location.href='${productUrl}'">
+                            <span class="search-result-text">${highlightText(product.name, query)}</span>
+                            <span class="search-result-badge">Product</span>
                          </div>`;
             });
         }
