@@ -34,7 +34,41 @@
             <div class="header-layout-grid">
                 <!-- Left: Visibility Settings -->
                 <div class="header-left-section">
-                    <!-- Visibility Settings entfernt -->
+                    <div class="dropdown visibility-settings-dropdown">
+                        <button class="btn visibility-settings-btn dropdown-toggle" type="button" id="visibilitySettingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-eye me-2"></i>
+                            <span class="d-none d-md-inline">{{ get_text('visibility_settings', lang) }}</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-start visibility-settings-menu" aria-labelledby="visibilitySettingsDropdown">
+                            <li class="dropdown-header">
+                                <i class="fas fa-cog me-2"></i>{{ get_text('visibility_settings_description', lang) }}
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="px-3 py-2">
+                                <div class="d-flex align-items-center justify-content-between visibility-setting-row">
+                                    <label class="form-label mb-0 me-3">
+                                        <i class="fas fa-percent me-2"></i>{{ get_text('hide_ingredient_percentages', lang) }}
+                                    </label>
+                                    <div class="form-check form-switch ms-auto">
+                                        <input class="form-check-input" type="checkbox" id="hidePercentagesToggle"
+                                               {% if session.get('hide_percentages', False) %}checked{% endif %}>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="px-3 py-2">
+                                <div class="d-flex align-items-center justify-content-between visibility-setting-row">
+                                    <label class="form-label mb-0 me-3">
+                                        <i class="fas fa-filter me-2"></i>{{ get_text('hide_recipes_unapproved_materials', lang) }}
+                                    </label>
+                                    <div class="form-check form-switch ms-auto">
+                                        <input class="form-check-input" type="checkbox" id="hideUnapprovedToggle"
+                                               {% if session.get('hide_unapproved_recipes', False) %}checked{% endif %}>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Centered Brand Section -->
