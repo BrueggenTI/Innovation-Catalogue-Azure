@@ -5,8 +5,13 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const shortcutCircle = document.getElementById('shortcutCircle');
+    const wrapper = document.querySelector('.shortcut-nav-wrapper');
     
-    if (!shortcutCircle) return;
+    if (!shortcutCircle || !wrapper) return;
+    
+    // Make wrapper visible immediately
+    wrapper.style.opacity = '1';
+    wrapper.style.visibility = 'visible';
     
     // Add pulse animation on first load to attract attention
     setTimeout(() => {
