@@ -115,28 +115,15 @@ function displaySearchResults(results, query, inputId = 'globalSearch') {
     const resultsId = inputId === 'universalSearch' ? 'universalSearchResults' : 'searchResults';
     const searchResults = document.getElementById(resultsId);
     
-    // Check if this looks like a recipe number search (numbers, possible prefixes like "R", "RZ", etc.)
-    const isRecipeNumberSearch = /^(r|rz|recipe)?\s*\d+/i.test(query.trim());
-    console.log('=== DEBUG: Query:', query, 'Is recipe number search:', isRecipeNumberSearch);
-    
     if (!results || results.length === 0) {
         searchResults.innerHTML = `
             <div class="search-empty">
                 <i class="fas fa-search me-2"></i>
-                ${isRecipeNumberSearch ? 'Keine Rezepte mit dieser Nummer gefunden' : 'No results found'}
+                No results found
             </div>
         `;
         return;
     }
-    
-    // Use special layout for recipe number searches on competence page
-    if (inputId === 'universalSearch' && isRecipeNumberSearch) {
-        console.log('=== DEBUG: Using recipe number layout for results:', results.length);
-        displayRecipeNumberResults(results, searchResults);
-        return;
-    }
-    
-    console.log('=== DEBUG: Using standard layout. InputId:', inputId, 'IsRecipeSearch:', isRecipeNumberSearch);
     
     let html = '<div class="search-results-list">';
     
