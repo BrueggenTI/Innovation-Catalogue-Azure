@@ -1132,24 +1132,45 @@ a:hover {
     opacity: 0.08;
 }
 
-/* Länglicher, flacher Toggle Switch */
+/* Minimalistischer Toggle Switch mit Animation */
 .visibility-settings-menu .form-check-input {
     cursor: pointer;
-    width: 3.5rem;
-    height: 1.3rem;
+    width: 48px;
+    height: 24px;
     background-color: #E5E7EB;
-    border-color: #E5E7EB;
+    border: none;
+    border-radius: 12px;
+    position: relative;
+    transition: background-color 0.3s ease;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .visibility-settings-menu .form-check-input:checked {
     background-color: var(--brg-color-primary);
-    border-color: var(--brg-color-primary);
 }
 
 .visibility-settings-menu .form-check-input:focus {
-    border-color: var(--brg-color-primary);
-    box-shadow: 0 0 0 0.25rem rgba(255, 65, 67, 0.25);
-    background-image: none;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 65, 67, 0.15);
+}
+
+/* Toggle Handle mit Animation */
+.visibility-settings-menu .form-check-input::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.visibility-settings-menu .form-check-input:checked::before {
+    transform: translateX(24px);
 }
 
 .visibility-settings-menu .form-label {
