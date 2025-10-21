@@ -1591,11 +1591,14 @@ def search_api():
             ).order_by(Product.created_at.desc()).limit(15).all()
 
             for product in products:
+                # Check if product was found via product name match
+                found_via_name = query in product.name.lower()
+                
                 # Determine if this is more recipe-like or product-like based on content
                 product_type = 'recipe' if any(keyword in product.name.lower() for keyword in ['muesli', 'müsli', 'granola', 'porridge', 'oats', 'recipe']) else 'product'
                 
-                # For recipe number searches, prefer showing as recipes
-                if is_recipe_number_search:
+                # For recipe number searches or product name matches, prefer showing as recipes
+                if is_recipe_number_search or found_via_name:
                     product_type = 'recipe'
                 
                 # Generate a recipe number for display (use ID or extract from name)
