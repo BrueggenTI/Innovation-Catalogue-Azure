@@ -430,18 +430,24 @@ class CoCreationLab {
                 }
             });
 
-            // Update results count
+            // Update results count with icon
             if (resultsCount) {
                 if (searchTerm === '') {
-                    resultsCount.textContent = '';
+                    resultsCount.innerHTML = '';
                 } else {
-                    resultsCount.textContent = `${visibleCount} product${visibleCount !== 1 ? 's' : ''} found`;
+                    resultsCount.innerHTML = `<i class="fas fa-filter me-1"></i>${visibleCount} product${visibleCount !== 1 ? 's' : ''} found`;
                 }
             }
 
-            // Show/hide clear button
+            // Show/hide clear button with smooth transition
             if (clearBtn) {
-                clearBtn.style.display = searchTerm ? 'block' : 'none';
+                if (searchTerm) {
+                    clearBtn.style.opacity = '1';
+                    clearBtn.style.pointerEvents = 'auto';
+                } else {
+                    clearBtn.style.opacity = '0';
+                    clearBtn.style.pointerEvents = 'none';
+                }
             }
         };
 
