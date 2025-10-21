@@ -66,7 +66,7 @@
                     </button>
                 </div>
                 <!-- Search Results Dropdown -->
-                <div class="search-results" id="searchResults" style="display: none;">
+                <div class="search-results" id="universalSearchResults" style="display: none;">
                     <div class="search-results-content">
                         <!-- Results will be populated here -->
                     </div>
@@ -1389,7 +1389,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Universal Search Functionality - moved inside DOMContentLoaded for proper scope
     function initializeUniversalSearch() {
     const searchInput = document.getElementById('universalSearch');
-    const searchResults = document.getElementById('searchResults');
+    const searchResults = document.getElementById('universalSearchResults');
     const clearButton = document.getElementById('clearSearch');
     let searchTimeout;
 
