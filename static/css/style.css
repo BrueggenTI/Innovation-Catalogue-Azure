@@ -4501,7 +4501,7 @@ body.modal-open {
 
 .shortcut-nav-wrapper {
     position: absolute;
-    bottom: 0;
+    bottom: -30px; /* Position so circle is half outside header */
     left: 50%;
     transform: translateX(-50%);
     z-index: 1050;
@@ -4531,7 +4531,7 @@ body.modal-open {
     backdrop-filter: blur(10px);
     opacity: 1;
     margin: 0 auto;
-    transform: translateY(50%);
+    transform: none;
 }
 
 .shortcut-circle i {
@@ -4541,7 +4541,7 @@ body.modal-open {
 }
 
 .shortcut-circle:hover {
-    transform: translateY(50%) scale(1.05);
+    transform: scale(1.05);
     box-shadow: 
         0 12px 28px rgba(255, 65, 67, 0.4),
         0 6px 14px rgba(255, 65, 67, 0.25),
@@ -4559,7 +4559,7 @@ body.modal-open {
     pointer-events: none;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     justify-content: center;
-    transform: translateY(50%);
+    transform: none;
 }
 
 /* Show menu on hover */
@@ -4570,7 +4570,7 @@ body.modal-open {
 
 .shortcut-nav-wrapper:hover .shortcut-circle {
     opacity: 0;
-    transform: translateY(50%) scale(0.5);
+    transform: scale(0.5);
     pointer-events: none;
 }
 
