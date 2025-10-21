@@ -965,6 +965,7 @@ def update_exclusive_info(id):
 
 @app.route('/product/<int:id>/update-description', methods=['POST'])
 @login_required
+@master_required
 def update_product_description(id):
     """Update product description"""
     init_user_session()
@@ -1007,6 +1008,7 @@ def update_product_description(id):
 
 @app.route('/product/<int:id>/update-image', methods=['POST'])
 @login_required
+@master_required
 def update_product_image(id):
     """Update product image"""
     init_user_session()

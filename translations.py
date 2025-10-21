@@ -30,7 +30,7 @@ TRANSLATIONS = {
         # Dashboard
         'welcome_message': 'The World of Cereals',
         'welcome_subtitle': 'Discover our innovative product development capabilities and co-create the future of breakfast together.',
-        'search_placeholder': 'Search for products, recipes, trends or new concepts...',
+        'search_placeholder': 'Search for products and trends',
         'quick_actions': 'Quick Actions',
         'innovation_catalog': 'Innovation Catalog',
         'innovation_catalog_desc': 'The world of innovation - explore our latest products',
