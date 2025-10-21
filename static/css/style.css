@@ -1132,9 +1132,13 @@ a:hover {
     opacity: 0.08;
 }
 
-/* Normal Bootstrap Toggle Switch */
+/* Länglicher, flacher Toggle Switch */
 .visibility-settings-menu .form-check-input {
     cursor: pointer;
+    width: 3.5rem;
+    height: 1.3rem;
+    background-color: #E5E7EB;
+    border-color: #E5E7EB;
 }
 
 .visibility-settings-menu .form-check-input:checked {
@@ -1145,6 +1149,7 @@ a:hover {
 .visibility-settings-menu .form-check-input:focus {
     border-color: var(--brg-color-primary);
     box-shadow: 0 0 0 0.25rem rgba(255, 65, 67, 0.25);
+    background-image: none;
 }
 
 .visibility-settings-menu .form-label {
@@ -1171,11 +1176,19 @@ a:hover {
 }
 
 .visibility-setting-row {
-    gap: 16px;
+    gap: 24px;
     padding: 6px 12px;
     border-radius: 8px;
     transition: background-color 0.2s ease;
     align-items: center;
+}
+
+.visibility-setting-row .form-label {
+    margin-right: auto;
+}
+
+.visibility-setting-row .form-check {
+    margin-left: 12px;
 }
 
 .visibility-setting-row:hover {
