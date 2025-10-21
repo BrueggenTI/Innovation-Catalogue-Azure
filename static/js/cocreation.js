@@ -381,8 +381,11 @@ class CoCreationLab {
                 this.config.baseProductName = card.dataset.productName;
                 this.config.baseProductImage = card.querySelector('img')?.src;
 
-                // Enable next button
+                // Enable next button (old button for backwards compatibility)
                 document.getElementById('step1-next').disabled = false;
+
+                // Update global navigation to enable the global next button
+                this.updateGlobalNavigation();
 
                 // Update preview
                 this.updatePreview();
