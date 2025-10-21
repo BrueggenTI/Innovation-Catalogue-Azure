@@ -61,6 +61,21 @@
                 <div class="step-label">{{ get_text('review_send', lang) }}</div>
             </div>
         </div>
+        <!-- Navigation Buttons Section -->
+        <div class="navigation-buttons-section mt-3 text-center" id="navigation-buttons-section">
+            <button class="btn btn-outline-secondary rounded-pill px-4 me-3" id="global-back-btn" style="display: none;">
+                <i class="fas fa-arrow-left me-2"></i><span id="global-back-text">{{ get_text('back', lang) }}</span>
+            </button>
+            <button class="btn btn-primary rounded-pill px-4" id="global-next-btn">
+                <span id="global-next-text">{{ get_text('continue_to_ingredients', lang) }}</span> <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+            <button class="btn btn-outline-primary rounded-pill px-4 me-3" id="global-save-draft-btn" style="display: none;">
+                <i class="fas fa-save me-2"></i>{{ get_text('save_as_draft', lang) if lang else 'Save as Draft' }}
+            </button>
+            <button class="btn btn-success rounded-pill px-4" id="global-generate-btn" style="display: none;">
+                <i class="fas fa-file-pdf me-2"></i>{{ get_text('generate_pdf', lang) }}
+            </button>
+        </div>
     </div>
 </div>
 
@@ -86,10 +101,10 @@
                         <!-- Search Bar for Products -->
                         <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text bg-white">
+                                <span class="input-group-text bg-white border-end-0">
                                     <i class="fas fa-search text-muted"></i>
                                 </span>
-                                <input type="text" class="form-control" id="product-search-input" placeholder="{{ get_text('search_by_product_or_number', lang) if lang else 'Search by product name or recipe number...' }}">
+                                <input type="text" class="form-control border-start-0" id="product-search-input" placeholder="{{ get_text('search_by_product_or_number', lang) if lang else 'Search by product name or recipe number...' }}">
                                 <button class="btn btn-outline-secondary" type="button" id="clear-search" style="display: none;">
                                     <i class="fas fa-times"></i>
                                 </button>
@@ -335,15 +350,15 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="client-name" class="form-label">{{ get_text('client_name', lang) }} *</label>
-                                            <input type="text" class="form-control" id="client-name" placeholder="{{ get_text('enter_client_name', lang) }}" required>
+                                            <input type="text" class="form-control form-control-underline" id="client-name" placeholder="{{ get_text('enter_client_name', lang) }}" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label for="client-email" class="form-label">{{ get_text('client_email', lang) }} *</label>
-                                            <input type="email" class="form-control" id="client-email" placeholder="{{ get_text('enter_client_email', lang) }}" required>
+                                            <input type="email" class="form-control form-control-underline" id="client-email" placeholder="{{ get_text('enter_client_email', lang) }}" required>
                                         </div>
                                         <div class="col-12">
                                             <label for="special-notes" class="form-label">{{ get_text('special_notes_requirements', lang) }}</label>
-                                            <textarea class="form-control" id="special-notes" rows="3" placeholder="{{ get_text('special_notes_placeholder', lang) }}"></textarea>
+                                            <textarea class="form-control form-control-underline" id="special-notes" rows="3" placeholder="{{ get_text('special_notes_placeholder', lang) }}"></textarea>
                                         </div>
                                     </div>
                                 </div>

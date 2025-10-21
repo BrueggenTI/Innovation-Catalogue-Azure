@@ -113,7 +113,14 @@ class CoCreationLab {
 
     loadURLParameters() {
         const urlParams = new URLSearchParams(window.location.search);
+        const draftId = urlParams.get('draft_id');
         const baseProductId = urlParams.get('base_product') || urlParams.get('base_product_id');
+
+        // Check if loading from a draft
+        if (draftId) {
+            this.loadDraftConfiguration(draftId);
+            return; // Don't proceed with regular base product selection
+        }
 
         if (baseProductId) {
             // Auto-select base product if provided in URL
@@ -123,6 +130,145 @@ class CoCreationLab {
                     productCard.click();
                 }, 500);
             }
+        }
+    }
+    
+    async loadDraftConfiguration(draftId) {
+        try {
+            console.log('Loading draft configuration:', draftId);
+            
+            const response = await fetch(`/cocreation/load-draft/${draftId}`);
+            const data = await response.json();
+            
+            if (!data.success || !data.draft) {
+                console.error('Failed to load draft:', data.error);
+                alert('Failed to load draft: ' + (data.error || 'Unknown error'));
+                return;
+            }
+            
+            // Parse the configuration
+            const config = JSON.parse(data.draft.product_config);
+            console.log('Loaded draft configuration:', config);
+            
+            // Restore base product
+            if (config.baseProduct) {
+                this.config.baseProduct = config.baseProduct;
+                this.config.baseProductName = config.baseProductName || '';
+                this.config.baseProductImage = config.baseProductImage || '';
+                
+                // Select the base product card
+                const productCard = document.querySelector(`[data-product-id="${config.baseProduct}"]`);
+                if (productCard) {
+                    document.querySelectorAll('.base-product-card').forEach(c => c.classList.remove('selected'));
+                    productCard.classList.add('selected');
+                }
+            }
+            
+            // Restore custom ingredients
+            if (config.customIngredients && Array.isArray(config.customIngredients)) {
+                this.config.customIngredients = [...config.customIngredients];
+            }
+            
+            // Restore nutritional claims
+            if (config.nutritionalClaims && Array.isArray(config.nutritionalClaims)) {
+                this.config.nutritionalClaims = [...config.nutritionalClaims];
+            }
+            
+            // Restore certifications
+            if (config.certifications && Array.isArray(config.certifications)) {
+                this.config.certifications = [...config.certifications];
+            }
+            
+            // Restore ingredient ratios
+            if (config.ingredientRatios && typeof config.ingredientRatios === 'object') {
+                this.config.ingredientRatios = {...config.ingredientRatios};
+            }
+            
+            // Restore client information
+            if (config.clientName) {
+                this.config.clientName = config.clientName;
+                const clientNameInput = document.getElementById('client-name');
+                if (clientNameInput) clientNameInput.value = config.clientName;
+            }
+            
+            if (config.clientEmail) {
+                this.config.clientEmail = config.clientEmail;
+                const clientEmailInput = document.getElementById('client-email');
+                if (clientEmailInput) clientEmailInput.value = config.clientEmail;
+            }
+            
+            if (config.notes) {
+                this.config.notes = config.notes;
+                const notesInput = document.getElementById('special-notes');
+                if (notesInput) notesInput.value = config.notes;
+            }
+            
+            // Update the UI to reflect the loaded configuration
+            this.restoreUIFromConfig();
+            
+            // Update preview
+            this.updatePreview();
+            
+            // Show success message
+            this.showSuccessMessage(`Draft "${data.draft.draft_name}" loaded successfully!`);
+            
+            // Navigate to step 2 (Add Ingredients) to show the loaded configuration
+            this.currentStep = 2;
+            this.maxStepReached = 5; // Allow navigation to all steps since draft was saved from a complete state
+            this.updateProgress();
+            document.getElementById('step-1').classList.remove('active');
+            document.getElementById('step-2').classList.add('active');
+            
+        } catch (error) {
+            console.error('Error loading draft configuration:', error);
+            alert('An error occurred while loading the draft.');
+        }
+    }
+    
+    restoreUIFromConfig() {
+        // Restore custom ingredients in the UI
+        if (this.config.customIngredients.length > 0) {
+            const customIngredientsDiv = document.getElementById('custom-ingredients-list');
+            if (customIngredientsDiv) {
+                customIngredientsDiv.innerHTML = '';
+                this.config.customIngredients.forEach(ingredient => {
+                    const ingredientTag = document.createElement('span');
+                    ingredientTag.className = 'ingredient-tag custom';
+                    ingredientTag.innerHTML = `
+                        ${ingredient}
+                        <button class="remove-ingredient" onclick="window.coCreationLab.removeCustomIngredient('${ingredient.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    customIngredientsDiv.appendChild(ingredientTag);
+                });
+            }
+        }
+        
+        // Restore selected claims
+        if (this.config.nutritionalClaims.length > 0) {
+            document.querySelectorAll('.claim-option').forEach(option => {
+                const claim = option.dataset.claim;
+                if (this.config.nutritionalClaims.includes(claim)) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+        
+        // Restore selected certifications
+        if (this.config.certifications.length > 0) {
+            document.querySelectorAll('.certification-option').forEach(option => {
+                const cert = option.dataset.cert;
+                if (this.config.certifications.includes(cert)) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+        
+        // Restore ingredient percentages if needed
+        if (Object.keys(this.config.ingredientRatios).length > 0) {
+            // The percentages will be restored when navigating to step 3
+            console.log('Ingredient ratios restored:', this.config.ingredientRatios);
         }
     }
 
@@ -161,6 +307,15 @@ class CoCreationLab {
     }
 
     bindStepNavigation() {
+        // Global navigation buttons
+        document.getElementById('global-next-btn')?.addEventListener('click', () => this.nextStep());
+        document.getElementById('global-back-btn')?.addEventListener('click', () => this.previousStep());
+        document.getElementById('global-save-draft-btn')?.addEventListener('click', () => {
+            document.getElementById('save-draft-btn')?.click();
+        });
+        document.getElementById('global-generate-btn')?.addEventListener('click', () => this.generateConcept());
+        
+        // Keep old button bindings for backwards compatibility (though they're now hidden)
         // Next buttons
         document.getElementById('step1-next')?.addEventListener('click', () => this.nextStep());
         document.getElementById('step2-next')?.addEventListener('click', () => this.nextStep());
@@ -2125,6 +2280,57 @@ class CoCreationLab {
 
         // Update layout based on current step
         this.updateLayoutForStep();
+        
+        // Update global navigation buttons
+        this.updateGlobalNavigation();
+    }
+
+    updateGlobalNavigation() {
+        const globalBackBtn = document.getElementById('global-back-btn');
+        const globalNextBtn = document.getElementById('global-next-btn');
+        const globalNextText = document.getElementById('global-next-text');
+        const globalSaveDraftBtn = document.getElementById('global-save-draft-btn');
+        const globalGenerateBtn = document.getElementById('global-generate-btn');
+        
+        // Show/hide back button (not shown on step 1)
+        if (globalBackBtn) {
+            globalBackBtn.style.display = this.currentStep > 1 ? 'inline-flex' : 'none';
+        }
+        
+        // Update next button text and visibility based on current step
+        if (globalNextBtn && globalNextText) {
+            if (this.currentStep === 1) {
+                globalNextText.textContent = 'Continue to Ingredients';
+                globalNextBtn.style.display = 'inline-flex';
+                globalNextBtn.disabled = !this.config.baseProduct;
+            } else if (this.currentStep === 2) {
+                globalNextText.textContent = 'Continue to Ratios';
+                globalNextBtn.style.display = 'inline-flex';
+                globalNextBtn.disabled = false;
+            } else if (this.currentStep === 3) {
+                globalNextText.textContent = 'Continue to Claims';
+                globalNextBtn.style.display = 'inline-flex';
+                globalNextBtn.disabled = false;
+            } else if (this.currentStep === 4) {
+                globalNextText.textContent = 'Review & Finalize';
+                globalNextBtn.style.display = 'inline-flex';
+                globalNextBtn.disabled = false;
+            } else if (this.currentStep === 5) {
+                // Step 5: Show save draft and generate buttons, hide next
+                globalNextBtn.style.display = 'none';
+                if (globalSaveDraftBtn) globalSaveDraftBtn.style.display = 'inline-flex';
+                if (globalGenerateBtn) {
+                    globalGenerateBtn.style.display = 'inline-flex';
+                    globalGenerateBtn.disabled = !this.config.baseProduct;
+                }
+            }
+        }
+        
+        // Hide save draft and generate buttons on steps 1-4
+        if (this.currentStep < 5) {
+            if (globalSaveDraftBtn) globalSaveDraftBtn.style.display = 'none';
+            if (globalGenerateBtn) globalGenerateBtn.style.display = 'none';
+        }
     }
 
     updateLayoutForStep() {

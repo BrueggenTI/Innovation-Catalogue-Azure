@@ -2524,6 +2524,50 @@ span.search-result-badge,
     border-bottom: 2px solid var(--brg-color-border-subtle);
 }
 
+/* Hide old step-actions within steps */
+.step-actions {
+    display: none !important;
+}
+
+/* Navigation buttons section under progress bar */
+.navigation-buttons-section {
+    padding: var(--brg-spacing-03) 0;
+}
+
+.navigation-buttons-section .btn {
+    min-width: 180px;
+}
+
+/* Underlined input fields for Review & Send section */
+.form-control-underline {
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    border-radius: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    background-color: transparent !important;
+    transition: border-color 0.3s ease, border-width 0.3s ease;
+}
+
+.form-control-underline:hover {
+    border-bottom-color: var(--brg-color-interactive-primary) !important;
+    border-bottom-width: 2px !important;
+}
+
+.form-control-underline:focus {
+    border-bottom-color: var(--brg-color-interactive-primary) !important;
+    border-bottom-width: 3px !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.form-control-underline::placeholder {
+    color: #adb5bd;
+    opacity: 0.7;
+}
+
 .base-product-card {
     background-color: var(--brg-color-background-primary);
     border: 2px solid var(--brg-color-border-subtle);
