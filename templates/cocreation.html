@@ -96,6 +96,59 @@
 .search-results-info i {
     color: #661c31;
 }
+
+/* Co-Creation Product Cards - Fixed Height */
+.base-product-card {
+    min-height: 220px !important;
+    height: 220px !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-image-small {
+    height: 90px !important;
+    flex-shrink: 0;
+}
+
+.product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px !important;
+    overflow: hidden;
+}
+
+.product-info h6 {
+    font-size: 13px !important;
+    line-height: 1.3;
+    margin-bottom: 8px !important;
+    min-height: 33px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.recipe-number-badge {
+    margin-top: auto;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 11px !important;
+    font-weight: 600;
+    color: #661c31 !important;
+}
+
+.product-category-badge-inline {
+    font-size: 10px;
+    padding: 3px 8px;
+    background: #661c31;
+    color: white;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 6px;
+}
 </style>
 
 <div class="cocreation-header py-5 bg-gradient-warning text-white">
@@ -202,15 +255,18 @@
                                            class="modern-search-input" 
                                            id="product-search-input" 
                                            placeholder="{{ get_text('search_by_product_or_number', lang) if lang else 'Search by product name or recipe number...' }}"
+                                           value="{{ search_query if search_query else '' }}"
                                            autocomplete="off">
                                     <button class="modern-clear-btn" 
                                             type="button" 
                                             id="clear-search" 
-                                            style="opacity: 0; pointer-events: none;">
+                                            style="{% if search_query %}opacity: 1; pointer-events: auto;{% else %}opacity: 0; pointer-events: none;{% endif %}">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <div class="search-results-info" id="search-results-count"></div>
+                                <div class="search-results-info" id="search-results-count">
+                                    {% if search_query %}<i class="fas fa-filter me-1"></i>Searching for: "{{ search_query }}"{% endif %}
+                                </div>
                             </div>
                         </div>
 
@@ -245,6 +301,38 @@
                                 </div>
                             {% endfor %}
                         </div>
+
+                        <!-- Pagination -->
+                        {% if pagination and pagination.total_pages > 1 %}
+                        <nav aria-label="Product pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                    <a class="page-link" href="{% if pagination.has_prev %}{{ url_for('cocreation', page=pagination.prev_page, search=search_query if search_query else None) }}{% else %}#{% endif %}">
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+
+                                {% for page_num in range(1, pagination.total_pages + 1) %}
+                                    {% if page_num == pagination.page %}
+                                        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                                    {% elif page_num <= 3 or page_num > pagination.total_pages - 3 or (page_num >= pagination.page - 1 and page_num <= pagination.page + 1) %}
+                                        <li class="page-item"><a class="page-link" href="{{ url_for('cocreation', page=page_num, search=search_query if search_query else None) }}">{{ page_num }}</a></li>
+                                    {% elif page_num == 4 or page_num == pagination.total_pages - 3 %}
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                    <a class="page-link" href="{% if pagination.has_next %}{{ url_for('cocreation', page=pagination.next_page, search=search_query if search_query else None) }}{% else %}#{% endif %}">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="text-center text-muted small mt-2">
+                                Showing {{ ((pagination.page - 1) * pagination.per_page + 1) }} - {{ [pagination.page * pagination.per_page, pagination.total]|min }} of {{ pagination.total }} products
+                            </div>
+                        </nav>
+                        {% endif %}
 
                         <div class="step-actions mt-4">
                             <button class="btn btn-primary rounded-pill px-4" id="step1-next" {% if not base_product %}disabled{% endif %}>

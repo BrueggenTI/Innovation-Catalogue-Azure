@@ -404,41 +404,35 @@ class CoCreationLab {
     bindProductSearch() {
         const searchInput = document.getElementById('product-search-input');
         const clearBtn = document.getElementById('clear-search');
-        const resultsCount = document.getElementById('search-results-count');
         
         if (!searchInput) return;
 
-        const filterProducts = () => {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            const productCards = document.querySelectorAll('.product-card-col');
-            let visibleCount = 0;
+        let searchTimeout;
 
-            productCards.forEach(col => {
-                const card = col.querySelector('.base-product-card');
-                if (!card) return;
-
-                const productName = card.dataset.productName?.toLowerCase() || '';
-                const recipeNumber = card.dataset.recipeNumber?.toLowerCase() || '';
-
-                const matches = productName.includes(searchTerm) || recipeNumber.includes(searchTerm);
-
-                if (searchTerm === '' || matches) {
-                    col.style.display = '';
-                    visibleCount++;
-                } else {
-                    col.style.display = 'none';
-                }
-            });
-
-            // Update results count with icon
-            if (resultsCount) {
-                if (searchTerm === '') {
-                    resultsCount.innerHTML = '';
-                } else {
-                    resultsCount.innerHTML = `<i class="fas fa-filter me-1"></i>${visibleCount} product${visibleCount !== 1 ? 's' : ''} found`;
-                }
+        const performSearch = () => {
+            const searchTerm = searchInput.value.trim();
+            
+            // Build URL with search parameter
+            const params = new URLSearchParams(window.location.search);
+            
+            if (searchTerm) {
+                params.set('search', searchTerm);
+            } else {
+                params.delete('search');
             }
+            
+            // Remove page parameter when searching to start from page 1
+            params.delete('page');
+            
+            // Redirect to new URL
+            const newUrl = '/cocreation' + (params.toString() ? '?' + params.toString() : '');
+            window.location.href = newUrl;
+        };
 
+        // Bind search input event with debounce
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.trim();
+            
             // Show/hide clear button with smooth transition
             if (clearBtn) {
                 if (searchTerm) {
@@ -449,17 +443,28 @@ class CoCreationLab {
                     clearBtn.style.pointerEvents = 'none';
                 }
             }
-        };
+            
+            // Debounce the search
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 800);
+        });
 
-        // Bind search input event
-        searchInput.addEventListener('input', filterProducts);
+        // Bind Enter key to search immediately
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                performSearch();
+            }
+        });
 
         // Bind clear button event
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 searchInput.value = '';
-                filterProducts();
-                searchInput.focus();
+                clearBtn.style.opacity = '0';
+                clearBtn.style.pointerEvents = 'none';
+                performSearch();
             });
         }
     }

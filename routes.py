@@ -1166,8 +1166,59 @@ def cocreation():
             base_product = Product.query.get(int(base_product_id))
         except (ValueError, TypeError):
             pass
-    # Get base products for selection
-    products = Product.query.all()
+    
+    # Get search parameter
+    search_query = request.args.get('search', '').strip()
+    search_query = sanitize_input(search_query) if search_query else ''
+    search_query = search_query if search_query and search_query != 'None' else ''
+    
+    # Pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 30  # 30 products per page
+    
+    # Build query - start with all products
+    query = Product.query
+    
+    # Search query - search by product name or recipe number
+    if search_query:
+        from sqlalchemy import or_
+        search_term = f"%{search_query}%"
+        query = query.filter(
+            or_(
+                Product.name.ilike(search_term),
+                Product.recipe_number.ilike(search_term)
+            )
+        )
+    
+    # Order by created_at descending
+    all_filtered_products = query.order_by(Product.created_at.desc()).all()
+    
+    # Calculate pagination
+    total_products = len(all_filtered_products)
+    total_pages = (total_products + per_page - 1) // per_page  # Ceiling division
+    
+    # Ensure page is within valid range
+    if page < 1:
+        page = 1
+    elif page > total_pages and total_pages > 0:
+        page = total_pages
+    
+    # Get products for current page
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    products = all_filtered_products[start_idx:end_idx]
+    
+    # Pagination info
+    pagination = {
+        'page': page,
+        'per_page': per_page,
+        'total': total_products,
+        'total_pages': total_pages,
+        'has_prev': page > 1,
+        'has_next': page < total_pages,
+        'prev_page': page - 1 if page > 1 else None,
+        'next_page': page + 1 if page < total_pages else None
+    }
 
     # Create new session
     session_id = str(uuid.uuid4())
@@ -1179,7 +1230,9 @@ def cocreation():
                          products=products,
                          session_id=session_id,
                          base_product=base_product,
-                         from_custom_page_id=from_custom_page_id)
+                         from_custom_page_id=from_custom_page_id,
+                         search_query=search_query,
+                         pagination=pagination)
 
 @app.route('/cocreation/drafts')
 @login_required
