@@ -1560,46 +1560,16 @@ def search_api():
         # Check if query looks like a recipe number (e.g., "R123", "123", "RZ456")
         is_recipe_number_search = bool(re.match(r'^(r|rz|recipe)?\s*\d+', query, re.IGNORECASE))
         
-        # Search products/recipes
+        # Search products/recipes - ONLY by product name
         try:
-            search_conditions = [
-                Product.name.ilike(f'%{query}%'),
-                Product.description.ilike(f'%{query}%'),
-                Product.category.ilike(f'%{query}%'),
-                Product.ingredients.ilike(f'%{query}%'),
-                Product.claims.ilike(f'%{query}%'),
-                Product.allergens.ilike(f'%{query}%'),
-                Product.nutritional_claims.ilike(f'%{query}%'),
-                Product.storage_conditions.ilike(f'%{query}%')
-            ]
-            
-            # For recipe number searches, also try to match by ID or extracted numbers
-            if is_recipe_number_search:
-                # Extract just the numbers from the query
-                number_match = re.search(r'\d+', query)
-                if number_match:
-                    recipe_number = int(number_match.group())
-                    # Search by ID or any field containing this number
-                    search_conditions.extend([
-                        Product.id == recipe_number,
-                        Product.name.ilike(f'%{recipe_number}%'),
-                        Product.description.ilike(f'%{recipe_number}%')
-                    ])
-            
+            # Only search by product name
             products = Product.query.filter(
-                db.or_(*search_conditions)
+                Product.name.ilike(f'%{query}%')
             ).order_by(Product.created_at.desc()).limit(15).all()
 
             for product in products:
-                # Check if product was found via product name match
-                found_via_name = query in product.name.lower()
-                
-                # Determine if this is more recipe-like or product-like based on content
-                product_type = 'recipe' if any(keyword in product.name.lower() for keyword in ['muesli', 'müsli', 'granola', 'porridge', 'oats', 'recipe']) else 'product'
-                
-                # For recipe number searches or product name matches, prefer showing as recipes
-                if is_recipe_number_search or found_via_name:
-                    product_type = 'recipe'
+                # ALL results are shown as recipes (not products)
+                product_type = 'recipe'
                 
                 # Generate a recipe number for display (use ID or extract from name)
                 recipe_number = None
@@ -1629,29 +1599,8 @@ def search_api():
         except Exception as e:
             logging.error(f"Error searching products: {str(e)}")
 
-        # Search trends
-        try:
-            trends = Trend.query.filter(
-                db.or_(
-                    Trend.title.ilike(f'%{query}%'),
-                    Trend.description.ilike(f'%{query}%'),
-                    Trend.category.ilike(f'%{query}%'),
-                    Trend.market_data.ilike(f'%{query}%'),
-                    Trend.consumer_insights.ilike(f'%{query}%')
-                )
-            ).order_by(Trend.created_at.desc()).limit(10).all()
-
-            for trend in trends:
-                results.append({
-                    'type': 'trend',
-                    'title': trend.title,
-                    'description': trend.description[:100] + '...' if trend.description and len(trend.description) > 100 else (trend.description or ''),
-                    'category': trend.category,
-                    'url': url_for('trends', category=trend.category) + f'#trend-{trend.id}',
-                    'image': trend.image_url
-                })
-        except Exception as e:
-            logging.error(f"Error searching trends: {str(e)}")
+        # Trends search is disabled - only show recipes
+        # User requested to only show recipes in search results
 
         # Add quick actions for common searches
         if len(results) <= 3:  # Show quick actions when few specific results
