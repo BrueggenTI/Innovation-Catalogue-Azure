@@ -4510,7 +4510,7 @@ body.modal-open {
 
 .shortcut-circle {
     position: absolute;
-    top: -45px; /* 3/4 hidden under header (45px of 60px hidden) */
+    top: -30px; /* Half on header, half on white background */
     left: 50%;
     transform: translateX(-50%);
     width: 60px;
@@ -4549,7 +4549,7 @@ body.modal-open {
 /* Menu Container */
 .shortcut-menu {
     position: absolute;
-    top: -45px; /* Aligned with circle position */
+    top: -30px; /* Aligned with circle position */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -4676,7 +4676,7 @@ body.modal-open {
     .shortcut-circle {
         width: 50px;
         height: 50px;
-        top: -37px; /* 3/4 hidden (37.5px of 50px) */
+        top: -25px; /* Half on header, half on white */
     }
     
     .shortcut-circle i {
@@ -4685,7 +4685,7 @@ body.modal-open {
     
     .shortcut-menu {
         gap: 12px;
-        top: -37px;
+        top: -25px;
     }
     
     .shortcut-btn {
