@@ -4501,37 +4501,35 @@ body.modal-open {
 
 .shortcut-nav-wrapper {
     position: absolute;
-    bottom: -50px; /* Position circle at bottom edge of header */
+    bottom: -30px; /* Half-circle below header */
     left: 50%;
     transform: translateX(-50%);
     z-index: 1050;
     pointer-events: none;
-    width: auto;
+    width: 60px;
+    height: 30px;
+    overflow: hidden;
 }
 
 .shortcut-circle {
-    position: relative;
-    top: 0;
+    position: absolute;
+    top: -30px;
     left: 0;
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #ff4143 0%, #ff5557 100%);
+    background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);
     border-radius: 50%;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     cursor: pointer;
     pointer-events: auto;
     box-shadow: 
-        0 8px 20px rgba(255, 65, 67, 0.3),
-        0 4px 10px rgba(255, 65, 67, 0.2),
-        0 0 0 0 rgba(255, 65, 67, 0.4);
+        0 8px 20px rgba(102, 28, 49, 0.3),
+        0 4px 10px rgba(102, 28, 49, 0.2);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
     opacity: 1;
-    margin: 0 auto;
-    transform: none;
+    padding-bottom: 8px;
 }
 
 .shortcut-circle i {
@@ -4543,9 +4541,8 @@ body.modal-open {
 .shortcut-circle:hover {
     transform: scale(1.05);
     box-shadow: 
-        0 12px 28px rgba(255, 65, 67, 0.4),
-        0 6px 14px rgba(255, 65, 67, 0.25),
-        0 0 0 0 rgba(255, 65, 67, 0.5);
+        0 12px 28px rgba(102, 28, 49, 0.4),
+        0 6px 14px rgba(102, 28, 49, 0.25);
 }
 
 /* Menu Container */
@@ -4710,15 +4707,14 @@ body.modal-open {
 @keyframes pulse {
     0%, 100% {
         box-shadow: 
-            0 8px 20px rgba(255, 65, 67, 0.3),
-            0 4px 10px rgba(255, 65, 67, 0.2),
-            0 0 0 0 rgba(255, 65, 67, 0.4);
+            0 8px 20px rgba(102, 28, 49, 0.3),
+            0 4px 10px rgba(102, 28, 49, 0.2);
     }
     50% {
         box-shadow: 
-            0 8px 20px rgba(255, 65, 67, 0.3),
-            0 4px 10px rgba(255, 65, 67, 0.2),
-            0 0 0 8px rgba(255, 65, 67, 0);
+            0 8px 20px rgba(102, 28, 49, 0.3),
+            0 4px 10px rgba(102, 28, 49, 0.2),
+            0 0 0 8px rgba(102, 28, 49, 0);
     }
 }
 
