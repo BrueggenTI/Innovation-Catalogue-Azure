@@ -1586,14 +1586,21 @@ div[id="trendsSearchResults"] .search-category {
 /* Spezifische Regel für Trends-Suchleiste Kategorie-Badges */
 #trendsSearchResults .search-result-badge,
 #trendsSearchResults .search-results-content .search-result-badge,
-.search-results .search-result-badge,
-.search-results-content .search-result-badge,
-span.search-result-badge,
 .search-result-badge.bg-success,
 .search-result-badge.bg-info,
 .search-result-badge.bg-primary,
 .search-result-badge.bg-secondary {
     color: white !important;
+}
+
+/* Standard search-result-badge styling for readability */
+.search-result-badge {
+    background-color: #661c31 !important;
+    color: white !important;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 500;
 }
 
 .search-result-item {
