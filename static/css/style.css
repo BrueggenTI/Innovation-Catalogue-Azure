@@ -1132,10 +1132,10 @@ a:hover {
     opacity: 0.08;
 }
 
-/* Minimalistischer Toggle Switch - Längliches Design mit rundem Slider */
+/* Minimalistischer Toggle Switch - Nur ein Kreis der sich verschiebt */
 .visibility-settings-menu .form-check-input {
-    width: 64px;
-    height: 32px;
+    width: 44px;
+    height: 6px;
     cursor: pointer;
     background-color: #E5E7EB;
     border: none;
@@ -1143,44 +1143,35 @@ a:hover {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     flex-shrink: 0;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .visibility-settings-menu .form-check-input:checked {
     background-color: #10B981;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .visibility-settings-menu .form-check-input:focus {
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
     outline: none;
 }
 
-.visibility-settings-menu .form-check-input:hover:not(:disabled):not(:checked) {
-    background-color: #D1D5DB;
-}
-
-.visibility-settings-menu .form-check-input:hover:not(:disabled):checked {
-    background-color: #059669;
-}
-
-/* Runder weißer Slider */
+/* Einzelner Kreis der sich verschiebt */
 .visibility-settings-menu .form-check-input::before {
     content: '';
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 26px;
-    height: 26px;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
     background-color: #ffffff;
     border-radius: 50%;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .visibility-settings-menu .form-check-input:checked::before {
-    transform: translateX(32px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.12);
+    left: calc(100% - 20px);
 }
 
 .visibility-settings-menu .form-label {
