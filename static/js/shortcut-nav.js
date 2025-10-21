@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Re-add pulse when user hasn't interacted in a while
     let interactionTimer;
-    const wrapper = document.querySelector('.shortcut-nav-wrapper');
     
     function resetInteractionTimer() {
         clearTimeout(interactionTimer);
