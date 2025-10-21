@@ -4504,7 +4504,7 @@ body.modal-open {
     top: 80px; /* 10px below header (70px) for better visibility */
     left: 50%;
     transform: translateX(-50%);
-    z-index: 999;
+    z-index: 1050; /* Higher than header to appear on top */
     pointer-events: none;
     opacity: 1;
     visibility: visible;
