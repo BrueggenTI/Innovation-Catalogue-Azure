@@ -4512,7 +4512,7 @@ body.modal-open {
 }
 
 .shortcut-nav-wrapper.scrolled {
-    top: 60px; /* Reduced distance when scrolled */
+    top: 60px; /* Reduced to 60px when scrolled */
 }
 
 .shortcut-circle {
