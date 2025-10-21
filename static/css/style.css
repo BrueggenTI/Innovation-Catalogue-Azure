@@ -4506,10 +4506,11 @@ body.modal-open {
     top: 125px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1050; /* Higher than header to appear on top */
+    z-index: 1050;
     pointer-events: none;
     opacity: 1;
     visibility: visible;
+    will-change: auto;
 }
 
 .shortcut-circle {
@@ -4541,7 +4542,7 @@ body.modal-open {
 }
 
 .shortcut-circle:hover {
-    transform: translateX(-50%) scale(1.05);
+    transform: scale(1.05);
     box-shadow: 
         0 12px 28px rgba(102, 28, 49, 0.35),
         0 6px 14px rgba(102, 28, 49, 0.2),
@@ -4571,7 +4572,7 @@ body.modal-open {
 .shortcut-nav-wrapper:hover .shortcut-circle {
     opacity: 0;
     visibility: hidden;
-    transform: translateX(-50%) scale(0.8);
+    transform: scale(0.8);
     pointer-events: none;
 }
 
