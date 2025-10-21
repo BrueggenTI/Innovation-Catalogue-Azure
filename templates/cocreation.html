@@ -5,6 +5,99 @@
 {% block body_attrs %} data-page-title="Co-Creation"{% endblock %}
 
 {% block content %}
+<style>
+/* Modern Search Bar Styling */
+.modern-search-container {
+    max-width: 100%;
+}
+
+.modern-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 50px;
+    padding: 4px 4px 4px 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.modern-search-wrapper:focus-within {
+    background: white;
+    border-color: #661c31;
+    box-shadow: 0 4px 20px rgba(102, 28, 49, 0.12);
+    transform: translateY(-1px);
+}
+
+.search-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.modern-search-wrapper:focus-within .search-icon-wrapper {
+    color: #661c31;
+}
+
+.modern-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px 16px;
+    font-size: 15px;
+    color: #2d3748;
+    outline: none;
+    font-weight: 400;
+}
+
+.modern-search-input::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+}
+
+.modern-clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #e9ecef;
+    border-radius: 50%;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 8px;
+}
+
+.modern-clear-btn:hover {
+    background: #661c31;
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.modern-clear-btn:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+.search-results-info {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 14px;
+    color: #718096;
+    font-weight: 500;
+    min-height: 20px;
+}
+
+.search-results-info i {
+    color: #661c31;
+}
+</style>
+
 <div class="cocreation-header py-5 bg-gradient-warning text-white">
     <div class="container-fluid px-4">
         <div class="row align-items-center">
@@ -559,101 +652,6 @@
 <input type="hidden" id="base-product-name" value="{{ base_product.name }}">
 <input type="hidden" id="base-product-image" value="{{ base_product.image_url }}">
 {% endif %}
-{% endblock %}
-
-{% block styles %}
-<style>
-/* Modern Search Bar Styling */
-.modern-search-container {
-    max-width: 100%;
-}
-
-.modern-search-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background: #f8f9fa;
-    border: 2px solid #e9ecef;
-    border-radius: 50px;
-    padding: 4px 4px 4px 20px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.modern-search-wrapper:focus-within {
-    background: white;
-    border-color: #661c31;
-    box-shadow: 0 4px 20px rgba(102, 28, 49, 0.12);
-    transform: translateY(-1px);
-}
-
-.search-icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    font-size: 16px;
-    transition: color 0.3s ease;
-}
-
-.modern-search-wrapper:focus-within .search-icon-wrapper {
-    color: #661c31;
-}
-
-.modern-search-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: 12px 16px;
-    font-size: 15px;
-    color: #2d3748;
-    outline: none;
-    font-weight: 400;
-}
-
-.modern-search-input::placeholder {
-    color: #a0aec0;
-    font-weight: 400;
-}
-
-.modern-clear-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: #e9ecef;
-    border-radius: 50%;
-    color: #6c757d;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-left: 8px;
-}
-
-.modern-clear-btn:hover {
-    background: #661c31;
-    color: white;
-    transform: rotate(90deg) scale(1.1);
-}
-
-.modern-clear-btn:active {
-    transform: rotate(90deg) scale(0.95);
-}
-
-.search-results-info {
-    margin-top: 12px;
-    text-align: center;
-    font-size: 14px;
-    color: #718096;
-    font-weight: 500;
-    min-height: 20px;
-}
-
-.search-results-info i {
-    color: #661c31;
-}
-</style>
 {% endblock %}
 
 {% block scripts %}
