@@ -14,11 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
     wrapper.style.visibility = 'visible';
     
     // Handle scroll event to adjust position
+    // Button bleibt bei 125px bis scrollY >= 95px (dann 30px Abstand zum oberen Rand)
     let scrollTimeout;
     window.addEventListener('scroll', function() {
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(function() {
-            if (window.scrollY > 50) {
+            if (window.scrollY >= 95) {
                 wrapper.classList.add('scrolled');
             } else {
                 wrapper.classList.remove('scrolled');
