@@ -3426,8 +3426,9 @@ def custom_pages_create():
     recipe = request.args.get('recipe', '').strip()
     product_type = request.args.get('product_type', '').strip()
     exclusivity = request.args.get('exclusivity', '').strip()
+    search_query = request.args.get('search', '').strip()
     
-    logging.debug(f"[CUSTOM_PAGES_CREATE] RAW URL parameters - claim: '{claim}', ingredient: '{ingredient}', category: '{category}'")
+    logging.debug(f"[CUSTOM_PAGES_CREATE] RAW URL parameters - claim: '{claim}', ingredient: '{ingredient}', category: '{category}', search: '{search_query}'")
     logging.debug(f"[CUSTOM_PAGES_CREATE] Full request.args: {dict(request.args)}")
     
     # Sanitize only if they have actual values
@@ -3437,6 +3438,7 @@ def custom_pages_create():
     recipe = sanitize_input(recipe) if recipe else ''
     product_type = sanitize_input(product_type) if product_type else ''
     exclusivity = sanitize_input(exclusivity) if exclusivity else ''
+    search_query = sanitize_input(search_query) if search_query else ''
     
     # CRITICAL: Ensure empty values are truly empty strings, not None
     # This prevents Jinja2 from rendering "None" as a string
@@ -3446,8 +3448,9 @@ def custom_pages_create():
     recipe = recipe if recipe and recipe != 'None' else ''
     product_type = product_type if product_type and product_type != 'None' else ''
     exclusivity = exclusivity if exclusivity and exclusivity != 'None' else ''
+    search_query = search_query if search_query and search_query != 'None' else ''
     
-    logging.debug(f"[CUSTOM_PAGES_CREATE] AFTER sanitization - claim: '{claim}', ingredient: '{ingredient}', category: '{category}'")
+    logging.debug(f"[CUSTOM_PAGES_CREATE] AFTER sanitization - claim: '{claim}', ingredient: '{ingredient}', category: '{category}', search: '{search_query}'")
     
     # Pagination parameters
     page = request.args.get('page', 1, type=int)
@@ -3455,6 +3458,17 @@ def custom_pages_create():
     
     # Build query - start with all products
     query = Product.query
+
+    # Search query - search by product name or recipe number
+    if search_query:
+        from sqlalchemy import or_
+        search_term = f"%{search_query}%"
+        query = query.filter(
+            or_(
+                Product.name.ilike(search_term),
+                Product.recipe_number.ilike(search_term)
+            )
+        )
 
     # Only apply filters if they have actual non-empty values (not None and not empty string)
     if category:
@@ -3618,6 +3632,7 @@ def custom_pages_create():
                          selected_recipe=recipe,
                          selected_product_type=product_type,
                          selected_exclusivity=exclusivity,
+                         search_query=search_query,
                          get_text=get_text,
                          lang=lang,
                          pagination=pagination)
