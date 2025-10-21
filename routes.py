@@ -815,6 +815,104 @@ def product_detail(id):
                          claims=claims,
                          from_custom_page_id=from_custom_page_id)
 
+@app.route('/catalog/product/<int:id>', methods=['GET', 'POST'])
+@login_required
+def catalog_product_detail(id):
+    """Product detail page accessed from catalog - hierarchical URL"""
+    init_user_session()
+    product = Product.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        # Handle exclusive recipe form submission
+        product.is_exclusive = 'is_exclusive' in request.form
+        if product.is_exclusive:
+            exclusive_type = request.form.get('exclusive_type', 'Market')
+            exclusive_name = request.form.get('exclusive_name', '')
+            product.market = f"{exclusive_type}:{exclusive_name}" if exclusive_name else ''
+        else:
+            product.market = ''
+        
+        try:
+            db.session.commit()
+            flash('Exklusivrezeptur-Einstellungen erfolgreich gespeichert!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Fehler beim Speichern der Einstellungen.', 'error')
+        
+        return redirect(url_for('catalog_product_detail', id=id))
+
+    # Parse JSON fields
+    ingredients = json.loads(product.ingredients) if product.ingredients else []
+    nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
+    certifications = json.loads(product.certifications) if product.certifications else []
+    nutritional_info = json.loads(product.nutritional_info) if product.nutritional_info else {}
+    allergens = json.loads(product.allergens) if product.allergens else []
+    claims = json.loads(product.claims) if product.claims else []
+
+    return render_template('product_detail.html',
+                         product=product,
+                         ingredients=ingredients,
+                         nutritional_claims=nutritional_claims,
+                         certifications=certifications,
+                         nutritional_info=nutritional_info,
+                         allergens=allergens,
+                         claims=claims,
+                         from_catalog=True)
+
+@app.route('/custom-pages/view/<int:page_id>/product/<int:id>', methods=['GET', 'POST'])
+@login_required
+def custom_page_product_detail(page_id, id):
+    """Product detail page accessed from custom page - hierarchical URL"""
+    init_user_session()
+    product = Product.query.get_or_404(id)
+    custom_page = CustomRecipePage.query.get_or_404(page_id)
+    
+    # Verify access rights
+    user_id = session.get('user_id')
+    is_master = session.get('is_master', False)
+    
+    if not is_master and custom_page.user_id != user_id:
+        flash('You do not have permission to view this custom page.', 'error')
+        return redirect(url_for('custom_pages_list'))
+    
+    if request.method == 'POST':
+        # Handle exclusive recipe form submission
+        product.is_exclusive = 'is_exclusive' in request.form
+        if product.is_exclusive:
+            exclusive_type = request.form.get('exclusive_type', 'Market')
+            exclusive_name = request.form.get('exclusive_name', '')
+            product.market = f"{exclusive_type}:{exclusive_name}" if exclusive_name else ''
+        else:
+            product.market = ''
+        
+        try:
+            db.session.commit()
+            flash('Exklusivrezeptur-Einstellungen erfolgreich gespeichert!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Fehler beim Speichern der Einstellungen.', 'error')
+        
+        return redirect(url_for('custom_page_product_detail', page_id=page_id, id=id))
+
+    # Parse JSON fields
+    ingredients = json.loads(product.ingredients) if product.ingredients else []
+    nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
+    certifications = json.loads(product.certifications) if product.certifications else []
+    nutritional_info = json.loads(product.nutritional_info) if product.nutritional_info else {}
+    allergens = json.loads(product.allergens) if product.allergens else []
+    claims = json.loads(product.claims) if product.claims else []
+
+    return render_template('product_detail.html',
+                         product=product,
+                         ingredients=ingredients,
+                         nutritional_claims=nutritional_claims,
+                         certifications=certifications,
+                         nutritional_info=nutritional_info,
+                         allergens=allergens,
+                         claims=claims,
+                         from_custom_page_id=page_id,
+                         custom_page=custom_page)
+
 @app.route('/product/<int:id>/update-exclusive-info', methods=['POST'])
 @login_required
 def update_exclusive_info(id):

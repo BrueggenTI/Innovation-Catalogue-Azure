@@ -149,8 +149,39 @@ function getSmartBackNavigation() {
         }
     }
     
-    // Priority 2: Check for context-aware navigation parameters (fallback for direct visits)
-    // If we're on a product detail page and came from a custom page
+    // Priority 2: Parse hierarchical URL structure to determine parent path
+    // This handles direct visits and ensures back button always works
+    
+    // Match: /custom-pages/view/{page_id}/product/{id}
+    const customPageProductMatch = currentPath.match(/^\/custom-pages\/view\/(\d+)\/product\/\d+$/);
+    if (customPageProductMatch) {
+        const pageId = customPageProductMatch[1];
+        return {
+            text: 'Custom Page',
+            url: `/custom-pages/view/${pageId}`,
+            icon: 'fa-folder'
+        };
+    }
+    
+    // Match: /catalog/product/{id}
+    if (currentPath.match(/^\/catalog\/product\/\d+$/)) {
+        return {
+            text: 'Innovation Catalog',
+            url: '/catalog',
+            icon: 'fa-cogs'
+        };
+    }
+    
+    // Match: /custom-pages/view/{page_id}
+    if (currentPath.match(/^\/custom-pages\/view\/\d+$/)) {
+        return {
+            text: 'My Custom Pages',
+            url: '/custom-pages',
+            icon: 'fa-folder'
+        };
+    }
+    
+    // Priority 3: Legacy support for old URL structure with query parameters
     if (currentPath.startsWith('/product/') && urlParams.has('from_custom_page')) {
         const customPageId = urlParams.get('from_custom_page');
         return {
@@ -160,14 +191,11 @@ function getSmartBackNavigation() {
         };
     }
     
-    // Priority 3: Default fallback navigation for when there's no history or context
-    // This handles direct visits to pages
+    // Priority 4: Default fallback navigation for when there's no history or context
     if (currentPath.startsWith('/product/')) {
         return { text: 'Innovation Catalog', url: '/catalog', icon: 'fa-cogs' };
     } else if (currentPath.startsWith('/trend/')) {
         return { text: 'Trends & Insights', url: '/trends', icon: 'fa-chart-line' };
-    } else if (currentPath.startsWith('/custom-pages/view/')) {
-        return { text: 'My Custom Pages', url: '/custom-pages', icon: 'fa-folder' };
     } else if (currentPath === '/cocreation') {
         return { text: 'Dashboard', url: '/', icon: 'fa-home' };
     } else if (currentPath === '/catalog' || currentPath === '/trends' || currentPath === '/custom-pages') {

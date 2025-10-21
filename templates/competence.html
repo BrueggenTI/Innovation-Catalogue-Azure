@@ -375,7 +375,7 @@
                             <!-- Buttons außerhalb des hoverable-area Wrappers -->
                             <div class="card-body p-4 pt-0">
                                 <div class="d-grid gap-2">
-                                    <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-outline-primary rounded-pill">
+                                    <a href="{{ url_for('catalog_product_detail', id=product.id) }}" class="btn btn-outline-primary rounded-pill">
                                         <i class="fas fa-info-circle me-2"></i>{{ get_text('view_details', lang) }}
                                     </a>
                                     <a href="{{ url_for('cocreation', base_product_id=product.id) }}" class="btn btn-primary rounded-pill">
