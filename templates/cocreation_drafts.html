@@ -184,12 +184,12 @@ function loadDraft(draftId) {
                 
                 window.location.href = '/cocreation?' + params.toString();
             } else {
-                alert('Failed to load draft: ' + (data.error || 'Unknown error'));
+                showErrorMessage('Failed to load draft: ' + (data.error || 'Unknown error'));
             }
         })
         .catch(error => {
             console.error('Error loading draft:', error);
-            alert('An error occurred while loading the draft.');
+            showErrorMessage('An error occurred while loading the draft.');
         });
 }
 
@@ -205,7 +205,7 @@ document.getElementById('confirm-rename')?.addEventListener('click', function() 
     const newName = document.getElementById('rename-draft-input').value.trim();
     
     if (!newName) {
-        alert('Please enter a name for the draft.');
+        showErrorMessage('Please enter a name for the draft.');
         return;
     }
     
@@ -219,14 +219,15 @@ document.getElementById('confirm-rename')?.addEventListener('click', function() 
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            showSuccessMessage('Draft renamed successfully!');
+            setTimeout(() => location.reload(), 500);
         } else {
-            alert('Failed to rename draft: ' + (data.error || 'Unknown error'));
+            showErrorMessage('Failed to rename draft: ' + (data.error || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error renaming draft:', error);
-        alert('An error occurred while renaming the draft.');
+        showErrorMessage('An error occurred while renaming the draft.');
     });
 });
 
@@ -241,14 +242,15 @@ function deleteDraft(draftId, draftName) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            showSuccessMessage('Draft deleted successfully!');
+            setTimeout(() => location.reload(), 500);
         } else {
-            alert('Failed to delete draft: ' + (data.error || 'Unknown error'));
+            showErrorMessage('Failed to delete draft: ' + (data.error || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error deleting draft:', error);
-        alert('An error occurred while deleting the draft.');
+        showErrorMessage('An error occurred while deleting the draft.');
     });
 }
 </script>

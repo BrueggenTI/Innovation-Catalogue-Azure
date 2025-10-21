@@ -142,7 +142,7 @@ class CoCreationLab {
             
             if (!data.success || !data.draft) {
                 console.error('Failed to load draft:', data.error);
-                alert('Failed to load draft: ' + (data.error || 'Unknown error'));
+                this.showErrorMessage('Failed to load draft: ' + (data.error || 'Unknown error'));
                 return;
             }
             
@@ -212,16 +212,21 @@ class CoCreationLab {
             // Show success message
             this.showSuccessMessage(`Draft "${data.draft.draft_name}" loaded successfully!`);
             
-            // Navigate to step 2 (Add Ingredients) to show the loaded configuration
-            this.currentStep = 2;
+            // Navigate to step 5 (Review & Send) to show the loaded configuration
+            this.currentStep = 5;
             this.maxStepReached = 5; // Allow navigation to all steps since draft was saved from a complete state
             this.updateProgress();
-            document.getElementById('step-1').classList.remove('active');
-            document.getElementById('step-2').classList.add('active');
+            
+            // Hide all steps first
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`step-${i}`)?.classList.remove('active');
+            }
+            // Show step 5 (Review & Send)
+            document.getElementById('step-5').classList.add('active');
             
         } catch (error) {
             console.error('Error loading draft configuration:', error);
-            alert('An error occurred while loading the draft.');
+            this.showErrorMessage('An error occurred while loading the draft.');
         }
     }
     
@@ -512,32 +517,53 @@ class CoCreationLab {
                         // Show success message
                         this.showSuccessMessage(`Draft "${draftName}" saved successfully!`);
                     } else {
-                        alert('Failed to save draft: ' + (data.error || 'Unknown error'));
+                        this.showErrorMessage('Failed to save draft: ' + (data.error || 'Unknown error'));
                     }
                 })
                 .catch(error => {
                     console.error('Error saving draft:', error);
-                    alert('An error occurred while saving the draft.');
+                    this.showErrorMessage('An error occurred while saving the draft.');
                 });
             });
         }
     }
 
     showSuccessMessage(message) {
-        // Simple success notification (can be enhanced with a proper toast/notification system)
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
-        alertDiv.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
-        alertDiv.innerHTML = `
-            <i class="fas fa-check-circle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.body.appendChild(alertDiv);
+        this.showNotification(message, 'success');
+    }
 
-        // Auto-remove after 5 seconds
+    showErrorMessage(message) {
+        this.showNotification(message, 'error');
+    }
+
+    showNotification(message, type = 'success') {
+        // Create modern, minimalistic notification
+        const notification = document.createElement('div');
+        notification.className = `modern-notification ${type}`;
+        
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        const iconColor = type === 'success' ? '#10b981' : '#ef4444';
+        
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas ${icon}" style="color: ${iconColor};"></i>
+                <span class="notification-message">${message}</span>
+            </div>
+            <button class="notification-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Trigger animation
+        setTimeout(() => notification.classList.add('show'), 10);
+        
+        // Auto-remove after 3 seconds
         setTimeout(() => {
-            alertDiv.remove();
-        }, 5000);
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
 
     bindIngredientPercentages() {

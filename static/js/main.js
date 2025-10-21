@@ -3,6 +3,44 @@
  * Handles global functionality, animations, and interactions
  */
 
+// Global notification system - modern, minimalistic design
+window.showNotification = function(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `modern-notification ${type}`;
+    
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    const iconColor = type === 'success' ? '#10b981' : '#ef4444';
+    
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${icon}" style="color: ${iconColor};"></i>
+            <span class="notification-message">${message}</span>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+};
+
+window.showSuccessMessage = function(message) {
+    window.showNotification(message, 'success');
+};
+
+window.showErrorMessage = function(message) {
+    window.showNotification(message, 'error');
+};
+
 document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize global functionality
