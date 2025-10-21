@@ -4515,9 +4515,9 @@ body.modal-open {
 .shortcut-circle {
     position: relative; /* Changed from absolute to relative */
     width: 70px;
-    height: 60px;
+    height: 50px;
     background: linear-gradient(135deg, #661c31 0%, #7a2139 100%);
-    border-radius: 30px;
+    border-radius: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
