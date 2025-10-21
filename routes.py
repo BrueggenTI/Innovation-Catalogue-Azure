@@ -179,23 +179,34 @@ def extract_images_from_document(file_path, file_extension, original_filename):
 
 
 def init_user_session():
-    """Initialize user session data from database or use defaults"""
-    # If user_id exists in session, load from database
+    """Initialize user session data from database or use defaults - optimized with caching"""
+    # Check if session data is already fully populated - avoid DB query if possible
     user_id = session.get('user_id')
+    
+    # If session already has user_name and user_email, it's fully populated (either from DB or legacy session)
+    # Skip DB query for better performance
+    if user_id and session.get('user_name') and session.get('user_email'):
+        # Mark as loaded for future calls
+        if not session.get('_user_loaded'):
+            session['_user_loaded'] = True
+        return
+    
+    # If user_id exists but session data is incomplete, load from database
     if user_id:
         user = User.query.get(user_id)
         if user:
-            # Load data from database
+            # Load data from database and cache in session
             session['user_name'] = user.name or 'User'
             session['user_email'] = user.email
             session['user_position'] = user.position
             session['user_department'] = user.department
             session['is_master_user'] = user.is_master_user
+            session['_user_loaded'] = True  # Mark as loaded from DB
             if not session.get('language'):
                 session['language'] = 'en'
             return
     
-    # Fallback to default values if no user in database
+    # Fallback to default values if no user in database (guest/non-authenticated session)
     if not session.get('user_name'):
         session['user_name'] = 'Sarah Mitchell'
     if not session.get('user_position'):
@@ -740,8 +751,9 @@ def catalog():
             except json.JSONDecodeError:
                 continue
 
-    # Get unique product types from all products
-    product_types = list(set([p.product_type for p in Product.query.all() if p.product_type]))
+    # Get unique product types from all products - optimized query
+    product_types = db.session.query(Product.product_type).distinct().filter(Product.product_type.isnot(None)).all()
+    product_types = [pt[0] for pt in product_types if pt[0]]
     
     # Ensure completely empty strings for template variables
     final_category = category if category and category.strip() and category != 'None' else ''

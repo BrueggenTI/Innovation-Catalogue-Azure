@@ -2,6 +2,12 @@ from app import db
 from datetime import datetime
 
 class User(db.Model):
+    __tablename__ = 'user'
+    __table_args__ = (
+        db.Index('idx_user_email', 'email'),
+        db.Index('idx_user_microsoft_id', 'microsoft_id'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     name = db.Column(db.String(100))
@@ -13,6 +19,17 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Product(db.Model):
+    __tablename__ = 'product'
+    __table_args__ = (
+        db.Index('idx_product_category', 'category'),
+        db.Index('idx_product_name', 'name'),
+        db.Index('idx_product_recipe_number', 'recipe_number'),
+        db.Index('idx_product_created_at', 'created_at'),
+        db.Index('idx_product_is_exclusive', 'is_exclusive'),
+        db.Index('idx_product_product_type', 'product_type'),
+        db.Index('idx_product_category_created', 'category', 'created_at'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50), nullable=False)
@@ -37,6 +54,12 @@ class Product(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class ConceptSession(db.Model):
+    __tablename__ = 'concept_session'
+    __table_args__ = (
+        db.Index('idx_concept_session_id', 'session_id'),
+        db.Index('idx_concept_created_at', 'created_at'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.String(36), unique=True, nullable=False)
     client_name = db.Column(db.String(100))
@@ -46,6 +69,14 @@ class ConceptSession(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Trend(db.Model):
+    __tablename__ = 'trend'
+    __table_args__ = (
+        db.Index('idx_trend_category', 'category'),
+        db.Index('idx_trend_report_type', 'report_type'),
+        db.Index('idx_trend_created_at', 'created_at'),
+        db.Index('idx_trend_category_report', 'category', 'report_type'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(300), nullable=False)
     category = db.Column(db.String(50), nullable=False)  # health, sustainability, innovation
@@ -58,6 +89,14 @@ class Trend(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class ResearchJob(db.Model):
+    __tablename__ = 'research_job'
+    __table_args__ = (
+        db.Index('idx_research_job_id', 'job_id'),
+        db.Index('idx_research_user_id', 'user_id'),
+        db.Index('idx_research_status', 'status'),
+        db.Index('idx_research_created_at', 'created_at'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
     job_id = db.Column(db.String(36), unique=True, nullable=False)  # UUID
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
@@ -91,6 +130,12 @@ class ResearchSource(db.Model):
     research_job = db.relationship('ResearchJob', backref='sources')
 
 class CustomRecipePage(db.Model):
+    __tablename__ = 'custom_recipe_page'
+    __table_args__ = (
+        db.Index('idx_custom_page_user_id', 'user_id'),
+        db.Index('idx_custom_page_created_at', 'created_at'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)  # Optional description for the custom page
@@ -102,6 +147,12 @@ class CustomRecipePage(db.Model):
     user = db.relationship('User', backref='custom_recipe_pages')
 
 class CoCreationDraft(db.Model):
+    __tablename__ = 'co_creation_draft'
+    __table_args__ = (
+        db.Index('idx_draft_user_id', 'user_id'),
+        db.Index('idx_draft_created_at', 'created_at'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     draft_name = db.Column(db.String(200), nullable=False)
