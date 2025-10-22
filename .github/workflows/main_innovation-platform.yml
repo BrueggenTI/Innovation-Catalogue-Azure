@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy: # Jobs 'build' und 'deploy' wurden zu einem zusammengefasst
+  build-and-deploy: # Ein einziger Job
     runs-on: ubuntu-latest
     permissions:
       contents: read #This is required for actions/checkout
@@ -24,26 +24,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 🛠️ Local Build Section
-      # Führt den lokalen Build und die Installation aus, um Fehler frühzeitig zu erkennen.
-      - name: Create and Start virtual environment and Install dependencies
-        run: |
-          python -m venv antenv
-          source antenv/bin/activate
-          pip install -r requirements.txt
-          
-      # 🚫 WICHTIGER SCHRITT: 'antenv' entfernen
-      # Da wir nicht mehr 'upload-artifact' mit einem Filter (!antenv/) verwenden,
-      # löschen wir das Verzeichnis manuell, bevor wir den gesamten Ordner bereitstellen.
-      # Dies stellt sicher, dass Oryx den Build auf Azure durchführt.
-      - name: Remove virtual environment before deployment
-        run: rm -rf antenv
+      # ⛔️ LOKALER BUILD-SCHRITT WURDE KOMPLETT ENTFERNT ⛔️
+      # Wir erstellen 'antenv' nicht mehr auf dem Runner.
+      # Azure (Oryx) wird 'requirements.txt' selbst finden und
+      # eine saubere Installation in seiner eigenen Umgebung durchführen.
+      # Dies ist der Standardweg und behebt die 'antenv'-Konflikte.
 
-      # 🚫 'Upload artifact' Schritt wurde entfernt.
-
-      # 🚫 'Download artifact' Schritt wurde entfernt.
-
-      # 'Deploy' Schritt ist jetzt Teil desselben Jobs
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -51,6 +37,5 @@ jobs:
           app-name: 'Innovation-Platform'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BF080D4CA4BB46F594B2AEE1F4400091 }}
-          # Der Parameter 'package' wird weggelassen.
-          # Er verwendet standardmäßig '.', also das gesamte Verzeichnis.
-          # Da wir 'antenv' im Schritt zuvor entfernt haben, ist dies korrekt.
+          # 'package' wird weggelassen und ist standardmäßig '.'
+          # Wir deployen jetzt nur noch den Quellcode (z.B. app.py, requirements.txt)
