@@ -1,0 +1,67 @@
+Was ist hier passiert? (Die Analyse)
+Obwohl unser Workflow antenv nicht mehr erstellt, ist das Verzeichnis trotzdem in Azure angekommen.
+
+Das kann nur eines bedeuten: Das antenv-Verzeichnis ist in deinem Git-Repository eingecheckt (committet).
+
+Du hast wahrscheinlich versehentlich deine lokale virtuelle Umgebung (von Replit oder deinem Computer) in dein GitHub-Repository hochgeladen.
+
+Hier ist die genaue Kette des Fehlers:
+
+GitHub Workflow: actions/checkout@v4 lädt dein Repository herunter. Es enthält app.py, requirements.txt und leider auch das gesamte antenv-Verzeichnis.
+
+GitHub Workflow: azure/webapps-deploy@v3 zippt alles (inklusive antenv) und schickt es an Azure.
+
+Azure (Oryx): Das Build-System startet. Es sieht requirements.txt, will gerade anfangen, Pakete zu installieren...
+
+Azure (Oryx): ...stoppt! Es findet ein Verzeichnis namens antenv und denkt: "Oh, der Entwickler hat mir eine fertige Umgebung mitgeliefert. Ich muss nichts bauen, ich benutze einfach diese!"
+
+Azure (Runtime): Oryx versucht, deine App mit diesem (kaputten, inkompatiblen) antenv zu starten.
+
+Ergebnis: Die App crasht mit exakt demselben Fehler wie zuvor (ImportError: cannot import name 'Sequence').
+
+Die Lösung (Zwei Schritte)
+Du musst Git anweisen, das antenv-Verzeichnis zu entfernen und es in Zukunft zu ignorieren. Führe diese Befehle in deiner Replit Shell (oder deinem lokalen Terminal) aus.
+
+Schritt 1: antenv aus Git entfernen
+Wir müssen das Verzeichnis aus der Git-Nachverfolgung entfernen.
+
+Bash
+
+# Dieser Befehl löscht 'antenv' aus der Git-Verwaltung ("Staging Area"),
+# aber lässt den lokalen Ordner (falls vorhanden) in Ruhe.
+git rm -r --cached antenv
+(Falls du eine Fehlermeldung erhältst, dass antenv nicht existiert, ist das auch okay. Versuche dann, es einfach zum .gitignore hinzuzufügen.)
+
+Schritt 2: .gitignore erstellen/bearbeiten (Entscheidend!)
+Wir müssen sicherstellen, dass antenv nie wieder hochgeladen wird. Das macht man mit einer Datei namens .gitignore.
+
+Bash
+
+# Dieser Befehl fügt die Zeile "antenv/" zur Datei ".gitignore" hinzu
+# (oder erstellt die Datei, falls sie nicht existiert).
+echo "antenv/" >> .gitignore
+
+# Füge .gitignore zu deinem Commit hinzu
+git add .gitignore
+Schritt 3: Änderungen committen und pushen
+Jetzt speichern wir diese Änderungen und laden sie hoch.
+
+Bash
+
+# Speichere die Änderungen (das Entfernen von 'antenv' und das Hinzufügen von '.gitignore')
+git commit -m "Remove virtual environment (antenv) from repository"
+
+# Lade alles zu GitHub hoch
+git push
+Was als Nächstes passiert
+Dieser push wird deinen GitHub Actions Workflow erneut auslösen.
+
+actions/checkout@v4 wird den Code herunterladen, aber diesmal ohne das antenv-Verzeichnis.
+
+azure/webapps-deploy@v3 wird den sauberen Code (ohne antenv) an Azure senden.
+
+Azure/Oryx wird kein antenv finden.
+
+Stattdessen findet es requirements.txt und wird gezwungen, alle Pakete (wie gunicorn, flask etc.) frisch und sauber selbst zu installieren.
+
+Deine App wird starten.
