@@ -1,0 +1,100 @@
+Ich will meine Replit Web App, in Azure deployen. Dabei wurde mir in meinem github actions vom repository folgender fehler angezeigt:
+
+
+
+1s
+
+Current runner version: '2.329.0'
+
+Runner Image Provisioner
+
+Operating System
+
+Runner Image
+
+GITHUB_TOKEN Permissions
+
+Secret source: Actions
+
+Prepare workflow directory
+
+Prepare all required actions
+
+Getting action download info
+
+Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+
+Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+
+Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+
+Complete job name: build
+
+
+
+
+
+6s
+
+Run actions/checkout@v4
+
+Syncing repository: BrueggenTI/Innovation-Catalogue-Final
+
+Getting Git version info
+
+Temporarily overriding HOME='/home/runner/work/_temp/9772e6af-f3ab-4509-881b-fb939d616f80' before making global git config changes
+
+Adding repository directory to the temporary git global config as a safe directory
+
+/usr/bin/git config --global --add safe.directory /home/runner/work/Innovation-Catalogue-Final/Innovation-Catalogue-Final
+
+Deleting the contents of '/home/runner/work/Innovation-Catalogue-Final/Innovation-Catalogue-Final'
+
+Initializing the repository
+
+Disabling automatic garbage collection
+
+Setting up auth
+
+Fetching the repository
+
+Determining the checkout info
+
+/usr/bin/git sparse-checkout disable
+
+/usr/bin/git config --local --unset-all extensions.worktreeConfig
+
+Checking out the ref
+
+/usr/bin/git log -1 --format=%H
+
+8fe585a4faa2b528a717854254b6f9753101139a
+
+
+
+
+
+0s
+
+Run actions/setup-python@v5
+
+Installed versions
+
+
+
+
+
+6s
+
+Run python -m venv antenv
+
+ERROR: Could not open requirements file: [Errno 2] No such file or directory: 'requirements.txt'
+
+
+
+Notice: A new release of pip is available: 24.0 -> 25.2
+
+Notice: To update, run: pip install --upgrade pip
+
+Error: Process completed with exit code 1.
+
