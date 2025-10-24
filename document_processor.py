@@ -148,12 +148,17 @@ class DocumentProcessor:
             
             for slide in prs.slides:
                 slide_count += 1
-                # Extract text from shapes (only those with text frames)
+                # Extract text from shapes and tables
                 for shape in slide.shapes:
-                    if hasattr(shape, "has_text_frame") and shape.has_text_frame:
+                    if hasattr(shape, "has_table") and shape.has_table:
+                        for row in shape.table.rows:
+                            row_text = [cell.text.strip() for cell in row.cells]
+                            if any(row_text):  # Only add non-empty rows
+                                text_content += "\t".join(row_text) + "\n"
+                    elif hasattr(shape, "has_text_frame") and shape.has_text_frame:
                         if shape.text and shape.text.strip():
                             text_content += shape.text + "\n"
-                
+
                 # Extract notes if available
                 if slide.has_notes_slide and slide.notes_slide.notes_text_frame:
                     notes_text = slide.notes_slide.notes_text_frame.text
