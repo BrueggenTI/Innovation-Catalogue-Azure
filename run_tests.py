@@ -18,7 +18,7 @@ def start_server():
         sys.executable, 'main.py'
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-def wait_for_server(url="http://localhost:5000", timeout=30):
+def wait_for_server(server_process, url="http://localhost:5000", timeout=30):
     """Wait for server to be ready"""
     import requests
     
@@ -34,6 +34,12 @@ def wait_for_server(url="http://localhost:5000", timeout=30):
         time.sleep(1)
     
     print("Server failed to start within timeout")
+    # Print server output for debugging
+    stdout, stderr = server_process.communicate()
+    print("SERVER STDOUT:")
+    print(stdout.decode() if stdout else "N/A")
+    print("SERVER STDERR:")
+    print(stderr.decode() if stderr else "N/A")
     return False
 
 def run_functional_tests():
@@ -80,7 +86,7 @@ def main():
     
     try:
         # Wait for server to start
-        if not wait_for_server():
+        if not wait_for_server(server_process):
             print("Failed to start server, exiting...")
             return 1
         
