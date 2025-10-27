@@ -906,6 +906,37 @@ def custom_page_product_detail(page_id, id):
         
         return redirect(url_for('custom_page_product_detail', page_id=page_id, id=id))
 
+@app.route('/product/<int:id>/update-claims', methods=['POST'])
+@login_required
+@master_required
+def update_product_claims(id):
+    """Update product claims"""
+    init_user_session()
+    product = Product.query.get_or_404(id)
+
+    try:
+        data = request.get_json()
+        claims = data.get('claims', [])
+
+        # Update product claims
+        product.claims = json.dumps(claims)
+        db.session.commit()
+
+        logging.info(f"Updated claims for product {id}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Claims updated successfully'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error updating product claims: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
     # Parse JSON fields
     ingredients = json.loads(product.ingredients) if product.ingredients else []
     nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
