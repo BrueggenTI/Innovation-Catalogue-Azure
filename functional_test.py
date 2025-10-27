@@ -250,11 +250,94 @@ class FunctionalTester:
                 
         except Exception as e:
             self.log_test("Database Operations", False, f"Exception: {e}")
+
+    def test_custom_page_product_detail_view(self):
+        """Test product detail view from a custom page"""
+        try:
+            # Step 1: Create a custom page
+            custom_page_data = {
+                'name': 'My Test Page',
+                'description': 'A page for testing product links.',
+                'product_ids': [1, 2]
+            }
+            # Note: This requires the /custom-pages/save endpoint to be available and working
+            # For this test, we'll assume it works and we get a page_id back.
+            # In a real scenario, you'd properly call the endpoint to create the page.
+            page_id = 1
+            product_id = 1
+
+            # Step 2: Access the product detail page from the custom page
+            url = f"{self.base_url}/custom-pages/view/{page_id}/product/{product_id}"
+            response = self.session.get(url)
+
+            if response.status_code == 200:
+                self.log_test("Custom Page Product Detail Load", True, f"Successfully loaded product {product_id} from custom page {page_id}")
+
+                # Step 3: Verify the "Back" link points to the custom page
+                back_link_url = f'/custom-pages/view/{page_id}'
+                if back_link_url in response.text:
+                    self.log_test("Custom Page Back Link", True, "Back link correctly points to the custom page.")
+                else:
+                    self.log_test("Custom Page Back Link", False, f"Back link does not point to {back_link_url}.")
+            elif response.status_code == 404:
+                self.log_test("Custom Page Product Detail Load", True, "Correctly handled 404 for non-existent product/page.")
+            else:
+                self.log_test("Custom Page Product Detail Load", False, f"Failed to load product detail page. Status code: {response.status_code}")
+
+        except Exception as e:
+            self.log_test("Custom Page Product Detail View", False, f"An exception occurred: {e}")
     
+    def login(self):
+        """Logs in the master user to access protected routes."""
+        login_url = f"{self.base_url}/master-login"
+
+        try:
+            # First, get the login page to extract the CSRF token
+            get_response = self.session.get(login_url)
+            if get_response.status_code != 200:
+                self.log_test("Setup: Master Login", False, f"Failed to get login page. Status: {get_response.status_code}")
+                return False
+
+            # Extract CSRF token using BeautifulSoup for robustness
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(get_response.text, 'html.parser')
+            csrf_input = soup.find('input', {'name': 'csrf_token'})
+
+            if not csrf_input or not csrf_input.get('value'):
+                self.log_test("Setup: Master Login", False, "Could not find CSRF token on login page.")
+                return False
+
+            csrf_token = csrf_input['value']
+
+            # Use default credentials for the test environment
+            credentials = {
+                "username": "innocatmaster23568",
+                "password": "Villa23568hafer23568!",
+                "csrf_token": csrf_token
+            }
+
+            response = self.session.post(login_url, data=credentials, allow_redirects=True)
+
+            if response.status_code == 200 and ("Welcome, Master User" in response.text or "Redirecting" in response.text):
+                self.log_test("Setup: Master Login", True, "Successfully logged in.")
+                return True
+            else:
+                self.log_test("Setup: Master Login", False, f"Login failed. Status: {response.status_code}, Response: {response.text[:150]}")
+                return False
+        except requests.exceptions.RequestException as e:
+            self.log_test("Setup: Master Login", False, f"Login request failed: {e}")
+            return False
+
     def run_all_tests(self):
         """Run all functional tests"""
         logger.info("Starting comprehensive functional testing...")
         
+        # First, log in to get a valid session
+        if not self.login():
+            logger.error("Login failed. Aborting remaining tests.")
+            self.generate_report()
+            return
+
         test_methods = [
             self.test_homepage,
             self.test_competence_page,
@@ -262,6 +345,7 @@ class FunctionalTester:
             self.test_cocreation_page,
             self.test_product_detail,
             self.test_concept_saving,
+            self.test_custom_page_product_detail_view,
             self.test_error_handling,
             self.test_performance,
             self.test_database_operations

@@ -936,6 +936,44 @@ def custom_page_product_detail(page_id, id):
         
         return redirect(url_for('custom_page_product_detail', page_id=page_id, id=id))
 
+    # Parse JSON fields with error handling
+    try:
+        ingredients = json.loads(product.ingredients) if product.ingredients else []
+    except (json.JSONDecodeError, TypeError):
+        ingredients = []
+    try:
+        nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
+    except (json.JSONDecodeError, TypeError):
+        nutritional_claims = []
+    try:
+        certifications = json.loads(product.certifications) if product.certifications else []
+    except (json.JSONDecodeError, TypeError):
+        certifications = []
+    try:
+        nutritional_info = json.loads(product.nutritional_info) if product.nutritional_info else {}
+    except (json.JSONDecodeError, TypeError):
+        nutritional_info = {}
+    try:
+        allergens = json.loads(product.allergens) if product.allergens else []
+    except (json.JSONDecodeError, TypeError):
+        allergens = []
+    try:
+        claims = json.loads(product.claims) if product.claims else []
+    except (json.JSONDecodeError, TypeError):
+        claims = []
+
+    return render_template('product_detail.html',
+                         product=product,
+                         ingredients=ingredients,
+                         nutritional_claims=nutritional_claims,
+                         certifications=certifications,
+                         nutritional_info=nutritional_info,
+                         allergens=allergens,
+                         claims=claims,
+                         from_custom_page_id=page_id,
+                         custom_page=custom_page)
+
+
 @app.route('/product/<int:id>/update-claims', methods=['POST'])
 @login_required
 @master_required
@@ -966,25 +1004,6 @@ def update_product_claims(id):
             'success': False,
             'error': str(e)
         }), 500
-
-    # Parse JSON fields
-    ingredients = json.loads(product.ingredients) if product.ingredients else []
-    nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
-    certifications = json.loads(product.certifications) if product.certifications else []
-    nutritional_info = json.loads(product.nutritional_info) if product.nutritional_info else {}
-    allergens = json.loads(product.allergens) if product.allergens else []
-    claims = json.loads(product.claims) if product.claims else []
-
-    return render_template('product_detail.html',
-                         product=product,
-                         ingredients=ingredients,
-                         nutritional_claims=nutritional_claims,
-                         certifications=certifications,
-                         nutritional_info=nutritional_info,
-                         allergens=allergens,
-                         claims=claims,
-                         from_custom_page_id=page_id,
-                         custom_page=custom_page)
 
 @app.route('/product/<int:id>/update-exclusive-info', methods=['POST'])
 @login_required
