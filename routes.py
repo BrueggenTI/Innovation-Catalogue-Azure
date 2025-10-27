@@ -669,20 +669,14 @@ def catalog():
 
     # Parse JSON fields for each product
     for product in all_filtered_products:
-        if product.ingredients:
-            try:
-                product.parsed_ingredients = json.loads(product.ingredients)
-            except:
-                product.parsed_ingredients = []
-        else:
+        try:
+            product.parsed_ingredients = json.loads(product.ingredients) if product.ingredients else []
+        except (json.JSONDecodeError, TypeError):
             product.parsed_ingredients = []
 
-        if product.nutritional_claims:
-            try:
-                product.parsed_nutritional_claims = json.loads(product.nutritional_claims)
-            except:
-                product.parsed_nutritional_claims = []
-        else:
+        try:
+            product.parsed_nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
+        except (json.JSONDecodeError, TypeError):
             product.parsed_nutritional_claims = []
         
         # Check for unapproved raw materials
@@ -809,13 +803,31 @@ def product_detail(id):
             return redirect(url_for('product_detail', id=id, from_custom_page=from_custom_page_id))
         return redirect(url_for('product_detail', id=id))
 
-    # Parse JSON fields
-    ingredients = json.loads(product.ingredients) if product.ingredients else []
-    nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
-    certifications = json.loads(product.certifications) if product.certifications else []
-    nutritional_info = json.loads(product.nutritional_info) if product.nutritional_info else {}
-    allergens = json.loads(product.allergens) if product.allergens else []
-    claims = json.loads(product.claims) if product.claims else []
+    # Parse JSON fields with error handling
+    try:
+        ingredients = json.loads(product.ingredients) if product.ingredients else []
+    except (json.JSONDecodeError, TypeError):
+        ingredients = []
+    try:
+        nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
+    except (json.JSONDecodeError, TypeError):
+        nutritional_claims = []
+    try:
+        certifications = json.loads(product.certifications) if product.certifications else []
+    except (json.JSONDecodeError, TypeError):
+        certifications = []
+    try:
+        nutritional_info = json.loads(product.nutritional_info) if product.nutritional_info else {}
+    except (json.JSONDecodeError, TypeError):
+        nutritional_info = {}
+    try:
+        allergens = json.loads(product.allergens) if product.allergens else []
+    except (json.JSONDecodeError, TypeError):
+        allergens = []
+    try:
+        claims = json.loads(product.claims) if product.claims else []
+    except (json.JSONDecodeError, TypeError):
+        claims = []
 
     return render_template('product_detail.html',
                          product=product,
@@ -853,13 +865,31 @@ def catalog_product_detail(id):
         
         return redirect(url_for('catalog_product_detail', id=id))
 
-    # Parse JSON fields
-    ingredients = json.loads(product.ingredients) if product.ingredients else []
-    nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
-    certifications = json.loads(product.certifications) if product.certifications else []
-    nutritional_info = json.loads(product.nutritional_info) if product.nutritional_info else {}
-    allergens = json.loads(product.allergens) if product.allergens else []
-    claims = json.loads(product.claims) if product.claims else []
+    # Parse JSON fields with error handling
+    try:
+        ingredients = json.loads(product.ingredients) if product.ingredients else []
+    except (json.JSONDecodeError, TypeError):
+        ingredients = []
+    try:
+        nutritional_claims = json.loads(product.nutritional_claims) if product.nutritional_claims else []
+    except (json.JSONDecodeError, TypeError):
+        nutritional_claims = []
+    try:
+        certifications = json.loads(product.certifications) if product.certifications else []
+    except (json.JSONDecodeError, TypeError):
+        certifications = []
+    try:
+        nutritional_info = json.loads(product.nutritional_info) if product.nutritional_info else {}
+    except (json.JSONDecodeError, TypeError):
+        nutritional_info = {}
+    try:
+        allergens = json.loads(product.allergens) if product.allergens else []
+    except (json.JSONDecodeError, TypeError):
+        allergens = []
+    try:
+        claims = json.loads(product.claims) if product.claims else []
+    except (json.JSONDecodeError, TypeError):
+        claims = []
 
     return render_template('product_detail.html',
                          product=product,

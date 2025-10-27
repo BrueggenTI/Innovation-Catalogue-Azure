@@ -5,18 +5,303 @@
 {% block body_attrs %} data-page-title="{{ product.name }}"{% endblock %}
 
 {% block content %}
+<style>
+/* Image Edit Hover Effect */
+.product-image-large:hover .image-edit-overlay {
+    background: rgba(0,0,0,0.6) !important;
+}
+
+.product-image-large:hover .edit-icon-wrapper {
+    opacity: 1 !important;
+}
+
+/* Image Upload Modal */
+.image-drop-zone {
+    border: 2px dashed #661c31;
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.image-drop-zone:hover {
+    background: #e9ecef;
+    border-color: #ff4143;
+}
+
+.image-drop-zone.dragover {
+    background: #fff3cd;
+    border-color: #ff4143;
+    border-style: solid;
+}
+
+.image-preview-container {
+    max-height: 400px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.image-preview-container img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Unapproved Raw Material Warning Tooltip */
+.unapproved-warning {
+    position: relative;
+    display: inline-block;
+    color: #dc3545;
+    font-size: 1.4rem;
+    cursor: help;
+    margin-left: 8px;
+}
+
+.unapproved-warning .tooltip-text {
+    visibility: hidden;
+    background-color: #dc3545;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.unapproved-warning .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #dc3545 transparent transparent transparent;
+}
+
+.unapproved-warning:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.unapproved-warning.small-icon {
+    font-size: 1.1rem;
+}
+</style>
+
 <div class="product-detail-header py-5 bg-light">
-    <div class="container">
-        <div class="row align-items-center">
+    <div class="container-fluid px-4">
+        <div class="row align-items-start">
             <div class="col-lg-6">
-                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded-4 shadow">
+                <div class="product-image-large position-relative">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded-4 shadow" id="productImage">
+
+                    <!-- Edit Image Overlay -->
+                    <div class="image-edit-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded-4" style="background: rgba(0,0,0,0); transition: background 0.3s ease; cursor: pointer;" onclick="openImageUploadModal()">
+                        <div class="edit-icon-wrapper text-center" style="opacity: 0; transition: opacity 0.3s ease;">
+                            <i class="fas fa-camera fa-3x text-white mb-2"></i>
+                            <div class="text-white fw-semibold">{{ get_text('change_image', lang) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exclusive Information Section -->
+                <div class="exclusive-info-section mt-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-crown text-primary me-1"></i>
+                                    <h6 class="mb-0 fw-semibold">{{ get_text('exclusive_information', lang) }}</h6>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleExclusiveEdit()">
+                                    <i class="fas fa-edit me-1"></i><span id="editButtonText">{{ get_text('edit', lang) }}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body pt-3">
+                            <!-- View Mode -->
+                            <div id="exclusiveInfoView">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label small fw-medium text-muted mb-1">{{ get_text('exclusive_status', lang) }}</label>
+                                        <div class="text-dark">
+                                            {% if product.is_exclusive %}
+                                                <span class="badge bg-warning text-dark">{{ get_text('yes', lang) }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ get_text('no', lang) }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if product.is_exclusive %}
+                                        {% if product.customer %}
+                                            <div class="col-md-12">
+                                                <label class="form-label small fw-medium text-muted mb-1">{{ get_text('exclusive_for_customer_label', lang) }}</label>
+                                                <div class="text-dark fw-medium">{{ product.customer }}</div>
+                                            </div>
+                                        {% elif product.market %}
+                                            <div class="col-md-12">
+                                                <label class="form-label small fw-medium text-muted mb-1">{{ get_text('exclusive_for_market_label', lang) }}</label>
+                                                <div class="text-dark fw-medium">{{ product.market }}</div>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-md-12">
+                                                <div class="text-muted">—</div>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Edit Mode -->
+                            <div id="exclusiveInfoEdit" style="display: none;">
+                                <form id="exclusiveInfoForm">
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <label for="exclusiveStatus" class="form-label small fw-medium text-muted mb-2">{{ get_text('exclusive_status', lang) }}</label>
+                                            <select class="form-select" id="exclusiveStatus" name="is_exclusive" onchange="toggleExclusiveFields()">
+                                                <option value="true" {% if product.is_exclusive %}selected{% endif %}>{{ get_text('yes', lang) }}</option>
+                                                <option value="false" {% if not product.is_exclusive %}selected{% endif %}>{{ get_text('no', lang) }}</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Exclusive Type Selection (only shown when exclusive is enabled) -->
+                                        <div id="exclusiveTypeContainer" class="col-md-12" style="display: {% if product.is_exclusive %}block{% else %}none{% endif %};">
+                                            <label class="form-label small fw-medium text-muted mb-2">{{ get_text('exclusive_type', lang) }}</label>
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="exclusive_type" id="exclusiveTypeMarket"
+                                                           value="market" onchange="updateExclusiveInputField()"
+                                                           {% if product.market and not product.customer %}checked{% endif %}>
+                                                    <label class="form-check-label" for="exclusiveTypeMarket">
+                                                        {{ get_text('exclusive_for_market_label', lang) }}
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="exclusive_type" id="exclusiveTypeCustomer"
+                                                           value="customer" onchange="updateExclusiveInputField()"
+                                                           {% if product.customer %}checked{% elif not product.market %}checked{% endif %}>
+                                                    <label class="form-check-label" for="exclusiveTypeCustomer">
+                                                        {{ get_text('exclusive_for_customer_label', lang) }}
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <!-- Market Input (conditionally shown) -->
+                                            <div id="marketInputContainer" style="display: {% if product.market and not product.customer %}block{% else %}none{% endif %};">
+                                                <label for="market" class="form-label small fw-medium text-muted mb-2">{{ get_text('market_name', lang) }}</label>
+                                                <input type="text" class="form-control" id="market" name="market"
+                                                       value="{{ product.market or '' }}" placeholder="{{ get_text('eg_germany_europe', lang) }}">
+                                            </div>
+
+                                            <!-- Customer Input (conditionally shown) -->
+                                            <div id="customerInputContainer" style="display: {% if product.customer or (not product.market and not product.customer) %}block{% else %}none{% endif %};">
+                                                <label for="customer" class="form-label small fw-medium text-muted mb-2">{{ get_text('customer_name', lang) }}</label>
+                                                <input type="text" class="form-control" id="customer" name="customer"
+                                                       value="{{ product.customer or '' }}" placeholder="{{ get_text('eg_rewe_edeka', lang) }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-3">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelExclusiveEdit()">
+                                            <i class="fas fa-times me-1"></i>{{ get_text('cancel', lang) }}
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="saveExclusiveInfo()">
+                                            <i class="fas fa-save me-1"></i>{{ get_text('save', lang) }}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-lg-6">
-                <div class="product-info">
-                    <span class="badge bg-primary mb-2">{{ product.category }}</span>
-                    <h1 class="display-5 fw-bold text-primary">{{ product.name }}</h1>
-                    <p class="lead text-muted">{{ product.description }}</p>
-                    <div class="product-actions d-flex gap-3">
+            <div class="col-lg-6 align-self-start">
+                <div class="product-info text-center">
+                    <!-- Category and Status Labels Side by Side Centered -->
+                    <div class="labels-section mb-3 d-flex gap-2 justify-content-center">
+                        <span class="badge bg-primary px-3 py-2">{{ product.category }}</span>
+
+                        {% if product.recipe_number %}
+                            {% set recipe_digits = product.recipe_number.lstrip('0') %}
+                            {% if recipe_digits and recipe_digits[0] == '4' %}
+                                <span class="badge bg-success px-3 py-2">
+                                    {{ get_text('productive', lang) }}
+                                </span>
+                            {% elif recipe_digits and recipe_digits[0] == '1' %}
+                                <span class="badge bg-warning text-dark px-3 py-2">
+                                    {{ get_text('development', lang) }}
+                                </span>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if product.is_exclusive %}
+                            <span class="badge exclusive-badge px-3 py-2">
+                                {{ get_text('exclusive_badge', lang) }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <h1 class="display-5 fw-bold text-primary mb-3">{{ product.name }}</h1>
+
+                    <!-- Recipe Number Centered Under Product Name -->
+                    {% if product.recipe_number %}
+                    <div class="recipe-number-display text-center mb-2">
+                        <span class="fs-4 fw-bold" style="color: #ff4143;">{{ product.recipe_number }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Department Under Recipe Number -->
+                    {% if product.department %}
+                    <div class="department-display text-center mb-4">
+                        <span class="text-muted"><strong>{{ get_text('department_label', lang) }}:</strong> {{ product.department }}</span>
+                    </div>
+                    {% elif product.recipe_number %}
+                    <div class="mb-4"></div>
+                    {% endif %}
+
+                    <!-- Product Description with Edit Functionality -->
+                    <div class="product-description-section mb-4">
+                        <!-- View Mode -->
+                        <div id="descriptionView">
+                            <p class="lead text-muted mb-2">{{ product.description }}</p>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleDescriptionEdit()">
+                                <i class="fas fa-edit me-1"></i>{{ get_text('edit_description', lang) }}
+                            </button>
+                        </div>
+
+                        <!-- Edit Mode -->
+                        <div id="descriptionEdit" style="display: none;">
+                            <form id="descriptionForm">
+                                <textarea class="form-control mb-3" id="descriptionInput" name="description" rows="3" maxlength="500">{{ product.description }}</textarea>
+                                <div class="text-muted small mb-3">
+                                    <span id="charCount">{{ product.description|length }}</span>/500 {{ get_text('characters', lang) }}
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelDescriptionEdit()">
+                                        <i class="fas fa-times me-1"></i>{{ get_text('cancel', lang) }}
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="saveDescription()">
+                                        <i class="fas fa-save me-1"></i>{{ get_text('save', lang) }}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="product-actions d-flex flex-column align-items-center gap-3">
                         <a href="{{ url_for('cocreation') }}?base_product={{ product.id }}{% if from_custom_page_id %}&from_custom_page={{ from_custom_page_id }}{% endif %}" class="btn btn-primary btn-lg rounded-pill px-5">
                             <i class="fas fa-lightbulb me-2"></i>{{ get_text('use_as_base_product', lang) }}
                         </a>
@@ -307,7 +592,7 @@
 
 <!-- Related Products -->
 <div class="related-products-section py-5">
-    <div class="container">
+    <div class="container-fluid px-4">
         <div class="row">
             <div class="col">
                 <h3 class="fw-bold text-primary mb-4 text-center">Explore Similar Products</h3>
@@ -428,97 +713,6 @@ function saveClaims() {
         alert('Failed to save claims. Please try again.');
     });
 }
-</script>
-{% endblock %}
-                                {% for claim in claims %}
-                                    <div class="claim-badge mb-2 d-block">
-                                        <span class="badge bg-success fs-6 px-3 py-2 d-inline-block" style="white-space: normal; word-wrap: break-word; line-height: 1.4; max-width: 100%;">
-                                            <i class="fas fa-check-circle me-1"></i>{{ claim }}
-                                        </span>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="text-center text-muted">
-                                <i class="fas fa-info-circle me-2"></i>{{ get_text('no_specific_claims', lang) }}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Storage Conditions -->
-            <div class="col-lg-6">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-header" style="background-color: #661c31;">
-                        <h4 class="card-title mb-0 text-white">
-                            <i class="fas fa-warehouse me-2"></i>Storage Conditions
-                        </h4>
-                    </div>
-                    <div class="card-body">
-                        {% if product.storage_conditions %}
-                            <div class="storage-info p-3 bg-light rounded">
-                                <i class="fas fa-info-circle text-primary me-2"></i>
-                                <span style="white-space: normal; word-wrap: break-word; line-height: 1.5;">{{ product.storage_conditions }}</span>
-                            </div>
-                        {% else %}
-                            <div class="text-center text-muted">
-                                <i class="fas fa-info-circle me-2"></i>No storage conditions specified.
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Nutri-Score -->
-            <div class="col-lg-6">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-header" style="background-color: #661c31;">
-                        <h4 class="card-title mb-0 text-white">
-                            <i class="fas fa-tachometer-alt me-2"></i>Nutri-Score
-                        </h4>
-                    </div>
-                    <div class="card-body text-center">
-                        {% if product.nutri_score_image %}
-                            <img src="{{ product.nutri_score_image }}" alt="Nutri-Score" class="img-fluid mb-2" style="max-height: 100px;">
-                        {% else %}
-                            <div class="nutri-score-placeholder">
-                                <div class="nutri-score-letters d-flex justify-content-center align-items-center">
-                                    <span class="badge nutri-a">A</span>
-                                    <span class="badge nutri-b">B</span>
-                                    <span class="badge nutri-c bg-warning">C</span>
-                                    <span class="badge nutri-d">D</span>
-                                    <span class="badge nutri-e">E</span>
-                                </div>
-                                <small class="text-muted d-block mt-2">No Nutri-Score image uploaded</small>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-<!-- Related Products -->
-<div class="related-products-section py-5">
-    <div class="container-fluid px-4">
-        <div class="row">
-            <div class="col">
-                <h3 class="fw-bold text-primary mb-4 text-center">Explore Similar Products</h3>
-                <div class="text-center">
-                    <a href="{{ url_for('catalog', category=product.category) }}" class="btn btn-outline-primary rounded-pill px-5">
-                        <i class="fas fa-search me-2"></i>View {{ product.category }} Products
-                    </a>
-                    <a href="{{ url_for('trends') }}" class="btn btn-outline-success rounded-pill px-5 ms-3">
-                        <i class="fas fa-chart-line me-2"></i>Related Trends
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
 // Debounced autosave
 let saveTimeout;
 function debouncedAutoSave() {
