@@ -29,3 +29,4 @@ beautifulsoup4>=4.14.2
 sift-stack-py>=0.9.1
 openpyxl>=3.1.5
 flask-compress>=1.20
+azure-storage-blob==12.20.0

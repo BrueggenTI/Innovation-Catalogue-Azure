@@ -17,7 +17,6 @@ from markupsafe import escape
 import bleach
 from werkzeug.utils import secure_filename
 from openai import OpenAI
-from replit.object_storage import Client as ObjectStorageClient
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from PIL import Image
@@ -28,6 +27,7 @@ from document_processor import document_processor
 from ai_trend_analyzer import analyze_document_for_trend, improve_trend_description
 from functools import wraps
 from auth_config import get_msal_app, get_auth_url, acquire_token_by_code, get_logout_url, validate_config
+from utils.blob_storage import upload_file_to_blob
 
 def sanitize_input(input_string, max_length=100):
     """Sanitize user input to prevent XSS and injection attacks"""
@@ -1102,62 +1102,42 @@ def update_product_description(id):
 @login_required
 @master_required
 def update_product_image(id):
-    """Update product image"""
+    """Update product image by uploading to Azure Blob Storage."""
     init_user_session()
     product = Product.query.get_or_404(id)
     
     try:
-        # Check if an image file was uploaded
         if 'image' not in request.files:
-            return jsonify({
-                'success': False,
-                'error': 'No image file provided'
-            }), 400
+            return jsonify({'success': False, 'error': 'No image file provided'}), 400
         
         file = request.files['image']
         
-        # Check if a file was selected
         if file.filename == '':
-            return jsonify({
-                'success': False,
-                'error': 'No file selected'
-            }), 400
+            return jsonify({'success': False, 'error': 'No file selected'}), 400
         
-        # Validate file type
         allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
         file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
         
         if file_ext not in allowed_extensions:
-            return jsonify({
-                'success': False,
-                'error': f'Invalid file type. Allowed types: {", ".join(allowed_extensions)}'
-            }), 400
+            return jsonify({'success': False, 'error': f'Invalid file type. Allowed types: {", ".join(allowed_extensions)}'}), 400
         
-        # Validate file size (max 10MB)
         file.seek(0, os.SEEK_END)
         file_size = file.tell()
         file.seek(0)
         
         if file_size > 10 * 1024 * 1024:
-            return jsonify({
-                'success': False,
-                'error': 'File size exceeds 10MB limit'
-            }), 400
+            return jsonify({'success': False, 'error': 'File size exceeds 10MB limit'}), 400
         
-        # Create uploads directory if it doesn't exist
-        upload_folder = os.path.join('static', 'uploads', 'products')
-        os.makedirs(upload_folder, exist_ok=True)
+        unique_filename = f"product_{product.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
         
-        # Generate unique filename
-        import uuid
-        unique_filename = f"{product.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
-        file_path = os.path.join(upload_folder, unique_filename)
+        # Upload to Azure Blob Storage
+        image_url = upload_file_to_blob(file.stream, unique_filename, file.content_type)
         
-        # Save the file
-        file.save(file_path)
-        
+        if not image_url:
+            return jsonify({'success': False, 'error': 'Failed to upload image to Azure Blob Storage.'}), 500
+
         # Update product image URL in database
-        product.image_url = f"/static/uploads/products/{unique_filename}"
+        product.image_url = image_url
         db.session.commit()
         
         logging.info(f"Updated image for product {id}: {product.image_url}")
@@ -1171,10 +1151,7 @@ def update_product_image(id):
     except Exception as e:
         db.session.rollback()
         logging.error(f"Error updating product image: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/trends')
 @login_required
@@ -2910,7 +2887,7 @@ def analyze_recipe():
 @csrf.exempt
 @master_required
 def upload_recipe_image():
-    """Upload recipe images (product image or nutri-score image) with fallback to local storage"""
+    """Upload recipe images (product image or nutri-score image) to Azure Blob Storage."""
     try:
         if 'image' not in request.files:
             return jsonify({'success': False, 'error': 'No image file uploaded'})
@@ -2934,33 +2911,21 @@ def upload_recipe_image():
         timestamp = int(time.time())
         unique_filename = f"{image_type}_{timestamp}_{filename}"
 
-        # Always use local storage for reliability
-        try:
-            # Create upload directory if it doesn't exist
-            upload_dir = os.path.join('static', 'images', 'recipes')
-            os.makedirs(upload_dir, exist_ok=True)
-            
-            # Save file locally
-            local_path = os.path.join(upload_dir, unique_filename)
-            file.save(local_path)
-            
-            # Return local URL
-            image_url = f"/static/images/recipes/{unique_filename}"
-            
-            logging.info(f"Recipe image uploaded successfully: {local_path}")
-            
+        # Upload to Azure Blob Storage
+        image_url = upload_file_to_blob(file.stream, unique_filename, file.content_type)
+
+        if image_url:
+            logging.info(f"Recipe image uploaded successfully to Azure Blob Storage: {image_url}")
             return jsonify({
                 'success': True,
                 'image_url': image_url,
                 'filename': unique_filename,
                 'message': f'{image_type.title()} image uploaded successfully'
             })
-            
-        except Exception as save_error:
-            logging.error(f"Failed to save image locally: {save_error}")
+        else:
             return jsonify({
                 'success': False,
-                'error': f'Failed to save image: {str(save_error)}'
+                'error': 'Failed to upload image to Azure Blob Storage.'
             }), 500
 
     except Exception as e:
@@ -3160,7 +3125,7 @@ def publish_recipe():
         # Use uploaded image URL or default
         image_url = data.get('image_url')
         logging.info(f"Publishing recipe with product image URL: {image_url}")
-        if image_url and (image_url.startswith('/api/image/') or image_url.startswith('/static/images/')):
+        if image_url:
             # Ensure the full URL path is stored
             new_product.image_url = image_url
             logging.info(f"Using extracted/uploaded product image: {image_url}")
@@ -3171,7 +3136,7 @@ def publish_recipe():
         # Set nutri-score image if uploaded
         nutri_score_image = data.get('nutri_score_image')
         logging.info(f"Publishing recipe with nutri-score image URL: {nutri_score_image}")
-        if nutri_score_image and (nutri_score_image.startswith('/api/image/') or nutri_score_image.startswith('/static/images/')):
+        if nutri_score_image:
             new_product.nutri_score_image = nutri_score_image
             logging.info(f"Using extracted/uploaded nutri-score image: {nutri_score_image}")
         else:
@@ -3231,89 +3196,6 @@ def delete_recipe(recipe_id):
             'error': f'Deletion failed: {str(e)}'
         }), 500
 
-@app.route('/api/image/<path:filename>')
-def serve_image(filename):
-    """Serve images from Object Storage with fallback to local storage"""
-    try:
-        storage_client = ObjectStorageClient()
-        
-        # Get file from Object Storage
-        file_data = storage_client.download_as_bytes(filename)
-        
-        # Determine content type based on file extension
-        file_extension = os.path.splitext(filename.lower())[1]
-        content_type_map = {
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.png': 'image/png',
-            '.gif': 'image/gif',
-            '.webp': 'image/webp'
-        }
-        content_type = content_type_map.get(file_extension, 'image/jpeg')
-        
-        from flask import Response
-        response = Response(file_data, mimetype=content_type)
-        
-        # Add cache headers for better performance
-        response.headers['Cache-Control'] = 'public, max-age=3600'
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        
-        logging.info(f"Successfully served image from Object Storage: {filename}")
-        return response
-        
-    except Exception as storage_error:
-        logging.warning(f"Object Storage failed for {filename}, trying local fallback: {storage_error}")
-        
-        # Try local storage fallback
-        try:
-            # Check if it's in the local images/recipes directory
-            local_path = os.path.join('static', 'images', 'recipes', os.path.basename(filename))
-            if os.path.exists(local_path):
-                return send_file(local_path)
-            
-            # Check if it's in uploads directory
-            uploads_path = os.path.join('static', 'uploads', os.path.basename(filename))
-            if os.path.exists(uploads_path):
-                return send_file(uploads_path)
-                
-        except Exception as local_error:
-            logging.warning(f"Local fallback also failed for {filename}: {local_error}")
-        
-        # Final fallback - create placeholder
-        try:
-            from PIL import Image, ImageDraw, ImageFont
-            import io
-            
-            # Create placeholder image
-            img = Image.new('RGB', (400, 300), color='#f8f9fa')
-            draw = ImageDraw.Draw(img)
-            
-            # Draw placeholder text
-            try:
-                font = ImageFont.load_default()
-            except:
-                font = None
-            
-            text = "Bild nicht verfügbar"
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
-            
-            position = ((400 - text_width) // 2, (300 - text_height) // 2)
-            draw.text(position, text, fill='#6c757d', font=font)
-            
-            # Convert to bytes
-            img_io = io.BytesIO()
-            img.save(img_io, 'PNG')
-            img_io.seek(0)
-            
-            from flask import Response
-            logging.info(f"Created placeholder image for {filename}")
-            return Response(img_io.getvalue(), mimetype='image/png')
-            
-        except Exception as fallback_error:
-            logging.error(f"Could not create placeholder image: {fallback_error}")
-            return jsonify({'error': 'Image not found'}), 404
 
     return render_template('profile.html', user=user_data)
 
