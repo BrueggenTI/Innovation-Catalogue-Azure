@@ -1,5 +1,5 @@
 import os
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, ContentSettings
 import logging
 
 # Konfiguration abrufen
@@ -30,7 +30,8 @@ def upload_file_to_blob(file_stream, file_name, content_type):
         blob_client = blob_service_client.get_blob_client(container=AZURE_STORAGE_CONTAINER_NAME, blob=file_name)
 
         file_stream.seek(0)
-        blob_client.upload_blob(file_stream, blob_type="BlockBlob", overwrite=True, content_settings={'contentType': content_type})
+        content_settings = ContentSettings(content_type=content_type)
+        blob_client.upload_blob(file_stream, blob_type="BlockBlob", overwrite=True, content_settings=content_settings)
 
         logging.info(f"Datei {file_name} erfolgreich in Azure Blob Storage hochgeladen.")
         return blob_client.url
