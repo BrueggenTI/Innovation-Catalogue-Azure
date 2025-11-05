@@ -35,10 +35,3 @@ def upload_file_to_blob(file_stream, file_name, content_type):
     except Exception as e:
         logging.error(f"Fehler beim Hochladen der Datei {file_name} in den Blob Storage: {e}")
         return None
-
-def get_blob_url(file_name):
-    """Gibt die URL für ein bestimmtes Blob zurück."""
-    if not AZURE_STORAGE_CONNECTION_STRING or not AZURE_STORAGE_CONTAINER_NAME:
-        return None
-
-    return f"https://{AZURE_STORAGE_CONNECTION_STRING.split('AccountName=')[1].split(';')[0]}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER_NAME}/{file_name}"

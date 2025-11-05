@@ -67,44 +67,30 @@ def clean_claim_text(claim_text):
     return clean_claim
 
 def extract_images_from_document(file_path, file_extension, original_filename):
-    """Extract ALL images from documents for user selection"""
-    extracted_images = {
-        'all_images': []  # List of all extracted images with metadata
-    }
+    """Extracts images from documents and uploads them to Azure Blob Storage."""
+    extracted_images = {'all_images': []}
     
     try:
         timestamp = int(time.time())
-        images_dir = os.path.join('static', 'images', 'recipes', 'extracted')
-        os.makedirs(images_dir, exist_ok=True)
         
         if file_extension == 'pdf':
-            # Extract images from PDF using PyMuPDF
             try:
                 doc = fitz.open(file_path)
                 for page_num in range(len(doc)):
-                    page = doc[page_num]
-                    image_list = page.get_images(full=True)
-                    
-                    for img_index, img in enumerate(image_list):
+                    for img_index, img in enumerate(doc.get_page_images(page_num)):
                         xref = img[0]
                         pix = fitz.Pixmap(doc, xref)
                         
-                        # Skip very small images (likely icons or decorative elements)
-                        if pix.width < 50 or pix.height < 50:
-                            pix = None
+                        if pix.width < 100 or pix.height < 100:
                             continue
-                            
-                        # Convert to PNG and save
-                        if pix.n - pix.alpha < 4:  # GRAY or RGB
-                            img_data = pix.tobytes("png")
-                            
-                            filename = f"extracted_{timestamp}_{page_num}_{img_index}.png"
-                            image_path = os.path.join(images_dir, filename)
-                            
-                            with open(image_path, 'wb') as img_file:
-                                img_file.write(img_data)
-                            
-                            image_url = f"/static/images/recipes/extracted/{filename}"
+
+                        img_data = pix.tobytes("png")
+                        filename = f"extracted_{timestamp}_{page_num}_{img_index}.png"
+
+                        # Upload to blob storage
+                        image_url = upload_file_to_blob(io.BytesIO(img_data), filename, "image/png")
+
+                        if image_url:
                             extracted_images['all_images'].append({
                                 'url': image_url,
                                 'filename': filename,
@@ -112,47 +98,43 @@ def extract_images_from_document(file_path, file_extension, original_filename):
                                 'dimensions': f'{pix.width}x{pix.height}',
                                 'index': len(extracted_images['all_images'])
                             })
-                            
-                            logging.info(f"Extracted image from PDF page {page_num + 1}: {filename}")
-                        
-                        pix = None
+                            logging.info(f"Uploaded extracted PDF image to blob storage: {filename}")
                 doc.close()
             except Exception as pdf_error:
                 logging.warning(f"Could not extract images from PDF: {pdf_error}")
                 
         elif file_extension in ['ppt', 'pptx']:
-            # Extract ALL images from PowerPoint
             try:
                 from pptx import Presentation
                 prs = Presentation(file_path)
-                
                 for slide_num, slide in enumerate(prs.slides):
                     for shape_num, shape in enumerate(slide.shapes):
-                        if hasattr(shape, 'image') and shape.image:
-                            try:
-                                image_bytes = shape.image.blob
-                                
-                                # Use PIL to analyze image
-                                img = Image.open(io.BytesIO(image_bytes))
-                                
-                                # Skip very small images
-                                if img.width < 50 or img.height < 50:
-                                    continue
-                                
-                                # Determine file extension
-                                img_format = img.format.lower() if img.format else 'png'
-                                if img_format not in ['png', 'jpg', 'jpeg']:
-                                    img_format = 'png'
-                                
-                                filename = f"extracted_{timestamp}_{slide_num}_{shape_num}.{img_format}"
-                                image_path = os.path.join(images_dir, filename)
-                                
-                                # Save image
-                                if img_format == 'jpg':
-                                    img = img.convert('RGB')
-                                img.save(image_path)
-                                
-                                image_url = f"/static/images/recipes/extracted/{filename}"
+                        if hasattr(shape, 'image'):
+                            image_bytes = shape.image.blob
+                            img = Image.open(io.BytesIO(image_bytes))
+
+                            if img.width < 100 or img.height < 100:
+                                continue
+
+                            img_format = img.format.lower() if img.format else 'png'
+                            if img_format not in ['png', 'jpg', 'jpeg']:
+                                img_format = 'png'
+
+                            content_type = f"image/{img_format}"
+                            filename = f"extracted_{timestamp}_{slide_num}_{shape_num}.{img_format}"
+
+                            # Save image to a byte stream
+                            img_byte_arr = io.BytesIO()
+                            save_format = 'JPEG' if img_format == 'jpg' else 'PNG'
+                            if save_format == 'JPEG':
+                                img = img.convert('RGB')
+                            img.save(img_byte_arr, format=save_format)
+                            img_byte_arr.seek(0)
+
+                            # Upload to blob storage
+                            image_url = upload_file_to_blob(img_byte_arr, filename, content_type)
+
+                            if image_url:
                                 extracted_images['all_images'].append({
                                     'url': image_url,
                                     'filename': filename,
@@ -160,17 +142,12 @@ def extract_images_from_document(file_path, file_extension, original_filename):
                                     'dimensions': f'{img.width}x{img.height}',
                                     'index': len(extracted_images['all_images'])
                                 })
-                                
-                                logging.info(f"Extracted image from PowerPoint slide {slide_num + 1}: {filename}")
+                                logging.info(f"Uploaded extracted PowerPoint image to blob storage: {filename}")
                                     
-                            except Exception as shape_error:
-                                logging.warning(f"Could not process shape image: {shape_error}")
-                                continue
-                                
             except Exception as pptx_error:
                 logging.warning(f"Could not extract images from PowerPoint: {pptx_error}")
         
-        logging.info(f"Total images extracted: {len(extracted_images['all_images'])}")
+        logging.info(f"Total images extracted and uploaded: {len(extracted_images['all_images'])}")
         
     except Exception as e:
         logging.error(f"Error extracting images from document: {e}")
