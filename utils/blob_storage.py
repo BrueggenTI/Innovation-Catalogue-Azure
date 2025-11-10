@@ -34,8 +34,10 @@ def upload_file_to_blob(file_stream, file_name, content_type):
         blob_client = blob_service_client.get_blob_client(container=AZURE_STORAGE_CONTAINER_NAME, blob=file_name)
 
         file_stream.seek(0)
-        content_settings = ContentSettings(content_type=content_type)
-        blob_client.upload_blob(file_stream, blob_type="BlockBlob", overwrite=True, content_settings=content_settings)
+        blob_client.upload_blob(file_stream, blob_type="BlockBlob", overwrite=True)
+
+        # Explizit den Content-Type nach dem Upload setzen
+        blob_client.set_http_headers(content_settings=ContentSettings(content_type=content_type))
 
         logging.info(f"Datei {file_name} erfolgreich in Azure Blob Storage hochgeladen.")
         return blob_client.url

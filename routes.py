@@ -81,9 +81,6 @@ def extract_images_from_document(file_path, file_extension, original_filename):
                         xref = img[0]
                         pix = fitz.Pixmap(doc, xref)
                         
-                        if pix.width < 100 or pix.height < 100:
-                            continue
-
                         img_data = pix.tobytes("png")
                         filename = f"extracted_{timestamp}_{page_num}_{img_index}.png"
 
@@ -112,9 +109,6 @@ def extract_images_from_document(file_path, file_extension, original_filename):
                         if hasattr(shape, 'image'):
                             image_bytes = shape.image.blob
                             img = Image.open(io.BytesIO(image_bytes))
-
-                            if img.width < 100 or img.height < 100:
-                                continue
 
                             img_format = img.format.lower() if img.format else 'png'
                             if img_format not in ['png', 'jpg', 'jpeg']:
