@@ -26,6 +26,10 @@ def upload_file_to_blob(file_stream, file_name, content_type):
     if not blob_service_client:
         return None
 
+    # ==> DIAGNOSTIC LOGGING START
+    logging.info(f"Attempting to upload '{file_name}' with received content_type: '{content_type}'")
+    # ==> DIAGNOSTIC LOGGING END
+
     try:
         blob_client = blob_service_client.get_blob_client(container=AZURE_STORAGE_CONTAINER_NAME, blob=file_name)
 
