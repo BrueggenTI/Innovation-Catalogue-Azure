@@ -2558,6 +2558,9 @@ function analyzeBatchRecipes() {
 
 // Batch recipe carousel modal
 function showBatchRecipeCarousel(recipes) {
+    const azureAccountName = '{{ azure_storage_account_name or "" }}';
+    const azureContainerName = '{{ azure_container_name or "" }}';
+
     const modalHTML = `
     <div class="modal fade" id="batchRecipeCarouselModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -2613,18 +2616,18 @@ function showBatchRecipeCarousel(recipes) {
     modal.show();
 
     // Load first recipe
-    loadBatchRecipe(0);
+    loadBatchRecipe(0, azureAccountName, azureContainerName);
 
     // Setup navigation buttons
-    document.getElementById('batchPrevBtn').addEventListener('click', () => navigateBatchRecipe(-1));
-    document.getElementById('batchNextBtn').addEventListener('click', () => navigateBatchRecipe(1));
+    document.getElementById('batchPrevBtn').addEventListener('click', () => navigateBatchRecipe(-1, azureAccountName, azureContainerName));
+    document.getElementById('batchNextBtn').addEventListener('click', () => navigateBatchRecipe(1, azureAccountName, azureContainerName));
     
     // Setup publish buttons
     document.getElementById('publishCurrentRecipeBtn').addEventListener('click', () => publishBatchRecipe(window.currentBatchIndex));
     document.getElementById('publishAllRecipesBtn').addEventListener('click', publishAllBatchRecipes);
 }
 
-function loadBatchRecipe(index) {
+function loadBatchRecipe(index, azureAccountName, azureContainerName) {
     const recipe = window.batchRecipes[index];
     window.currentBatchIndex = index;
 
@@ -2636,18 +2639,18 @@ function loadBatchRecipe(index) {
     document.getElementById('batchNextBtn').disabled = index === window.batchRecipes.length - 1;
 
     // Generate compact form HTML
-    const formHTML = generateCompactRecipeForm(recipe, index);
+    const formHTML = generateCompactRecipeForm(recipe, index, azureAccountName, azureContainerName);
     document.getElementById('batchRecipeContent').innerHTML = formHTML;
 }
 
-function navigateBatchRecipe(direction) {
+function navigateBatchRecipe(direction, azureAccountName, azureContainerName) {
     const newIndex = window.currentBatchIndex + direction;
     if (newIndex >= 0 && newIndex < window.batchRecipes.length) {
-        loadBatchRecipe(newIndex);
+        loadBatchRecipe(newIndex, azureAccountName, azureContainerName);
     }
 }
 
-function generateCompactRecipeForm(recipe, index) {
+function generateCompactRecipeForm(recipe, index, azureAccountName, azureContainerName) {
     const ingredientsHTML = (recipe.ingredients || []).map((ing, i) => `
         <tr>
             <td><input type="text" class="form-control form-control-sm" value="${ing.name}" data-field="ingredients.${i}.name"></td>
@@ -2660,6 +2663,15 @@ function generateCompactRecipeForm(recipe, index) {
             <input type="text" class="form-control form-control-sm d-inline-block" value="${claim}" data-field="claims.${i}" style="width: auto; min-width: 100px; background: transparent; border: none; color: white;">
         </span>
     `).join('');
+
+    let imageHTML = '<small class="text-muted">Kein Bild</small>';
+    if (azureAccountName && azureContainerName && recipe.specification) {
+        const azureUrl = `https://${azureAccountName}.blob.core.windows.net/${azureContainerName}/${recipe.specification}.png`;
+        const fallbackUrl = recipe.image_url ? `'${recipe.image_url}'` : "'/static/images/product-placeholder.png'";
+        imageHTML = `<img src="${azureUrl}" alt="Product" style="height: 50px; width: auto;" onerror="this.onerror=null; this.src=${fallbackUrl};">`;
+    } else if (recipe.image_url) {
+        imageHTML = `<img src="${recipe.image_url}" alt="Product" style="height: 50px; width: auto;">`;
+    }
 
     return `
         <div class="container-fluid p-3">
@@ -2685,7 +2697,7 @@ function generateCompactRecipeForm(recipe, index) {
                 <div class="col-md-3">
                     <label class="form-label fw-bold small mb-1">Produktbild</label>
                     <div>
-                        ${recipe.image_url ? `<img src="${recipe.image_url}" alt="Product" style="height: 50px; width: auto;">` : '<small class="text-muted">Kein Bild</small>'}
+                        ${imageHTML}
                     </div>
                 </div>
                 
