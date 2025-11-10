@@ -2945,8 +2945,7 @@ def analyze_batch_recipes():
         recipes_data = batch_processor.process_batch_files(excel_files)
         
         # Match images to recipes
-        if image_files:
-            recipes_data = batch_processor.match_images_to_recipes(recipes_data, image_files)
+        recipes_data = batch_processor.match_images_to_recipes(recipes_data)
         
         # Convert to list format for frontend
         recipes_list = []
@@ -2976,7 +2975,7 @@ def analyze_batch_recipes():
                 'claims': claims,  # Automatically calculated
                 'nutri_score': recipe.get('nutri_score'),
                 'nutri_score_image': recipe.get('nutri_score_image'),
-                'image_url': recipe.get('image_path', ''),
+                'image_url': recipe.get('image_url', ''),
                 'recipe_number': spec_num,
                 'storage_conditions': '',  # To be filled by user
                 'shelf_life': '',  # To be filled by user

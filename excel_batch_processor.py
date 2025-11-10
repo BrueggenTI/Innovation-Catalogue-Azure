@@ -341,43 +341,32 @@ class ExcelBatchProcessor:
         logger.info(f"Merged {len(merged)} recipes total")
         return merged
 
-    def match_images_to_recipes(self, recipes_data, uploaded_images):
+    def match_images_to_recipes(self, recipes_data):
         """
-        Match uploaded product images to recipes based on specification number in filename
+        Match product images from Azure Blob Storage to recipes based on specification number.
         
         Args:
             recipes_data: Dictionary of recipe data with spec numbers as keys
-            uploaded_images: List of tuples (file_path, filename)
             
         Returns:
-            dict: Updated recipes_data with matched images
+            dict: Updated recipes_data with matched image URLs
         """
-        import shutil
-        import os
-        
+        from utils.blob_storage import get_blob_url_if_exists
+
         for spec_num, recipe in recipes_data.items():
-            # Look for images with this spec number in filename
-            for image_path, filename in uploaded_images:
-                if spec_num in filename:
-                    # Copy image to static folder for web access
-                    try:
-                        static_dir = os.path.join('static', 'images', 'recipes')
-                        os.makedirs(static_dir, exist_ok=True)
-                        
-                        # Create unique filename
-                        import time
-                        unique_filename = f"batch_{spec_num}_{int(time.time())}_{filename}"
-                        static_path = os.path.join(static_dir, unique_filename)
-                        
-                        # Copy file to static directory
-                        shutil.copy2(image_path, static_path)
-                        
-                        # Store web-accessible URL
-                        recipe['image_path'] = f"/static/images/recipes/{unique_filename}"
-                        recipe['image_filename'] = filename
-                        logger.info(f"Matched and saved image {filename} to recipe {spec_num} at {static_path}")
-                        break
-                    except Exception as e:
-                        logger.error(f"Error copying image for recipe {spec_num}: {e}")
-        
+            # Construct the expected image filename
+            image_filename = f"{spec_num}.png"
+
+            # Check if the image exists in blob storage
+            image_url = get_blob_url_if_exists(image_filename)
+
+            if image_url:
+                recipe['image_url'] = image_url
+                recipe['image_filename'] = image_filename
+                logger.info(f"Matched image {image_filename} from Azure Blob Storage to recipe {spec_num}")
+            else:
+                # Set a placeholder or leave it empty if no image is found
+                recipe['image_url'] = None
+                recipe['image_filename'] = None
+
         return recipes_data
