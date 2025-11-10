@@ -728,6 +728,17 @@ def catalog():
     final_product_type = product_type if product_type and product_type.strip() and product_type != 'None' else ''
     final_exclusivity = exclusivity if exclusivity and exclusivity.strip() and exclusivity != 'None' else ''
     
+    # Get Azure Storage info for dynamic image URLs
+    connection_string = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
+    azure_storage_account_name = None
+    if connection_string:
+        parts = connection_string.split(';')
+        for part in parts:
+            if part.startswith('AccountName='):
+                azure_storage_account_name = part.split('=', 1)[1]
+                break
+
+    azure_container_name = os.environ.get('AZURE_STORAGE_CONTAINER_NAME')
     
     return render_template('competence.html', 
                          products=products,
@@ -741,7 +752,9 @@ def catalog():
                          selected_recipe=final_recipe,
                          selected_product_type=final_product_type,
                          selected_exclusivity=final_exclusivity,
-                         pagination=pagination)
+                         pagination=pagination,
+                         azure_storage_account_name=azure_storage_account_name,
+                         azure_container_name=azure_container_name)
 
 @app.route('/product/<int:id>', methods=['GET', 'POST'])
 @login_required

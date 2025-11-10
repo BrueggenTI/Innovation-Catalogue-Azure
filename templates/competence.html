@@ -299,7 +299,15 @@
                                 {% endif %}
                                 
                                 <div class="product-image-container">
-                                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
+                                    {% if azure_storage_account_name and azure_container_name and product.recipe_number %}
+                                        <img src="https://{{ azure_storage_account_name }}.blob.core.windows.net/{{ azure_container_name }}/{{ product.recipe_number }}.png"
+                                             alt="{{ product.name }}"
+                                             class="card-img-top product-image"
+                                             style="height: 200px; object-fit: cover;"
+                                             onerror="this.onerror=null; this.src='{{ product.image_url }}';">
+                                    {% else %}
+                                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="card-img-top product-image" style="height: 200px; object-fit: cover;">
+                                    {% endif %}
                                     
                                     <!-- Badges container to prevent overlap -->
                                     <div class="product-badges-container" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: flex-start; align-items: flex-start; gap: 4px; flex-wrap: wrap; row-gap: 2px;">
