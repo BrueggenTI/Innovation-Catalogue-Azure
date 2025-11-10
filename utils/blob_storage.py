@@ -44,3 +44,21 @@ def upload_file_to_blob(file_stream, file_name, content_type):
     except Exception as e:
         logging.error(f"Fehler beim Hochladen der Datei {file_name} nach Azure Blob Storage: {e}")
         return None
+
+def get_blob_url_if_exists(file_name):
+    """Überprüft, ob ein Blob existiert und gibt dessen URL zurück."""
+    blob_service_client = get_blob_service_client()
+    if not blob_service_client:
+        return None
+
+    try:
+        blob_client = blob_service_client.get_blob_client(container=AZURE_STORAGE_CONTAINER_NAME, blob=file_name)
+        if blob_client.exists():
+            logging.info(f"Blob {file_name} existiert und wird verwendet.")
+            return blob_client.url
+        else:
+            logging.info(f"Blob {file_name} existiert nicht.")
+            return None
+    except Exception as e:
+        logging.error(f"Fehler beim Überprüfen des Blobs {file_name}: {e}")
+        return None
