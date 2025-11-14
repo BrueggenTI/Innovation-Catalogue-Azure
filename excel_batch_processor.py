@@ -96,8 +96,8 @@ class ExcelBatchProcessor:
             spec_columns = {}
             for col_idx, cell_value in enumerate(header_row):
                 if cell_value and col_idx > 1:  # Skip first two columns
-                    # Extract specification number (7-digit number)
-                    spec_match = re.search(r'\b(\d{7})\b', str(cell_value))
+                    # Extract specification number
+                    spec_match = re.search(r'\b(\d+)\b', str(cell_value))
                     if spec_match:
                         spec_num = spec_match.group(1)
                         # Store column index for this specification
@@ -223,7 +223,7 @@ class ExcelBatchProcessor:
                     continue
                 
                 # Extract specification number from first column
-                spec_match = re.search(r'\b(\d{7})\b', str(row[0]))
+                spec_match = re.search(r'\b(\d+)\b', str(row[0]))
                 if not spec_match:
                     continue
                 
