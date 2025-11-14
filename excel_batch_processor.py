@@ -351,21 +351,18 @@ class ExcelBatchProcessor:
         Returns:
             dict: Updated recipes_data with matched image URLs
         """
-        from utils.blob_storage import get_blob_url_if_exists
+        from utils.blob_storage import find_latest_image_for_recipe
 
         for spec_num, recipe in recipes_data.items():
-            # Construct the expected image filename
-            image_filename = f"{spec_num}.png"
-
-            # Check if the image exists in blob storage
-            image_url = get_blob_url_if_exists(image_filename)
+            # Find the latest matching image (.png or .jpg) for the specification number
+            image_url, image_filename = find_latest_image_for_recipe(spec_num)
 
             if image_url:
                 recipe['image_url'] = image_url
                 recipe['image_filename'] = image_filename
                 logger.info(f"Matched image {image_filename} from Azure Blob Storage to recipe {spec_num}")
             else:
-                # Set a placeholder or leave it empty if no image is found
+                # If no image is found, ensure fields are set to None
                 recipe['image_url'] = None
                 recipe['image_filename'] = None
 

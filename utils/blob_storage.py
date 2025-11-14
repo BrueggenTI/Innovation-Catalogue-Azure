@@ -1,4 +1,5 @@
 import os
+import re
 from azure.storage.blob import BlobServiceClient, ContentSettings
 import logging
 
@@ -62,3 +63,40 @@ def get_blob_url_if_exists(file_name):
     except Exception as e:
         logging.error(f"Fehler beim Überprüfen des Blobs {file_name}: {e}")
         return None
+
+def find_latest_image_for_recipe(spec_num):
+    """
+    Finds the most recently updated image for a given recipe specification number.
+    Searches for blobs containing the spec_num as a whole word, ending in .png or .jpg.
+    """
+    blob_service_client = get_blob_service_client()
+    if not blob_service_client:
+        return None, None
+
+    try:
+        container_client = blob_service_client.get_container_client(AZURE_STORAGE_CONTAINER_NAME)
+        blobs = container_client.list_blobs()
+
+        candidate_blobs = []
+        # Regex to find the spec_num as a whole word, case-insensitive for extensions
+        pattern = re.compile(r".*\b" + re.escape(spec_num) + r"\b.*\.(png|jpg)$", re.IGNORECASE)
+
+        for blob in blobs:
+            if pattern.match(blob.name):
+                candidate_blobs.append(blob)
+
+        if not candidate_blobs:
+            logging.info(f"Kein passendes Bild für Rezeptnummer {spec_num} gefunden.")
+            return None, None
+
+        # Sort blobs by last_modified timestamp in descending order and pick the newest
+        latest_blob = sorted(candidate_blobs, key=lambda b: b.last_modified, reverse=True)[0]
+
+        blob_client = container_client.get_blob_client(latest_blob.name)
+        logging.info(f"Neuestes passendes Bild für Rezeptnummer {spec_num} gefunden: {latest_blob.name}")
+
+        return blob_client.url, latest_blob.name
+
+    except Exception as e:
+        logging.error(f"Fehler bei der Suche nach dem neuesten Bild für Rezeptnummer {spec_num}: {e}")
+        return None, None
