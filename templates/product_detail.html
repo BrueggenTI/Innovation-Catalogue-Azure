@@ -550,13 +550,21 @@
                     </div>
                     <div class="card-body">
                         {% if product.storage_conditions %}
-                            <div class="storage-info p-3 bg-light rounded">
+                            <div class="storage-info p-3 bg-light rounded mb-3">
                                 <i class="fas fa-info-circle text-primary me-2"></i>
                                 <span style="white-space: normal; word-wrap: break-word; line-height: 1.5;">{{ product.storage_conditions }}</span>
                             </div>
                         {% else %}
-                            <div class="text-center text-muted">
+                            <div class="text-center text-muted mb-3">
                                 <i class="fas fa-info-circle me-2"></i>No storage conditions specified.
+                            </div>
+                        {% endif %}
+
+                        {% if product.shelf_life %}
+                            <div class="shelf-life-info p-3 bg-light rounded">
+                                <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                <strong>Shelf Life:</strong>
+                                <span style="white-space: normal; word-wrap: break-word; line-height: 1.5;">{{ product.shelf_life }}</span>
                             </div>
                         {% endif %}
                     </div>

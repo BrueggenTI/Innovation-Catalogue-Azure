@@ -51,6 +51,7 @@ class Product(db.Model):
     department = db.Column(db.String(100))  # Department information (e.g., Production, R&D)
     customer = db.Column(db.String(200))  # Customer name or company (mutually exclusive with market)
     market = db.Column(db.String(200))  # Market information (mutually exclusive with customer)
+    shelf_life = db.Column(db.String(100))  # Shelf life information (e.g., "12 months (365 days)")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class ConceptSession(db.Model):

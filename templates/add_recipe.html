@@ -2542,7 +2542,7 @@ function analyzeBatchRecipes() {
             window.currentBatchIndex = 0;
 
             // Show batch recipe carousel modal
-            showBatchRecipeCarousel(data.recipes);
+            showBatchRecipeCarousel(data.recipes, {{ all_categories|tojson }});
         } else {
             alert('Batch-Analyse fehlgeschlagen: ' + (data.error || 'Unknown error'));
         }
@@ -2557,7 +2557,7 @@ function analyzeBatchRecipes() {
 }
 
 // Batch recipe carousel modal
-function showBatchRecipeCarousel(recipes) {
+function showBatchRecipeCarousel(recipes, allCategories) {
     const azureAccountName = '{{ azure_storage_account_name or "" }}';
     const azureContainerName = '{{ azure_container_name or "" }}';
 
@@ -2616,18 +2616,31 @@ function showBatchRecipeCarousel(recipes) {
     modal.show();
 
     // Load first recipe
-    loadBatchRecipe(0, azureAccountName, azureContainerName);
+    loadBatchRecipe(0, azureAccountName, azureContainerName, allCategories);
 
     // Setup navigation buttons
-    document.getElementById('batchPrevBtn').addEventListener('click', () => navigateBatchRecipe(-1, azureAccountName, azureContainerName));
-    document.getElementById('batchNextBtn').addEventListener('click', () => navigateBatchRecipe(1, azureAccountName, azureContainerName));
+    document.getElementById('batchPrevBtn').addEventListener('click', () => navigateBatchRecipe(-1, azureAccountName, azureContainerName, allCategories));
+    document.getElementById('batchNextBtn').addEventListener('click', () => navigateBatchRecipe(1, azureAccountName, azureContainerName, allCategories));
     
     // Setup publish buttons
     document.getElementById('publishCurrentRecipeBtn').addEventListener('click', () => publishBatchRecipe(window.currentBatchIndex));
     document.getElementById('publishAllRecipesBtn').addEventListener('click', publishAllBatchRecipes);
 }
 
-function loadBatchRecipe(index, azureAccountName, azureContainerName) {
+const SHELF_LIFE_DATA = {{ SHELF_LIFE_DATA | tojson }};
+
+function updateShelfLife(selectElement) {
+    const category = selectElement.value;
+    const shelfLifeInput = document.querySelector('[data-field="shelf_life"]');
+    if (category in SHELF_LIFE_DATA) {
+        const data = SHELF_LIFE_DATA[category];
+        shelfLifeInput.value = `${data.months} months (${data.days} days)`;
+    } else {
+        shelfLifeInput.value = '';
+    }
+}
+
+function loadBatchRecipe(index, azureAccountName, azureContainerName, allCategories) {
     const recipe = window.batchRecipes[index];
     window.currentBatchIndex = index;
 
@@ -2639,18 +2652,18 @@ function loadBatchRecipe(index, azureAccountName, azureContainerName) {
     document.getElementById('batchNextBtn').disabled = index === window.batchRecipes.length - 1;
 
     // Generate compact form HTML
-    const formHTML = generateCompactRecipeForm(recipe, index, azureAccountName, azureContainerName);
+    const formHTML = generateCompactRecipeForm(recipe, index, azureAccountName, azureContainerName, allCategories);
     document.getElementById('batchRecipeContent').innerHTML = formHTML;
 }
 
-function navigateBatchRecipe(direction, azureAccountName, azureContainerName) {
+function navigateBatchRecipe(direction, azureAccountName, azureContainerName, allCategories) {
     const newIndex = window.currentBatchIndex + direction;
     if (newIndex >= 0 && newIndex < window.batchRecipes.length) {
-        loadBatchRecipe(newIndex, azureAccountName, azureContainerName);
+        loadBatchRecipe(newIndex, azureAccountName, azureContainerName, allCategories);
     }
 }
 
-function generateCompactRecipeForm(recipe, index, azureAccountName, azureContainerName) {
+function generateCompactRecipeForm(recipe, index, azureAccountName, azureContainerName, allCategories) {
     const ingredientsHTML = (recipe.ingredients || []).map((ing, i) => `
         <tr>
             <td><input type="text" class="form-control form-control-sm" value="${ing.name}" data-field="ingredients.${i}.name"></td>
@@ -2673,6 +2686,10 @@ function generateCompactRecipeForm(recipe, index, azureAccountName, azureContain
         imageHTML = `<img src="${recipe.image_url}" alt="Product" style="height: 50px; width: auto;">`;
     }
 
+    const categoryOptions = allCategories.map(cat => `
+        <option value="${cat}" ${recipe.category === cat ? 'selected' : ''}>${cat}</option>
+    `).join('');
+
     return `
         <div class="container-fluid p-3">
             <div class="row g-2">
@@ -2683,11 +2700,8 @@ function generateCompactRecipeForm(recipe, index, azureAccountName, azureContain
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-bold small mb-1">Kategorie</label>
-                    <select class="form-select form-select-sm" data-field="category">
-                        <option value="Traditional Muesli" ${recipe.category === 'Traditional Muesli' ? 'selected' : ''}>Traditional Muesli</option>
-                        <option value="Crunchy Muesli" ${recipe.category === 'Crunchy Muesli' ? 'selected' : ''}>Crunchy Muesli</option>
-                        <option value="Bars" ${recipe.category === 'Bars' ? 'selected' : ''}>Bars</option>
-                        <option value="Flakes" ${recipe.category === 'Flakes' ? 'selected' : ''}>Flakes</option>
+                    <select class="form-select form-select-sm" data-field="category" onchange="updateShelfLife(this)">
+                        ${categoryOptions}
                     </select>
                 </div>
                 <div class="col-md-2">
