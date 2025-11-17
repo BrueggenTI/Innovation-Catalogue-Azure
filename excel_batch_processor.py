@@ -217,6 +217,14 @@ class ExcelBatchProcessor:
                 if header:
                     col_map[str(header).lower().strip()] = idx
             
+            # Find category column by keyword
+            category_col_idx = -1
+            category_keywords = ["category", "kategorie", "product group"]
+            for header_name, col_idx in col_map.items():
+                if any(keyword in header_name for keyword in category_keywords):
+                    category_col_idx = col_idx
+                    break
+
             # Parse each row (skip header)
             for row in sheet.iter_rows(min_row=2, values_only=True):
                 if not row[0]:  # Skip empty rows
@@ -281,7 +289,8 @@ class ExcelBatchProcessor:
                         'salt': safe_round(self._safe_float(row[15]) if len(row) > 15 else 0)
                     },
                     'nutri_score': row[16] if len(row) > 16 else None,
-                    'nutri_score_image': get_nutriscore_image(row[16]) if len(row) > 16 else None
+                    'nutri_score_image': get_nutriscore_image(row[16]) if len(row) > 16 else None,
+                    'category': row[category_col_idx].strip() if category_col_idx != -1 and len(row) > category_col_idx and row[category_col_idx] else None
                 }
             
             logger.info(f"Parsed {len(recipes)} recipes from nutritional file")
@@ -319,7 +328,8 @@ class ExcelBatchProcessor:
                 'ingredients': [],
                 'nutritional_info': {},
                 'nutri_score': None,
-                'nutri_score_image': None
+                'nutri_score_image': None,
+                'category': None
             }
             
             # Merge ingredients data
@@ -333,6 +343,7 @@ class ExcelBatchProcessor:
                 recipe['nutritional_info'] = nutritional_data[spec_num].get('nutritional_info', {})
                 recipe['nutri_score'] = nutritional_data[spec_num].get('nutri_score')
                 recipe['nutri_score_image'] = nutritional_data[spec_num].get('nutri_score_image')
+                recipe['category'] = nutritional_data[spec_num].get('category')
                 if not recipe['name']:
                     recipe['name'] = nutritional_data[spec_num].get('name', '')
             

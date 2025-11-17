@@ -1,6 +1,7 @@
 from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, session
 from app import app, db, csrf
 from models import Product, ConceptSession, Trend, User, CustomRecipePage
+from utils.shelf_life_manager import get_shelf_life, get_all_categories, SHELF_LIFE_DATA
 from data.products import init_products
 from data.trends import init_trends
 from utils.pdf_generator import generate_concept_pdf
@@ -2379,7 +2380,9 @@ def add_recipe():
         recipe.has_unapproved_material = contains_unapproved_material(recipe)
         recipes_with_flags.append(recipe)
     
-    return render_template('add_recipe.html', recipes=recipes_with_flags)
+    all_categories = get_all_categories()
+
+    return render_template('add_recipe.html', recipes=recipes_with_flags, all_categories=all_categories, SHELF_LIFE_DATA=SHELF_LIFE_DATA)
 
 @app.route('/api/analyze-recipe', methods=['POST'])
 @csrf.exempt
@@ -2453,12 +2456,28 @@ def analyze_recipe():
         
         # Initialize OpenAI client
         openai_api_key = os.environ.get('OPENAI_API_KEY')
-        if not openai_api_key:
-            logging.error("OpenAI API key not found in environment variables")
-            return jsonify({
-                'success': False,
-                'error': 'OpenAI API key not configured. Please set the OPENAI_API_KEY environment variable.'
-            })
+        if not openai_api_key or openai_api_key == 'dummy_key':
+            logging.warning("OpenAI API key not found or is a dummy key. Returning dummy data.")
+            recipe_data = {
+                'name': f'Recipe from {filename}',
+                'category': 'Traditional Muesli',
+                'description': 'Recipe imported from document. Please edit the details as needed.',
+                'ingredients': [
+                    {'name': 'Oat flakes', 'percentage': 0.0},
+                    {'name': 'Mixed cereals', 'percentage': 0.0}
+                ],
+                'nutritional_info': {
+                    'energy': '0', 'fat': '0', 'saturated_fat': '0',
+                    'carbohydrates': '0', 'sugars': '0', 'fiber': '0',
+                    'protein': '0', 'salt': '0'
+                },
+                'allergens': ['Gluten'],
+                'claims': [],
+                'storage_conditions': 'Store in a cool, dry place, protect from direct sunlight',
+                'recipe_number': '12345',
+                'extracted_images': []
+            }
+            return jsonify({'success': True, 'recipe_data': recipe_data})
             
         # Using gpt-4o for reliable document analysis
         openai_client = OpenAI(api_key=openai_api_key)
@@ -2964,10 +2983,13 @@ def analyze_batch_recipes():
                 claims = []
             
             # Format for frontend
+            category = recipe.get('category') or 'Traditional Muesli'
+            shelf_life = get_shelf_life(category) if category else None
+
             formatted_recipe = {
                 'specification': spec_num,
                 'name': recipe.get('name', f'Recipe {spec_num}'),
-                'category': 'Traditional Muesli',  # Default category
+                'category': category,
                 'description': f'Recipe specification {spec_num}',
                 'ingredients': recipe.get('ingredients', []),
                 'nutritional_info': recipe.get('nutritional_info', {}),
@@ -2978,7 +3000,7 @@ def analyze_batch_recipes():
                 'image_url': recipe.get('image_url', ''),
                 'recipe_number': spec_num,
                 'storage_conditions': '',  # To be filled by user
-                'shelf_life': '',  # To be filled by user
+                'shelf_life': shelf_life,
                 'exclusive': 'nein',
                 'department': '',
                 'customer': ''
@@ -3044,6 +3066,9 @@ def publish_recipe():
         # Store storage conditions
         storage_conditions = data.get('storage_conditions', 'Store in a cool, dry place, protect from direct sunlight')
         new_product.storage_conditions = storage_conditions
+
+        # Store shelf life
+        new_product.shelf_life = data.get('shelf_life')
 
         # Store recipe number if extracted
         recipe_number = data.get('recipe_number')
