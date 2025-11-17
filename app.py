@@ -3,6 +3,7 @@ import logging
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
+from flask_migrate import Migrate
 from flask_session import Session
 from flask_compress import Compress
 from sqlalchemy.orm import DeclarativeBase
@@ -91,6 +92,7 @@ app.config['COMPRESS_MIN_SIZE'] = 500
 db.init_app(app)
 mail.init_app(app)
 Compress(app)
+migrate = Migrate(app, db)
 
 # Configure CSRF protection
 csrf = CSRFProtect(app)

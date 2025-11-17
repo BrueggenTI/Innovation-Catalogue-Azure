@@ -80,6 +80,18 @@ def main():
     """Main test execution"""
     print("Brüggen Innovation Catalogue - Comprehensive Testing")
     print("="*60)
+
+    # Apply database migrations programmatically
+    print("Applying database migrations...")
+    try:
+        from flask_migrate import upgrade
+        from app import app, db, migrate
+        with app.app_context():
+            upgrade()
+        print("Database migrations applied successfully.")
+    except Exception as e:
+        print(f"Error applying database migrations: {e}")
+        return 1
     
     # Start server
     server_process = start_server()
