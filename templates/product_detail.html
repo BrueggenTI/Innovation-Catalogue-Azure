@@ -108,12 +108,14 @@
                     <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded-4 shadow" id="productImage">
 
                     <!-- Edit Image Overlay -->
+                    {% if session.get('is_master_user') %}
                     <div class="image-edit-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded-4" style="background: rgba(0,0,0,0); transition: background 0.3s ease; cursor: pointer;" onclick="openImageUploadModal()">
                         <div class="edit-icon-wrapper text-center" style="opacity: 0; transition: opacity 0.3s ease;">
                             <i class="fas fa-camera fa-3x text-white mb-2"></i>
                             <div class="text-white fw-semibold">{{ get_text('change_image', lang) }}</div>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
 
                 <!-- Exclusive Information Section -->
@@ -273,6 +275,7 @@
                     {% endif %}
 
                     <!-- Product Description with Edit Functionality -->
+                    {% if session.get('is_master_user') %}
                     <div class="product-description-section mb-4">
                         <!-- View Mode -->
                         <div id="descriptionView">
@@ -300,6 +303,11 @@
                             </form>
                         </div>
                     </div>
+                    {% else %}
+                    <div class="product-description-section mb-4">
+                        <p class="lead text-muted mb-2">{{ product.description }}</p>
+                    </div>
+                    {% endif %}
 
                     <div class="product-actions d-flex flex-column align-items-center gap-3">
                         <a href="{{ url_for('cocreation') }}?base_product={{ product.id }}{% if from_custom_page_id %}&from_custom_page={{ from_custom_page_id }}{% endif %}" class="btn btn-primary btn-lg rounded-pill px-5">
