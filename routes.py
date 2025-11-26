@@ -1656,11 +1656,16 @@ def search_api():
         # Check if query looks like a recipe number (e.g., "R123", "123", "RZ456")
         is_recipe_number_search = bool(re.match(r'^(r|rz|recipe)?\s*\d+', query, re.IGNORECASE))
         
-        # Search products/recipes - ONLY by product name
+        # Search products/recipes - by name AND recipe number
         try:
-            # Only search by product name
+            from sqlalchemy import or_
+
+            # Search by product name or recipe number
             products = Product.query.filter(
-                Product.name.ilike(f'%{query}%')
+                or_(
+                    Product.name.ilike(f'%{query}%'),
+                    Product.recipe_number.ilike(f'%{query}%')
+                )
             ).order_by(Product.created_at.desc()).limit(15).all()
 
             for product in products:
