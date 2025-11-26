@@ -647,7 +647,7 @@ class CoCreationLab {
                                        step="${stepValue}" 
                                        value="${currentValue}"
                                        data-ingredient="${ingredient}"
-                                       style="flex: 1; width: 70px; -webkit-appearance: none; -moz-appearance: textfield; text-align: center;"
+                                       style="flex: 1; width: 90px; -webkit-appearance: none; -moz-appearance: textfield; text-align: center;"
                                        onwheel="this.blur()">
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-sm text-muted unit-dropdown" 
