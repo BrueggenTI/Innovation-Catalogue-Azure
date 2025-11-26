@@ -1,5 +1,6 @@
 from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, session
-from app import app, db, csrf
+from app import app, db, mail
+from flask_wtf.csrf import CSRFProtect
 from models import Product, ConceptSession, Trend, User, CustomRecipePage
 from utils.shelf_life_manager import get_shelf_life, get_all_categories, SHELF_LIFE_DATA
 from data.products import init_products

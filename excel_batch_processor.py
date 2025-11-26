@@ -150,6 +150,11 @@ class ExcelBatchProcessor:
                     ingredient_name_match = re.search(r'\d+\s+(.+)', str(ingredient_spec))
                     ingredient_name = ingredient_name_match.group(1) if ingredient_name_match else str(ingredient_spec)
                     
+                    # Check if the ingredient is unapproved (spec number starts with 6)
+                    is_unapproved = False
+                    if ingredient_spec and re.match(r'^\s*6', str(ingredient_spec)):
+                        is_unapproved = True
+
                     # Check each recipe column for percentage
                     for spec_num, col_idx in spec_columns.items():
                         if col_idx < len(row) and row[col_idx] and row[col_idx] != '-':
@@ -165,7 +170,8 @@ class ExcelBatchProcessor:
                                     recipes[spec_num]['ingredients'].append({
                                         'name': ingredient_name,
                                         'percentage': round(percentage_value, 1),
-                                        'specification': ingredient_spec
+                                        'specification': ingredient_spec,
+                                        'status': 'unapproved_raw_material' if is_unapproved else ''
                                     })
                             elif isinstance(percentage, str):
                                 # Handle percentage strings like "50%" or "12,5%"
@@ -176,7 +182,8 @@ class ExcelBatchProcessor:
                                         recipes[spec_num]['ingredients'].append({
                                             'name': ingredient_name,
                                             'percentage': round(percentage_value, 1),
-                                            'specification': ingredient_spec
+                                            'specification': ingredient_spec,
+                                            'status': 'unapproved_raw_material' if is_unapproved else ''
                                         })
                                 except ValueError:
                                     # Skip non-numeric values

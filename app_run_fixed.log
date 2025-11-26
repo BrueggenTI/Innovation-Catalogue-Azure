@@ -1,0 +1,10 @@
+INFO:root:Database tables created successfully
+INFO:root:Database tables created successfully
+Traceback (most recent call last):
+  File "/app/app.py", line 76, in <module>
+    from routes import *
+  File "/app/routes.py", line 9, in <module>
+    from utils.email_sender import send_concept_email
+  File "/app/utils/email_sender.py", line 2, in <module>
+    from app import mail
+ImportError: cannot import name 'mail' from 'app' (/app/app.py). Did you mean: 'Mail'?
