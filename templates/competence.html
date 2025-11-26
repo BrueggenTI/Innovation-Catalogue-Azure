@@ -1194,295 +1194,121 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(card);
     });
     
-    // Universal Search Functionality - moved inside DOMContentLoaded for proper scope
+    // Universal Search Functionality
     function initializeUniversalSearch() {
-    const searchInput = document.getElementById('universalSearch');
-    const searchResults = document.getElementById('searchResults');
-    const clearButton = document.getElementById('clearSearch');
-    let searchTimeout;
-    
-    if (!searchInput) return; // Guard clause
-    
-    // Search input handler
-    searchInput.addEventListener('input', function() {
-        const query = this.value.trim();
-        
-        clearTimeout(searchTimeout);
-        
-        if (query.length === 0) {
-            hideSearchResults();
-            clearButton.style.display = 'none';
-            return;
-        }
-        
-        clearButton.style.display = 'block';
-        
-        // Debounce search
-        searchTimeout = setTimeout(() => {
-            performSearch(query);
-        }, 300);
-    });
-    
-    // Add Enter key handler for recipe number search
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const query = this.value.trim();
-            
-            if (query.length === 0) return;
-            
-            // Check if query looks like a recipe number (contains digits)
-            if (/\d/.test(query)) {
-                // Filter products by recipe number containing the query
-                const params = new URLSearchParams();
-                params.set('recipe', query);
-                window.location.href = '/competence?' + params.toString();
-            } else {
-                // For non-recipe searches, perform normal search
-                performSearch(query);
-            }
-        }
-    });
-    
-    // Clear button handler
-    clearButton.addEventListener('click', function() {
-        searchInput.value = '';
-        hideSearchResults();
-        this.style.display = 'none';
-        searchInput.focus();
-    });
-    
-    // Click outside to close
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.search-container')) {
-            hideSearchResults();
-        }
-    });
-}
+        const searchInput = document.getElementById('universalSearch');
+        const searchResultsContainer = document.getElementById('universalSearchResults');
+        const clearButton = document.getElementById('clearSearch');
+        let searchTimeout;
 
-    function performSearch(query) {
-        const searchResults = document.getElementById('searchResults');
-        const resultsContent = searchResults.querySelector('.search-results-content');
-        
-        // Search through all available data
-        const results = {
-            categories: [],
-            ingredients: [],
-            claims: [],
-            recipeNumbers: []
-        };
-        
-        const lowerQuery = query.toLowerCase();
-        
-        // Search categories
-        allCategories.forEach(category => {
-            if (category.toLowerCase().includes(lowerQuery)) {
-                results.categories.push(category);
+        if (!searchInput) return;
+
+        // Search input handler
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            clearTimeout(searchTimeout);
+
+            if (query.length < 2) {
+                hideSearchResults();
+                clearButton.style.display = 'none';
+                return;
             }
+
+            clearButton.style.display = 'block';
+
+            // Debounce search to avoid excessive API calls
+            searchTimeout = setTimeout(() => {
+                performSearch(query);
+            }, 300);
         });
-        
-        // Search ingredients
-        allIngredients.forEach(ingredient => {
-            if (ingredient.toLowerCase().includes(lowerQuery)) {
-                results.ingredients.push(ingredient);
+
+        // Clear button handler
+        clearButton.addEventListener('click', function() {
+            searchInput.value = '';
+            hideSearchResults();
+            this.style.display = 'none';
+            searchInput.focus();
+        });
+
+        // Click outside to close results
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                hideSearchResults();
             }
-        });
-        
-        // Search claims
-        allClaims.forEach(claim => {
-            if (claim.toLowerCase().includes(lowerQuery)) {
-                results.claims.push(claim);
-            }
-        });
-        
-        // Search recipe numbers and product names
-        const uniqueRecipeNumbers = new Set();
-        productsData.forEach(product => {
-            if (product.recipeNumber && product.recipeNumber.toLowerCase().includes(lowerQuery)) {
-                uniqueRecipeNumbers.add(product.recipeNumber);
-            }
-        });
-        results.recipeNumbers = Array.from(uniqueRecipeNumbers);
-        
-        // Build results HTML
-        let html = '';
-        
-        if (results.categories.length > 0) {
-            html += '<div class="search-category">Categories</div>';
-            results.categories.forEach(category => {
-                html += `<div class="search-result-item" data-type="category" data-value="${category}">
-                            <span class="search-result-text">${highlightText(category, query)}</span>
-                            <span class="search-result-badge">Category</span>
-                         </div>`;
-            });
-        }
-        
-        if (results.ingredients.length > 0) {
-            html += '<div class="search-category">Key Ingredients</div>';
-            results.ingredients.forEach(ingredient => {
-                html += `<div class="search-result-item" data-type="ingredient" data-value="${ingredient}">
-                            <span class="search-result-text">${highlightText(ingredient, query)}</span>
-                            <span class="search-result-badge">Ingredient</span>
-                         </div>`;
-            });
-        }
-        
-        if (results.claims.length > 0) {
-            html += '<div class="search-category">Claims</div>';
-            results.claims.forEach(claim => {
-                html += `<div class="search-result-item" data-type="claim" data-value="${claim}">
-                            <span class="search-result-text">${highlightText(claim, query)}</span>
-                            <span class="search-result-badge">Claim</span>
-                         </div>`;
-            });
-        }
-        
-        if (results.recipeNumbers.length > 0) {
-            html += '<div class="search-category">Recipe Numbers</div>';
-            
-            // Create placeholder items first
-            results.recipeNumbers.forEach(recipeNum => {
-                html += `<div class="recipe-number-result-item loading" data-type="recipe" data-value="${recipeNum}" id="recipe-${recipeNum}">
-                            <div class="recipe-info-left">
-                                <div class="recipe-number-display">${highlightText(recipeNum, query)}</div>
-                                <div class="recipe-name-display loading-text">Loading...</div>
-                            </div>
-                            <div class="recipe-image-right">
-                                <div class="recipe-image-placeholder loading-placeholder">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                </div>
-                            </div>
-                         </div>`;
-            });
-            
-            // Load product data asynchronously
-            results.recipeNumbers.forEach(async (recipeNum) => {
-                try {
-                    const productData = await getProductDataForRecipe(recipeNum);
-                    const recipeElement = document.getElementById(`recipe-${recipeNum}`);
-                    
-                    if (recipeElement && productData) {
-                        const nameElement = recipeElement.querySelector('.recipe-name-display');
-                        const imageContainer = recipeElement.querySelector('.recipe-image-right');
-                        
-                        // Update name
-                        nameElement.textContent = productData.name;
-                        nameElement.classList.remove('loading-text');
-                        
-                        // Update image
-                        imageContainer.innerHTML = productData.image ? 
-                            `<img src="${productData.image}" alt="${productData.name}" class="recipe-result-image" onerror="this.style.display='none'">` :
-                            '<div class="recipe-image-placeholder"><i class="fas fa-utensils"></i></div>';
-                        
-                        recipeElement.classList.remove('loading');
-                    } else if (recipeElement) {
-                        // Handle unknown recipe
-                        const nameElement = recipeElement.querySelector('.recipe-name-display');
-                        nameElement.textContent = 'Recipe not found';
-                        nameElement.classList.remove('loading-text');
-                        nameElement.style.color = '#6c757d';
-                        recipeElement.classList.remove('loading');
-                    }
-                } catch (error) {
-                    console.error('Error loading product data for recipe:', recipeNum, error);
-                }
-            });
-        }
-        
-        if (html === '') {
-            html = '<div class="search-no-results">No results found for "' + query + '"</div>';
-        }
-        
-        resultsContent.innerHTML = html;
-        showSearchResults();
-        
-        // Add click handlers to results
-        resultsContent.querySelectorAll('.search-result-item, .recipe-number-result-item').forEach(item => {
-            item.addEventListener('click', function() {
-                selectSearchResult(this.dataset.type, this.dataset.value);
-            });
         });
     }
 
-    async function getProductDataForRecipe(recipeNumber) {
+    async function performSearch(query) {
+        const resultsContent = document.querySelector('#universalSearchResults .search-results-content');
+        resultsContent.innerHTML = '<div class="search-no-results">Searching...</div>';
+        showSearchResults();
+
         try {
-            const response = await fetch(`/api/recipe-number/${recipeNumber}/product`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    return data.product;
-                }
+            const response = await fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}' // Add CSRF token if needed by your app
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            if (data.success && data.results.length > 0) {
+                renderSearchResults(data.results, query);
+            } else {
+                resultsContent.innerHTML = `<div class="search-no-results">No results found for "<strong>${escapeHTML(query)}</strong>"</div>`;
             }
         } catch (error) {
-            console.error('Failed to fetch product data for recipe:', recipeNumber, error);
+            console.error('Search failed:', error);
+            resultsContent.innerHTML = '<div class="search-no-results">Error performing search.</div>';
         }
-        return null;
+    }
+
+    function renderSearchResults(results, query) {
+        const resultsContent = document.querySelector('#universalSearchResults .search-results-content');
+        let html = '<div class="search-category">Recipes</div>';
+
+        results.forEach(result => {
+            if (result.type === 'recipe') {
+                 html += `
+                    <a href="${result.url}" class="recipe-number-result-item">
+                        <div class="recipe-info-left">
+                            <div class="recipe-name-display">${highlightText(result.title, query)}</div>
+                            <div class="recipe-number-display">#${result.recipe_number || result.id}</div>
+                        </div>
+                        <div class="recipe-image-right">
+                            <img src="${result.image || '/static/images/product-placeholder.png'}" alt="${result.title}" class="recipe-result-image" onerror="this.onerror=null; this.src='/static/images/product-placeholder.png';">
+                        </div>
+                    </a>`;
+            }
+        });
+
+        resultsContent.innerHTML = html;
     }
 
     function highlightText(text, query) {
-        try {
-            // Escape special regex characters to prevent injection
-            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`(${escapedQuery})`, 'gi');
-            return text.replace(regex, '<span class="search-highlight">$1</span>');
-        } catch (e) {
-            // Fallback if regex fails
-            return text;
-        }
+        if (!text) return '';
+        const escapedQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
     }
 
-    function selectSearchResult(type, value) {
-        // Clear search
-        document.getElementById('universalSearch').value = '';
-        hideSearchResults();
-        document.getElementById('clearSearch').style.display = 'none';
-        
-        // Handle different result types
-        switch(type) {
-            case 'category':
-                activeFilters.category = value;
-                // Apply filters by redirecting to backend
-                updateButtonVisualState();
-                updateActiveFiltersDisplay();
-                redirectToBackend();
-                break;
-            case 'ingredient':
-                if (!activeFilters.ingredient.includes(value)) {
-                    activeFilters.ingredient.push(value);
-                }
-                // Apply filters by redirecting to backend
-                updateButtonVisualState();
-                updateActiveFiltersDisplay();
-                redirectToBackend();
-                break;
-            case 'claim':
-                if (!activeFilters.claim.includes(value)) {
-                    activeFilters.claim.push(value);
-                }
-                // Apply filters by redirecting to backend
-                updateButtonVisualState();
-                updateActiveFiltersDisplay();
-                redirectToBackend();
-                break;
-            case 'recipe':
-                // For recipe clicks, navigate directly to the product detail page
-                const productData = productsData.find(p => p.recipeNumber === value);
-                if (productData) {
-                    window.location.href = `/product/${productData.id}`;
-                } else {
-                    // Fallback: filter by recipe number if direct navigation fails
-                    if (!activeFilters.recipeNumber) {
-                        activeFilters.recipeNumber = [];
-                    }
-                    if (!activeFilters.recipeNumber.includes(value)) {
-                        activeFilters.recipeNumber.push(value);
-                    }
-                    updateButtonVisualState();
-                    updateActiveFiltersDisplay();
-                    redirectToBackend();
-                }
-                break;
-        }
+    function escapeHTML(str) {
+        return str.replace(/[&<>"']/g, function(match) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[match];
+        });
     }
 
     function showSearchResults() {
