@@ -1,8 +1,0 @@
-INFO:root:Database tables created successfully
-INFO:root:Database tables created successfully
-Traceback (most recent call last):
-  File "/app/app.py", line 75, in <module>
-    from routes import *
-  File "/app/routes.py", line 2, in <module>
-    from app import app, db, csrf
-ImportError: cannot import name 'csrf' from 'app' (/app/app.py)
