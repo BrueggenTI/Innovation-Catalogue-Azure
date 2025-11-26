@@ -243,7 +243,7 @@
                                     {{ get_text('productive', lang) }}
                                 </span>
                             {% elif recipe_digits and recipe_digits[0] == '1' %}
-                                <span class="badge bg-warning text-dark px-3 py-2">
+                                <span class="badge bg-development px-3 py-2">
                                     {{ get_text('development', lang) }}
                                 </span>
                             {% endif %}
@@ -368,7 +368,7 @@
                                                     {% endif %}
                                                 </td>
                                                 {% if not session.get('hide_percentages', False) %}
-                                                <td class="text-end" style="font-weight: normal; font-size: 0.9rem;">{{ ingredient.percentage }}%</td>
+                                                <td class="text-end" style="font-weight: normal; font-size: 0.9rem;">{{ ingredient.percentage | round(1) }}%</td>
                                                 {% endif %}
                                             </tr>
                                             
@@ -385,7 +385,7 @@
                                                             {% endif %}
                                                         </td>
                                                         {% if not session.get('hide_percentages', False) %}
-                                                        <td class="text-end" style="font-size: 0.85rem; color: #6c757d;">{{ child.percentage }}%</td>
+                                                        <td class="text-end" style="font-size: 0.85rem; color: #6c757d;">{{ child.percentage | round(1) }}%</td>
                                                         {% endif %}
                                                     </tr>
                                                 {% endfor %}
@@ -420,7 +420,7 @@
                                         <tr>
                                             <td class="fw-medium">{{ get_text('energy', lang) }}</td>
                                             <td class="text-end fw-bold">
-                                                {{ nutritional_info.energy }} kcal
+                                                {{ nutritional_info.energy | float | round(1) }} kcal
                                                 {% if nutritional_info.energy_kj %}
                                                     / {{ nutritional_info.energy_kj }} kJ
                                                 {% elif nutritional_info.energy %}
@@ -430,31 +430,31 @@
                                         </tr>
                                         <tr>
                                             <td class="fw-medium">{{ get_text('fat', lang) }}</td>
-                                            <td class="text-end">{{ nutritional_info.fat }} g</td>
+                                            <td class="text-end">{{ nutritional_info.fat | float | round(1) }} g</td>
                                         </tr>
                                         <tr class="table-light">
                                             <td class="ps-4">{{ get_text('of_which_saturated', lang) }}</td>
-                                            <td class="text-end">{{ nutritional_info.saturated_fat }} g</td>
+                                            <td class="text-end">{{ nutritional_info.saturated_fat | float | round(1) }} g</td>
                                         </tr>
                                         <tr>
                                             <td class="fw-medium">{{ get_text('carbohydrates', lang) }}</td>
-                                            <td class="text-end">{{ nutritional_info.carbohydrates }} g</td>
+                                            <td class="text-end">{{ nutritional_info.carbohydrates | float | round(1) }} g</td>
                                         </tr>
                                         <tr class="table-light">
                                             <td class="ps-4">{{ get_text('of_which_sugars', lang) }}</td>
-                                            <td class="text-end">{{ nutritional_info.sugars }} g</td>
+                                            <td class="text-end">{{ nutritional_info.sugars | float | round(1) }} g</td>
                                         </tr>
                                         <tr>
                                             <td class="fw-medium">{{ get_text('fiber', lang) }}</td>
-                                            <td class="text-end">{{ nutritional_info.fiber }} g</td>
+                                            <td class="text-end">{{ nutritional_info.fiber | float | round(1) }} g</td>
                                         </tr>
                                         <tr>
                                             <td class="fw-medium">{{ get_text('protein', lang) }}</td>
-                                            <td class="text-end">{{ nutritional_info.protein }} g</td>
+                                            <td class="text-end">{{ nutritional_info.protein | float | round(1) }} g</td>
                                         </tr>
                                         <tr>
                                             <td class="fw-medium">{{ get_text('salt', lang) }}</td>
-                                            <td class="text-end">{{ nutritional_info.salt }} g</td>
+                                            <td class="text-end">{{ nutritional_info.salt | float | round(1) }} g</td>
                                         </tr>
                                     </tbody>
                                 </table>

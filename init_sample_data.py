@@ -19,6 +19,7 @@ def init_sample_data():
         products = [
             {
                 "name": "Premium Swiss Muesli",
+                "recipe_number": "40001",
                 "category": "Traditional Swiss Muesli",
                 "description": "Classic blend of rolled oats, nuts, and dried fruits following authentic Swiss recipe traditions",
                 "ingredients": json.dumps([
@@ -32,14 +33,14 @@ def init_sample_data():
                 "nutritional_claims": json.dumps(["High Fiber", "Source of Protein", "No Added Sugar"]),
                 "certifications": json.dumps(["Organic", "Non-GMO"]),
                 "nutritional_info": json.dumps({
-                    "energy": "375 kcal",
-                    "fat": "12.5g",
-                    "saturated_fat": "2.1g",
-                    "carbohydrates": "58.2g",
-                    "sugars": "18.3g",
-                    "fiber": "8.7g",
-                    "protein": "12.1g",
-                    "salt": "0.02g"
+                    "energy": "375",
+                    "fat": "12.5",
+                    "saturated_fat": "2.1",
+                    "carbohydrates": "58.2",
+                    "sugars": "18.3",
+                    "fiber": "8.7",
+                    "protein": "12.1",
+                    "salt": "0.02"
                 }),
                 "allergens": json.dumps(["Nuts (Hazelnuts, Almonds)", "May contain traces of gluten"]),
                 "claims": json.dumps(["Rich in Fiber", "Source of Protein", "No Added Sugar", "Organic"]),
@@ -49,6 +50,7 @@ def init_sample_data():
             },
             {
                 "name": "Protein Power Clusters",
+                "recipe_number": "10001",
                 "category": "Premium Oat Clusters",
                 "description": "Crunchy oat clusters enhanced with plant-based protein for active lifestyle consumers",
                 "ingredients": json.dumps([
@@ -62,14 +64,14 @@ def init_sample_data():
                 "nutritional_claims": json.dumps(["High Protein", "High Fiber", "Vegan", "Gluten-Free"]),
                 "certifications": json.dumps(["Organic", "Vegan Certified"]),
                 "nutritional_info": json.dumps({
-                    "energy": "425 kcal",
-                    "fat": "16.8g",
-                    "saturated_fat": "8.2g",
-                    "carbohydrates": "35.4g",
-                    "sugars": "12.1g",
-                    "fiber": "12.3g",
-                    "protein": "28.5g",
-                    "salt": "0.15g"
+                    "energy": "425",
+                    "fat": "16.8",
+                    "saturated_fat": "8.2",
+                    "carbohydrates": "35.4",
+                    "sugars": "12.1",
+                    "fiber": "12.3",
+                    "protein": "28.5",
+                    "salt": "0.15"
                 }),
                 "allergens": json.dumps(["May contain traces of nuts", "May contain traces of soy"]),
                 "claims": json.dumps(["High Protein", "Vegan", "Gluten-Free", "Source of Omega-3"]),
@@ -79,6 +81,7 @@ def init_sample_data():
             },
             {
                 "name": "Antioxidant Berry Crunch",
+                "recipe_number": "40002",
                 "category": "Baked Muesli Crunchy",
                 "description": "Baked muesli with superfruit blend delivering high antioxidant content",
                 "ingredients": json.dumps([
@@ -92,14 +95,14 @@ def init_sample_data():
                 "nutritional_claims": json.dumps(["High Antioxidants", "Source of Fiber", "Natural Ingredients"]),
                 "certifications": json.dumps(["Organic", "Superfood Certified"]),
                 "nutritional_info": json.dumps({
-                    "energy": "385 kcal",
-                    "fat": "8.9g",
-                    "saturated_fat": "1.8g",
-                    "carbohydrates": "67.2g",
-                    "sugars": "22.5g",
-                    "fiber": "9.8g",
-                    "protein": "8.7g",
-                    "salt": "0.08g"
+                    "energy": "385",
+                    "fat": "8.9",
+                    "saturated_fat": "1.8",
+                    "carbohydrates": "67.2",
+                    "sugars": "22.5",
+                    "fiber": "9.8",
+                    "protein": "8.7",
+                    "salt": "0.08"
                 }),
                 "allergens": json.dumps(["May contain traces of nuts", "May contain traces of gluten"]),
                 "claims": json.dumps(["Rich in Antioxidants", "Natural Superfruit Blend", "Source of Fiber", "Organic"]),
@@ -109,6 +112,7 @@ def init_sample_data():
             },
             {
                 "name": "On-the-Go Energy Bars",
+                "recipe_number": "10002",
                 "category": "Cereal & Fruit Snack Bars",
                 "description": "Convenient snack bars combining cereals and fruits for busy professionals",
                 "ingredients": json.dumps([
@@ -121,14 +125,14 @@ def init_sample_data():
                 "nutritional_claims": json.dumps(["Natural Energy", "No Artificial Additives", "Sustained Release"]),
                 "certifications": json.dumps(["Organic", "Fair Trade"]),
                 "nutritional_info": json.dumps({
-                    "energy": "445 kcal",
-                    "fat": "18.7g",
-                    "saturated_fat": "6.2g",
-                    "carbohydrates": "58.9g",
-                    "sugars": "35.2g",
-                    "fiber": "7.4g",
-                    "protein": "11.8g",
-                    "salt": "0.12g"
+                    "energy": "445",
+                    "fat": "18.7",
+                    "saturated_fat": "6.2",
+                    "carbohydrates": "58.9",
+                    "sugars": "35.2",
+                    "fiber": "7.4",
+                    "protein": "11.8",
+                    "salt": "0.12"
                 }),
                 "allergens": json.dumps(["Nuts (Almonds)", "May contain traces of other nuts", "May contain traces of gluten"]),
                 "claims": json.dumps(["Natural Energy Source", "No Artificial Preservatives", "Fair Trade", "Organic"]),
@@ -138,6 +142,7 @@ def init_sample_data():
             },
             {
                 "name": "Ancient Grains Blend",
+                "recipe_number": "40003",
                 "category": "Premium Oat Clusters",
                 "description": "Unique blend of ancient grains and modern superfoods for health-conscious consumers",
                 "ingredients": json.dumps([
@@ -150,14 +155,14 @@ def init_sample_data():
                 "nutritional_claims": json.dumps(["Complete Protein", "High Fiber", "Gluten-Free", "Omega-3"]),
                 "certifications": json.dumps(["Organic", "Ancient Grains Certified"]),
                 "nutritional_info": json.dumps({
-                    "energy": "395 kcal",
-                    "fat": "14.2g",
-                    "saturated_fat": "2.1g",
-                    "carbohydrates": "52.8g",
-                    "sugars": "3.2g",
-                    "fiber": "11.5g",
-                    "protein": "16.8g",
-                    "salt": "0.05g"
+                    "energy": "395",
+                    "fat": "14.2",
+                    "saturated_fat": "2.1",
+                    "carbohydrates": "52.8",
+                    "sugars": "3.2",
+                    "fiber": "11.5",
+                    "protein": "16.8",
+                    "salt": "0.05"
                 }),
                 "allergens": json.dumps(["Gluten-Free", "May contain traces of nuts"]),
                 "claims": json.dumps(["Complete Protein", "Ancient Grains", "Gluten-Free", "Rich in Omega-3"]),
