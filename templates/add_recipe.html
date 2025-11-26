@@ -1740,15 +1740,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Re-apply the status from the original data, as it's not stored in the form
-    if (data.ingredients) {
-        data.ingredients.forEach((ing, i) => {
-            if (recipe.ingredients[i] && recipe.ingredients[i].status) {
-                ing.status = recipe.ingredients[i].status;
-            }
-        });
-    }
-
     function deleteRecipe(recipeId) {
         fetch(`/api/delete-recipe/${recipeId}`, {
             method: 'DELETE',
@@ -2673,25 +2664,12 @@ function navigateBatchRecipe(direction, azureAccountName, azureContainerName, al
 }
 
 function generateCompactRecipeForm(recipe, index, azureAccountName, azureContainerName, allCategories) {
-    const ingredientsHTML = (recipe.ingredients || []).map((ing, i) => {
-        const unapprovedWarning = ing.status === 'unapproved_raw_material' ? `
-            <span class="unapproved-warning ms-2" title="Unapproved Raw Material">
-                <i class="fas fa-exclamation-triangle"></i>
-            </span>
-        ` : '';
-
-        return `
-            <tr>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <input type="text" class="form-control form-control-sm" value="${ing.name}" data-field="ingredients.${i}.name" data-status="${ing.status || ''}">
-                        ${unapprovedWarning}
-                    </div>
-                </td>
-                <td><input type="number" class="form-control form-control-sm text-end" value="${ing.percentage}" step="0.1" data-field="ingredients.${i}.percentage"></td>
-            </tr>
-        `;
-    }).join('');
+    const ingredientsHTML = (recipe.ingredients || []).map((ing, i) => `
+        <tr>
+            <td><input type="text" class="form-control form-control-sm" value="${ing.name}" data-field="ingredients.${i}.name"></td>
+            <td><input type="number" class="form-control form-control-sm text-end" value="${ing.percentage}" step="0.1" data-field="ingredients.${i}.percentage"></td>
+        </tr>
+    `).join('');
 
     const claimsHTML = (recipe.claims || []).map((claim, i) => `
         <span class="badge bg-success me-1 mb-1">
@@ -2911,9 +2889,6 @@ function collectBatchRecipeData() {
             const part = parts[i];
             // Handle array indices
             if (!isNaN(part)) {
-                if (!obj[parseInt(part)]) {
-                    obj[parseInt(part)] = {};
-                }
                 obj = obj[parseInt(part)];
             } else {
                 if (!obj[part]) {
@@ -2930,14 +2905,6 @@ function collectBatchRecipeData() {
             obj[lastPart] = value;
         } else {
             obj[lastPart] = value;
-        }
-
-        // Also save the status attribute for ingredients
-        if (field.startsWith('ingredients') && lastPart === 'name') {
-            const status = input.dataset.status;
-            if (status) {
-                obj['status'] = status;
-            }
         }
     });
     
