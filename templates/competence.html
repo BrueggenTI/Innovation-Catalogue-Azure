@@ -131,30 +131,6 @@
                     <div class="filter-count text-muted small">Filter by status</div>
                 </div>
             </div>
-
-            <div class="col filter-col-equal">
-                <div class="filter-header" data-filter="nutri_score">
-                    <h6 class="mb-2 fw-semibold text-dark">
-                        <i class="fas fa-award me-2" style="color: #661c31;"></i>Nutri-Score
-                        <i class="fas fa-chevron-down filter-chevron ms-2"></i>
-                    </h6>
-                    <div class="filter-count text-muted small">Filter by score</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nutri-Score Options -->
-        <div class="filter-options" id="nutri_scoreOptions" style="display: none;">
-            <h6 class="fw-semibold mb-3 text-dark">Select Nutri-Score</h6>
-            <div class="row g-2">
-                {% for score in ['A', 'B', 'C', 'D', 'E'] %}
-                <div class="col-auto">
-                    <button type="button" class="filter-option-btn" data-filter="nutri_score" data-value="{{ score }}">
-                        Nutri-Score {{ score }}
-                    </button>
-                </div>
-                {% endfor %}
-            </div>
         </div>
     </div>
 </div>
@@ -760,8 +736,7 @@ document.addEventListener('DOMContentLoaded', function() {
         claim: [], // Changed to array for multiple claims
         recipeNumber: [], // Add recipe number filtering
         product_type: '', // Product or Development
-        exclusivity: '', // exclusive, non-exclusive, or both
-        nutri_score: '' // A, B, C, D, E
+        exclusivity: '' // exclusive, non-exclusive, or both
     };
     
     // Only set filters if they have actual meaningful values from URL
@@ -770,7 +745,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlClaim = '{{ selected_claim if selected_claim and selected_claim.strip() and selected_claim != "None" else "" }}';
     const urlProductType = '{{ selected_product_type if selected_product_type and selected_product_type.strip() and selected_product_type != "None" else "" }}';
     const urlExclusivity = '{{ selected_exclusivity if selected_exclusivity and selected_exclusivity.strip() and selected_exclusivity != "None" else "" }}';
-    const urlNutriScore = '{{ selected_nutri_score if selected_nutri_score and selected_nutri_score.strip() and selected_nutri_score != "None" else "" }}';
     
     if (urlCategory && urlCategory.trim().length > 0) {
         activeFilters.category = urlCategory.trim();
@@ -789,9 +763,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (urlExclusivity && urlExclusivity.trim().length > 0) {
         activeFilters.exclusivity = urlExclusivity.trim();
     }
-    if (urlNutriScore && urlNutriScore.trim().length > 0) {
-        activeFilters.nutri_score = urlNutriScore.trim();
-    }
     
     let currentOpenFilter = null;
     
@@ -808,9 +779,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (urlParams.get('recipe')) {
         activeFilters.recipeNumber = urlParams.get('recipe').split('|').filter(r => r.trim());
-    }
-    if (urlParams.get('nutri_score')) {
-        activeFilters.nutri_score = urlParams.get('nutri_score');
     }
 
     // Initialize active filters on page load
@@ -970,7 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeFilters.claim.push(value);
             }
         } else {
-            // Handle single selection for category, product_type, nutri_score
+            // Handle single selection for category filter
             if (activeFilters[filterType] === value) {
                 activeFilters[filterType] = '';
             } else {
@@ -1098,7 +1066,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (activeFilters.recipeNumber.length > 0) params.set('recipe', activeFilters.recipeNumber.join('|'));
         if (activeFilters.product_type) params.set('product_type', activeFilters.product_type);
         if (activeFilters.exclusivity && activeFilters.exclusivity !== 'both') params.set('exclusivity', activeFilters.exclusivity);
-        if (activeFilters.nutri_score) params.set('nutri_score', activeFilters.nutri_score);
         
         const newUrl = '/catalog' + (params.toString() ? '?' + params.toString() : '');
         window.location.href = newUrl;
@@ -1175,16 +1142,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.exclusivity-filter-btn').forEach(btn => {
             const value = btn.dataset.exclusivity;
             if (value === activeFilters.exclusivity || (!activeFilters.exclusivity && value === 'both')) {
-                btn.classList.add('selected');
-            } else {
-                btn.classList.remove('selected');
-            }
-        });
-
-        // Update nutri-score buttons
-        document.querySelectorAll('.filter-option-btn[data-filter="nutri_score"]').forEach(btn => {
-            const value = btn.dataset.value;
-            if (activeFilters.nutri_score === value) {
                 btn.classList.add('selected');
             } else {
                 btn.classList.remove('selected');

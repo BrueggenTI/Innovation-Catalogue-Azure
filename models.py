@@ -43,7 +43,6 @@ class Product(db.Model):
     storage_conditions = db.Column(db.Text)  # Storage conditions text
     image_url = db.Column(db.String(200))  # Main product image
     nutri_score_image = db.Column(db.String(200))  # URL to Nutri-Score image
-    nutri_score = db.Column(db.String(10))  # A, B, C, D, E
     case_study = db.Column(db.Text)
     production_tech = db.Column(db.String(100))
     recipe_number = db.Column(db.String(50))  # Store extracted recipe number from documents
