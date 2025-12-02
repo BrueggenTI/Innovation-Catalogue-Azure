@@ -577,6 +577,8 @@ def catalog():
     recipe = sanitize_input(recipe) if recipe else ''
     product_type = sanitize_input(product_type) if product_type else ''
     exclusivity = sanitize_input(exclusivity) if exclusivity else ''
+    nutri_score = request.args.get('nutri_score', '').strip()
+    nutri_score = sanitize_input(nutri_score) if nutri_score else ''
     
     # Pagination parameters
     page = request.args.get('page', 1, type=int)
@@ -636,6 +638,9 @@ def catalog():
         elif exclusivity == 'non-exclusive':
             query = query.filter(Product.is_exclusive == False)
         # If 'both' or any other value, don't filter (show all)
+
+    if nutri_score and len(nutri_score) > 0:
+        query = query.filter(Product.nutri_score == nutri_score)
 
     all_filtered_products = query.order_by(Product.created_at.desc()).all()
 
@@ -728,7 +733,7 @@ def catalog():
     final_recipe = recipe if recipe and recipe.strip() and recipe != 'None' else ''
     final_product_type = product_type if product_type and product_type.strip() and product_type != 'None' else ''
     final_exclusivity = exclusivity if exclusivity and exclusivity.strip() and exclusivity != 'None' else ''
-    
+    final_nutri_score = nutri_score if nutri_score and nutri_score.strip() and nutri_score != 'None' else ''
     
     return render_template('competence.html', 
                          products=products,
@@ -742,6 +747,7 @@ def catalog():
                          selected_recipe=final_recipe,
                          selected_product_type=final_product_type,
                          selected_exclusivity=final_exclusivity,
+                         selected_nutri_score=final_nutri_score,
                          pagination=pagination)
 
 @app.route('/product/<int:id>', methods=['GET', 'POST'])
@@ -3142,6 +3148,28 @@ def publish_recipe():
         else:
             new_product.nutri_score_image = None
             logging.info("No nutri-score image set")
+
+        # Set nutri_score value (A, B, C, D, E)
+        # 1. Try to get explicit value from data
+        nutri_score = data.get('nutri_score')
+
+        # 2. If not provided, try to derive from image URL
+        if not nutri_score and new_product.nutri_score_image:
+            image_path = new_product.nutri_score_image.lower()
+            if 'nutriscore_a' in image_path:
+                nutri_score = 'A'
+            elif 'nutriscore_b' in image_path:
+                nutri_score = 'B'
+            elif 'nutriscore_c' in image_path:
+                nutri_score = 'C'
+            elif 'nutriscore_d' in image_path:
+                nutri_score = 'D'
+            elif 'nutriscore_e' in image_path:
+                nutri_score = 'E'
+
+        if nutri_score:
+            new_product.nutri_score = nutri_score
+            logging.info(f"Set Nutri-Score to: {nutri_score}")
 
         # Add to database
         db.session.add(new_product)
