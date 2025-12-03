@@ -177,3 +177,9 @@ def inject_translations():
 
 # import routes
 from routes import *
+from routes_groups import groups_bp
+from routes_sharing import sharing_bp
+
+# Register Blueprints
+app.register_blueprint(groups_bp)
+app.register_blueprint(sharing_bp)
