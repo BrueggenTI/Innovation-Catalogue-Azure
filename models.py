@@ -18,6 +18,60 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+class UserGroup(db.Model):
+    __tablename__ = 'user_group'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    creator = db.relationship('User', backref='created_groups')
+
+class GroupMember(db.Model):
+    __tablename__ = 'group_member'
+    __table_args__ = (
+        db.UniqueConstraint('group_id', 'user_id', name='unique_group_member'),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    role = db.Column(db.String(20), default='member')  # owner, admin, member
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    group = db.relationship('UserGroup', backref=db.backref('members', cascade='all, delete-orphan'))
+    user = db.relationship('User', backref='group_memberships')
+
+class ContentShare(db.Model):
+    __tablename__ = 'content_share'
+
+    id = db.Column(db.Integer, primary_key=True)
+    content_type = db.Column(db.String(50), nullable=False)  # custom_page, cocreation_draft
+    content_id = db.Column(db.Integer, nullable=False)
+    shared_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    shared_with_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    shared_with_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete='CASCADE'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    sharer = db.relationship('User', foreign_keys=[shared_by], backref='shared_content_by_me')
+    recipient_user = db.relationship('User', foreign_keys=[shared_with_user_id], backref='shared_content_with_me')
+    recipient_group = db.relationship('UserGroup', backref='shared_content')
+
+class Notification(db.Model):
+    __tablename__ = 'notification'
+
+    id = db.Column(db.Integer, primary_key=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    type = db.Column(db.String(50), nullable=False)  # group_invite, content_share, role_change
+    message = db.Column(db.Text, nullable=False)
+    link = db.Column(db.String(200))
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    recipient = db.relationship('User', backref='notifications')
+
 class Product(db.Model):
     __tablename__ = 'product'
     __table_args__ = (

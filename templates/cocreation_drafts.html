@@ -15,9 +15,46 @@
                     </h1>
                     <p class="text-muted">Manage your saved co-creation configurations</p>
                 </div>
-                <a href="{{ url_for('cocreation') }}" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-plus me-2"></i>Create New
-                </a>
+                <div class="d-flex align-items-center">
+                    <div class="btn-group me-3" role="group" aria-label="View Mode">
+                        <a href="{{ url_for('cocreation_drafts', view='my') }}" class="btn btn-outline-primary {% if view_mode == 'my' %}active{% endif %}">
+                            <i class="fas fa-user me-2"></i>My Drafts
+                        </a>
+                        <a href="{{ url_for('cocreation_drafts', view='shared') }}" class="btn btn-outline-success {% if view_mode == 'shared' %}active{% endif %}">
+                            <i class="fas fa-share-alt me-2"></i>Shared with Me
+                        </a>
+                    </div>
+
+                    {% if view_mode == 'shared' %}
+                    <div class="dropdown me-3">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter me-1"></i>Filter
+                        </button>
+                        <div class="dropdown-menu p-3" aria-labelledby="filterDropdown" style="width: 250px;">
+                            <form id="filter-shared-form" method="GET" action="{{ url_for('cocreation_drafts') }}">
+                                <input type="hidden" name="view" value="shared">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Filter by User</label>
+                                    <select class="form-select form-select-sm" name="filter_user">
+                                        <option value="">All Users</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Filter by Group</label>
+                                    <select class="form-select form-select-sm" name="filter_group">
+                                        <option value="">All Groups</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm w-100">Apply Filter</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <a href="{{ url_for('cocreation') }}" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-plus me-2"></i>Create New
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -42,6 +79,15 @@
                                         <i class="fas fa-folder-open me-2"></i>Load Draft
                                     </a>
                                 </li>
+                                {% if view_mode == 'my' %}
+                                <li>
+                                    <a class="dropdown-item share-content-btn" href="#"
+                                       data-id="{{ draft.id }}"
+                                       data-type="cocreation_draft"
+                                       data-title="{{ draft.draft_name }}">
+                                        <i class="fas fa-share-alt me-2"></i>Share
+                                    </a>
+                                </li>
                                 <li>
                                     <a class="dropdown-item" href="#" onclick="renameDraft({{ draft.id }}, '{{ draft.draft_name }}'); return false;">
                                         <i class="fas fa-edit me-2"></i>Rename
@@ -53,6 +99,7 @@
                                         <i class="fas fa-trash me-2"></i>Delete
                                     </a>
                                 </li>
+                                {% endif %}
                             </ul>
                         </div>
                     </div>
@@ -99,7 +146,18 @@
                         {% endif %}
                     </div>
 
+                    <!-- Share Indicators -->
                     <div class="mt-3">
+                        {% if view_mode == 'my' and draft.shared_with_count > 0 %}
+                        <span class="badge bg-info text-white mb-2" data-bs-toggle="tooltip" title="Shared with {{ draft.shared_with_count }} users/groups">
+                            <i class="fas fa-share me-1"></i>Shared
+                        </span>
+                        {% elif view_mode == 'shared' %}
+                        <span class="badge bg-success mb-2" data-bs-toggle="tooltip" title="Shared by {{ draft.shared_by_name }} {% if draft.shared_via_group %}(via {{ draft.shared_via_group }}){% endif %}">
+                            <i class="fas fa-reply me-1"></i>Shared with me
+                        </span>
+                        {% endif %}
+
                         <button class="btn btn-outline-primary btn-sm w-100 rounded-pill" onclick="loadDraft({{ draft.id }})">
                             <i class="fas fa-folder-open me-2"></i>Load Draft
                         </button>
@@ -114,11 +172,19 @@
         <div class="col-12">
             <div class="text-center py-5">
                 <i class="fas fa-folder-open fa-5x text-muted mb-4" style="opacity: 0.3;"></i>
-                <h3 class="text-muted mb-3">No Drafts Yet</h3>
-                <p class="text-muted mb-4">Start creating custom products and save your progress as drafts</p>
+                <h3 class="text-muted mb-3">No Drafts Found</h3>
+                <p class="text-muted mb-4">
+                    {% if view_mode == 'my' %}
+                    Start creating custom products and save your progress as drafts.
+                    {% else %}
+                    No drafts have been shared with you yet.
+                    {% endif %}
+                </p>
+                {% if view_mode == 'my' %}
                 <a href="{{ url_for('cocreation') }}" class="btn btn-primary rounded-pill px-5">
                     <i class="fas fa-plus me-2"></i>Create Your First Draft
                 </a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -150,6 +216,55 @@
     </div>
 </div>
 
+<!-- Share Modal -->
+<div class="modal fade" id="shareContentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share <span id="share-content-title"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="share-content-id">
+                <input type="hidden" id="share-content-type">
+
+                <ul class="nav nav-pills mb-3" id="shareTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="share-user-tab" data-bs-toggle="tab" data-bs-target="#share-user-pane" type="button" role="tab">User</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="share-group-tab" data-bs-toggle="tab" data-bs-target="#share-group-pane" type="button" role="tab">Group</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="shareTabContent">
+                    <div class="tab-pane fade show active" id="share-user-pane" role="tabpanel">
+                        <div class="mb-3">
+                            <label class="form-label">Search User</label>
+                            <input type="text" class="form-control" id="share-user-search" placeholder="Type name...">
+                        </div>
+                        <div id="share-user-results" class="list-group mb-3" style="max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <div class="tab-pane fade" id="share-group-pane" role="tabpanel">
+                        <div class="mb-3">
+                            <label class="form-label">Select Group</label>
+                            <select class="form-select" id="share-group-select">
+                                <option value="">Select a group...</option>
+                                <!-- Groups loaded via JS -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirm-share-btn" disabled>Share</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .draft-card {
     border-radius: 12px;
@@ -167,6 +282,160 @@
 </style>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Populate Filters for Shared View
+    if (document.getElementById('filter-shared-form')) {
+        // Load Users
+        fetch('/api/users/search?q=a')
+            .then(r => r.json())
+            .then(users => {
+                const sel = document.querySelector('select[name="filter_user"]');
+                const current = new URLSearchParams(window.location.search).get('filter_user');
+                users.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = u.name;
+                    if(current == u.id) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            });
+
+        // Load Groups
+        fetch('/api/groups')
+            .then(r => r.json())
+            .then(groups => {
+                const sel = document.querySelector('select[name="filter_group"]');
+                const current = new URLSearchParams(window.location.search).get('filter_group');
+                groups.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = g.name;
+                    if(current == g.id) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            });
+    }
+
+    // Share Modal Logic
+    const shareModal = new bootstrap.Modal(document.getElementById('shareContentModal'));
+    const shareUserSearch = document.getElementById('share-user-search');
+    const shareUserResults = document.getElementById('share-user-results');
+    const shareGroupSelect = document.getElementById('share-group-select');
+    const confirmShareBtn = document.getElementById('confirm-share-btn');
+
+    let selectedShareTarget = null; // {type: 'user'|'group', id: int}
+
+    // Open Share Modal
+    document.querySelectorAll('.share-content-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('share-content-id').value = this.dataset.id;
+            document.getElementById('share-content-type').value = this.dataset.type;
+            document.getElementById('share-content-title').textContent = this.dataset.title;
+
+            // Reset fields
+            shareUserSearch.value = '';
+            shareUserResults.innerHTML = '';
+            shareGroupSelect.innerHTML = '<option value="">Select a group...</option>';
+            selectedShareTarget = null;
+            confirmShareBtn.disabled = true;
+
+            // Load groups for dropdown
+            loadGroupsForShare();
+
+            shareModal.show();
+        });
+    });
+
+    // Search Users for Share
+    shareUserSearch.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+        if (query.length < 2) return;
+
+        fetch(`/api/users/search?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(users => {
+                shareUserResults.innerHTML = '';
+                users.forEach(user => {
+                    const btn = document.createElement('button');
+                    btn.className = 'list-group-item list-group-item-action';
+                    btn.textContent = user.name;
+                    btn.onclick = () => {
+                        shareUserSearch.value = user.name;
+                        selectedShareTarget = {type: 'user', id: user.id};
+                        confirmShareBtn.disabled = false;
+                        shareUserResults.innerHTML = '';
+                    };
+                    shareUserResults.appendChild(btn);
+                });
+            });
+    });
+
+    // Load Groups for Share
+    function loadGroupsForShare() {
+        fetch('/api/groups')
+            .then(res => res.json())
+            .then(groups => {
+                shareGroupSelect.innerHTML = '<option value="">Select a group...</option>';
+                groups.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = g.name;
+                    shareGroupSelect.appendChild(opt);
+                });
+            });
+    }
+
+    // Handle Group Selection
+    shareGroupSelect.addEventListener('change', function() {
+        if (this.value) {
+            selectedShareTarget = {type: 'group', id: this.value};
+            confirmShareBtn.disabled = false;
+        } else {
+            selectedShareTarget = null;
+            confirmShareBtn.disabled = true;
+        }
+    });
+
+    // Confirm Share
+    confirmShareBtn.addEventListener('click', function() {
+        if (!selectedShareTarget) return;
+
+        const contentId = document.getElementById('share-content-id').value;
+        const contentType = document.getElementById('share-content-type').value;
+
+        const payload = {
+            content_id: contentId,
+            content_type: contentType
+        };
+
+        if (selectedShareTarget.type === 'user') {
+            payload.user_id = selectedShareTarget.id;
+        } else {
+            payload.group_id = selectedShareTarget.id;
+        }
+
+        fetch('/api/share', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Content shared successfully!');
+                shareModal.hide();
+                location.reload();
+            } else {
+                alert('Error sharing: ' + data.error);
+            }
+        });
+    });
+});
+
 function loadDraft(draftId) {
     if (!draftId) return;
     

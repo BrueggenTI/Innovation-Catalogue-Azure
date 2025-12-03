@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, session
 from app import app, db, csrf
-from models import Product, ConceptSession, Trend, User, CustomRecipePage
+from models import Product, ConceptSession, Trend, User, CustomRecipePage, ContentShare, UserGroup, GroupMember
 from utils.shelf_life_manager import get_shelf_life, get_all_categories, SHELF_LIFE_DATA
 from data.products import init_products
 from data.trends import init_trends
@@ -1289,13 +1289,80 @@ def cocreation_drafts():
         if not user_id:
             flash('Please log in to view your drafts', 'error')
             return redirect(url_for('login'))
+
+        view_mode = request.args.get('view', 'my') # 'my' or 'shared'
         
-        drafts = CoCreationDraft.query.filter_by(user_id=user_id).order_by(CoCreationDraft.updated_at.desc()).all()
+        if view_mode == 'my':
+            drafts = CoCreationDraft.query.filter_by(user_id=user_id).order_by(CoCreationDraft.updated_at.desc()).all()
+
+            for draft in drafts:
+                draft.is_shared = False
+                # Check shares
+                shares = ContentShare.query.filter_by(
+                    content_type='cocreation_draft',
+                    content_id=draft.id,
+                    shared_by=user_id
+                ).all()
+                draft.shared_with_count = len(shares)
+                draft.shares = shares
+
+        else: # shared with me
+            # Filter by specific user or group if requested
+            filter_user_id = request.args.get('filter_user', type=int)
+            filter_group_id = request.args.get('filter_group', type=int)
+
+            direct_shares_query = ContentShare.query.filter_by(
+                content_type='cocreation_draft',
+                shared_with_user_id=user_id
+            )
+            if filter_user_id:
+                direct_shares_query = direct_shares_query.filter_by(shared_by=filter_user_id)
+            direct_shares = direct_shares_query.all()
+
+            my_groups = GroupMember.query.filter_by(user_id=user_id).all()
+            group_ids = [g.group_id for g in my_groups]
+
+            # If specific group requested, filter group_ids
+            if filter_group_id:
+                if filter_group_id in group_ids:
+                    group_ids = [filter_group_id]
+                else:
+                    group_ids = [] # User not in this group
+
+            group_shares = []
+            if group_ids:
+                group_shares_query = ContentShare.query.filter(
+                    ContentShare.content_type == 'cocreation_draft',
+                    ContentShare.shared_with_group_id.in_(group_ids)
+                )
+                if filter_user_id:
+                    group_shares_query = group_shares_query.filter_by(shared_by=filter_user_id)
+                group_shares = group_shares_query.all()
+
+            combined_shares = direct_shares + group_shares
+
+            # If filtering by group, exclude direct shares
+            if filter_group_id:
+                combined_shares = group_shares
+
+            all_share_ids = [s.content_id for s in combined_shares]
+            drafts = CoCreationDraft.query.filter(CoCreationDraft.id.in_(all_share_ids)).order_by(CoCreationDraft.updated_at.desc()).all()
+
+            for draft in drafts:
+                draft.is_shared = True
+                share_rec = next((s for s in combined_shares if s.content_id == draft.id), None)
+                if share_rec:
+                    draft.shared_by_name = share_rec.sharer.name
+                    if share_rec.shared_with_group_id:
+                        draft.shared_via_group = share_rec.recipient_group.name
+                    else:
+                        draft.shared_via_group = None
         
         lang = session.get('language', 'en')
         
         return render_template('cocreation_drafts.html',
                              drafts=drafts,
+                             view_mode=view_mode,
                              lang=lang)
     except Exception as e:
         logging.error(f"Error loading drafts page: {str(e)}")
@@ -3413,7 +3480,7 @@ def delete_trend(trend_id):
 @app.route('/custom-pages')
 @login_required
 def custom_pages_list():
-    """List all custom recipe pages for the current user"""
+    """List all custom recipe pages for the current user, including shared ones"""
     init_user_session()
     lang = session.get('language', 'en')
     user_id = session.get('user_id')
@@ -3422,8 +3489,87 @@ def custom_pages_list():
         flash('Please log in to view your custom pages.', 'warning')
         return redirect(url_for('login'))
     
-    custom_pages = CustomRecipePage.query.filter_by(user_id=user_id).order_by(CustomRecipePage.created_at.desc()).all()
+    # Handle filters
+    view_mode = request.args.get('view', 'my') # 'my' or 'shared'
     
+    if view_mode == 'my':
+        custom_pages = CustomRecipePage.query.filter_by(user_id=user_id).order_by(CustomRecipePage.created_at.desc()).all()
+
+        # Mark as owned by me
+        for page in custom_pages:
+            page.is_shared = False
+            page.shared_by_name = None
+
+            # Check if I shared this page
+            shares = ContentShare.query.filter_by(
+                content_type='custom_page',
+                content_id=page.id,
+                shared_by=user_id
+            ).all()
+
+            page.shared_with_count = len(shares)
+            page.shares = shares # For tooltip details
+
+    else: # shared with me
+        # Filter by specific user or group if requested
+        filter_user_id = request.args.get('filter_user', type=int)
+        filter_group_id = request.args.get('filter_group', type=int)
+
+        # Direct shares
+        direct_shares_query = ContentShare.query.filter_by(
+            content_type='custom_page',
+            shared_with_user_id=user_id
+        )
+        if filter_user_id:
+            direct_shares_query = direct_shares_query.filter_by(shared_by=filter_user_id)
+        # If filtering by group, ignore direct shares unless we want logic to be additive
+        # For simplicity, if group filter is active, direct shares might be irrelevant, but let's keep logic simple
+        direct_shares = direct_shares_query.all()
+
+        # Group shares
+        my_groups = GroupMember.query.filter_by(user_id=user_id).all()
+        group_ids = [g.group_id for g in my_groups]
+
+        # If specific group requested, filter group_ids
+        if filter_group_id:
+            if filter_group_id in group_ids:
+                group_ids = [filter_group_id]
+            else:
+                group_ids = [] # User not in this group
+
+        group_shares = []
+        if group_ids:
+            group_shares_query = ContentShare.query.filter(
+                ContentShare.content_type == 'custom_page',
+                ContentShare.shared_with_group_id.in_(group_ids)
+            )
+            if filter_user_id:
+                group_shares_query = group_shares_query.filter_by(shared_by=filter_user_id)
+            group_shares = group_shares_query.all()
+
+        # Combine
+        combined_shares = direct_shares + group_shares
+
+        # If filtering by group, exclude direct shares
+        if filter_group_id:
+            combined_shares = group_shares
+
+        all_share_ids = [s.content_id for s in combined_shares]
+        custom_pages = CustomRecipePage.query.filter(CustomRecipePage.id.in_(all_share_ids)).order_by(CustomRecipePage.created_at.desc()).all()
+
+        # Mark metadata
+        for page in custom_pages:
+            page.is_shared = True
+
+            # Find the relevant share record
+            share_rec = next((s for s in combined_shares if s.content_id == page.id), None)
+            if share_rec:
+                page.shared_by_name = share_rec.sharer.name
+                if share_rec.shared_with_group_id:
+                    page.shared_via_group = share_rec.recipient_group.name
+                else:
+                    page.shared_via_group = None
+
     # Parse product_ids for each page
     for page in custom_pages:
         try:
@@ -3435,6 +3581,7 @@ def custom_pages_list():
     
     return render_template('custom_pages_list.html', 
                          custom_pages=custom_pages,
+                         view_mode=view_mode,
                          get_text=get_text,
                          lang=lang)
 
