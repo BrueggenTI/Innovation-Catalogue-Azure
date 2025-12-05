@@ -28,29 +28,51 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toggle Sidebar
     sidebarToggleBtn.addEventListener('click', function() {
         sidebar.show();
-        loadUsers();
+        loadUsers(); // Calls with defaults (empty query, page 1)
         loadGroups();
     });
 
     // --- Users Tab Logic ---
     let usersCache = [];
+    let currentUserPage = 1;
+    let currentUserQuery = '';
+    let hasMoreUsers = false;
 
-    function loadUsers(query = '') {
-        // If query is empty, fetch all/default users. Backend handles empty 'q' now.
-        const url = `/api/users/search?q=${encodeURIComponent(query)}`;
+    function loadUsers(query = '', page = 1, append = false) {
+        // Encode query
+        const url = `/api/users/search?q=${encodeURIComponent(query)}&page=${page}`;
 
         fetch(url)
             .then(response => response.json())
-            .then(users => {
-                usersCache = users;
-                renderUsers(users);
+            .then(data => {
+                const users = data.users;
+                hasMoreUsers = data.has_next;
+                currentUserPage = page;
+                currentUserQuery = query;
+
+                if (append) {
+                    usersCache = [...usersCache, ...users];
+                } else {
+                    usersCache = users;
+                }
+
+                renderUsers(users, append);
             })
             .catch(err => console.error('Error loading users:', err));
     }
 
-    function renderUsers(users) {
-        usersListContainer.innerHTML = '';
-        if (users.length === 0) {
+    function renderUsers(users, append = false) {
+        if (!append) {
+            usersListContainer.innerHTML = '';
+        }
+
+        // Remove existing "Load More" button if it exists
+        const existingBtn = document.getElementById('load-more-users-btn');
+        if (existingBtn) {
+            existingBtn.remove();
+        }
+
+        if (usersCache.length === 0) {
             usersListContainer.innerHTML = `
                 <div class="social-empty">
                     <i class="fas fa-user-slash"></i>
@@ -64,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.className = 'social-card';
 
             // Get initials for avatar
-            const initials = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
 
             item.innerHTML = `
                 <div class="social-avatar">
@@ -83,9 +105,29 @@ document.addEventListener('DOMContentLoaded', function() {
             usersListContainer.appendChild(item);
         });
 
+        // Add "Load More" button if there are more users
+        if (hasMoreUsers) {
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.id = 'load-more-users-btn';
+            loadMoreBtn.className = 'btn btn-link w-100 text-center text-muted my-2';
+            loadMoreBtn.innerHTML = 'Mehr anzeigen <i class="fas fa-chevron-down ms-1"></i>';
+            loadMoreBtn.onclick = function() {
+                loadUsers(currentUserQuery, currentUserPage + 1, true);
+            };
+            usersListContainer.appendChild(loadMoreBtn);
+        }
+
         // Bind events
+        bindUserEvents();
+    }
+
+    function bindUserEvents() {
         document.querySelectorAll('.add-user-to-group-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            // Remove old listener to avoid duplicates if re-rendering (simple way)
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            newBtn.addEventListener('click', function() {
                 userToAddId = this.dataset.id;
                 addUserTargetName.textContent = this.dataset.name;
                 loadMyAdminGroupsForSelect(); // Load groups where I am admin
@@ -96,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     userSearchInput.addEventListener('input', function(e) {
         const query = e.target.value.trim();
-        loadUsers(query);
+        loadUsers(query, 1, false);
     });
 
     // --- Groups Tab Logic ---

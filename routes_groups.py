@@ -18,22 +18,39 @@ def login_required(f):
 @login_required
 def search_users():
     query = request.args.get('q', '').strip()
-    if len(query) < 2:
-        return jsonify([])
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
 
     current_user_id = session.get('user_id')
-    users = User.query.filter(
-        (User.name.ilike(f'%{query}%')) | (User.email.ilike(f'%{query}%')),
-        User.id != current_user_id
-    ).limit(10).all()
 
-    return jsonify([{
-        'id': u.id,
-        'name': u.name,
-        'email': u.email,
-        'department': u.department,
-        'position': u.position
-    } for u in users])
+    # Base query excluding current user
+    base_query = User.query.filter(User.id != current_user_id)
+
+    # Apply search filter if query exists
+    if query:
+        base_query = base_query.filter(
+            (User.name.ilike(f'%{query}%')) | (User.email.ilike(f'%{query}%'))
+        )
+
+    # Order by name for consistency
+    base_query = base_query.order_by(User.name)
+
+    # Paginate
+    pagination = base_query.paginate(page=page, per_page=per_page, error_out=False)
+    users = pagination.items
+
+    return jsonify({
+        'users': [{
+            'id': u.id,
+            'name': u.name,
+            'email': u.email,
+            'department': u.department,
+            'position': u.position
+        } for u in users],
+        'has_next': pagination.has_next,
+        'next_page': pagination.next_num,
+        'total': pagination.total
+    })
 
 @groups_bp.route('/api/groups', methods=['GET', 'POST'])
 @login_required
@@ -79,7 +96,9 @@ def groups():
         # Groups where user is a member
         memberships = GroupMember.query.filter_by(user_id=user_id).all()
         group_ids = [m.group_id for m in memberships]
-        groups = UserGroup.query.filter(UserGroup.id.in_(group_ids)).all()
+
+        # Order groups by name for consistent display
+        groups = UserGroup.query.filter(UserGroup.id.in_(group_ids)).order_by(UserGroup.name).all()
 
         return jsonify([{
             'id': g.id,
