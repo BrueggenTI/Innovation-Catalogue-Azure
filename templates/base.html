@@ -316,24 +316,24 @@
     <!-- Create Group Modal -->
     <div class="modal fade" id="createGroupModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content glass-modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Create New Group</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Group Name</label>
-                        <input type="text" class="form-control" id="new-group-name" required>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="new-group-name" placeholder="Group Name" required>
+                        <label for="new-group-name">Group Name</label>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" id="new-group-desc" rows="2"></textarea>
+                    <div class="form-floating mb-3">
+                        <textarea class="form-control" id="new-group-desc" placeholder="Description" style="height: 100px"></textarea>
+                        <label for="new-group-desc">Description</label>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="save-new-group-btn">Create Group</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill" id="save-new-group-btn">Create Group</button>
                 </div>
             </div>
         </div>
@@ -341,17 +341,26 @@
 
     <!-- Add User To Group Modal -->
     <div class="modal fade" id="addToGroupModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content glass-modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Add User to Group</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Select a group to add <strong id="add-user-target-name"></strong> to:</p>
-                    <div id="select-group-list" class="list-group">
+                    <p class="text-muted mb-4">Select a group to add <strong id="add-user-target-name" class="exclusive-target-name"></strong> to:</p>
+
+                    <!-- Search Field -->
+                    <div class="modal-search-wrapper">
+                        <i class="fas fa-search modal-search-icon"></i>
+                        <input type="text" class="modal-search-input" id="add-user-group-search" placeholder="Search your groups...">
+                    </div>
+
+                    <!-- Grid Layout Container -->
+                    <div id="select-group-grid" class="group-select-grid">
                         <!-- Groups injected via JS -->
                     </div>
+
                     <div class="mt-3 text-center">
                         <small class="text-muted">Only groups where you are Owner or Admin appear here.</small>
                     </div>
@@ -363,55 +372,92 @@
     <!-- Group Settings Modal -->
     <div class="modal fade" id="groupSettingsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+            <div class="modal-content glass-modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Group Settings</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-0">
                     <input type="hidden" id="settings-group-id">
 
-                    <!-- Info Tab -->
-                    <div class="mb-4">
-                        <h6>Group Details</h6>
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <label class="form-label">Name</label>
-                                <input type="text" class="form-control" id="settings-group-name">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs glass-tabs pt-3" id="groupSettingsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-pane" type="button" role="tab">
+                                <i class="fas fa-info-circle me-2"></i>General
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="members-tab" data-bs-toggle="tab" data-bs-target="#members-pane" type="button" role="tab">
+                                <i class="fas fa-users me-2"></i>Members
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-danger" id="danger-tab" data-bs-toggle="tab" data-bs-target="#danger-pane" type="button" role="tab">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content glass-tab-content px-4 pb-4" id="groupSettingsTabContent">
+
+                        <!-- General Tab -->
+                        <div class="tab-pane fade show active" id="general-pane" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="settings-group-name" placeholder="Group Name">
+                                        <label for="settings-group-name">Group Name</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="settings-group-desc" placeholder="Description" style="height: 120px"></textarea>
+                                        <label for="settings-group-desc">Description</label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-8">
-                                <label class="form-label">Description</label>
-                                <input type="text" class="form-control" id="settings-group-desc">
+                            <div class="mt-4 text-end">
+                                 <button class="btn btn-success rounded-pill px-4" id="update-group-info-btn">
+                                    <i class="fas fa-save me-2"></i>Update Details
+                                 </button>
                             </div>
                         </div>
-                        <div class="mt-2 text-end">
-                             <button class="btn btn-sm btn-success" id="update-group-info-btn">Update Details</button>
+
+                        <!-- Members Tab -->
+                        <div class="tab-pane fade" id="members-pane" role="tabpanel">
+                            <div class="table-responsive rounded-3 border">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-3 py-3">User</th>
+                                            <th class="py-3">Role</th>
+                                            <th class="text-end pe-3 py-3">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="group-members-tbody" class="bg-white">
+                                        <!-- Members injected JS -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
 
-                    <hr>
-
-                    <!-- Members Section -->
-                    <h6>Members</h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="group-members-tbody">
-                                <!-- Members injected JS -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="mt-3" id="owner-actions-area">
-                        <hr>
-                        <h6 class="text-danger">Danger Zone</h6>
-                        <button class="btn btn-outline-danger btn-sm" id="delete-group-btn">Delete Group</button>
+                        <!-- Danger Zone Tab -->
+                        <div class="tab-pane fade" id="danger-pane" role="tabpanel">
+                            <div class="alert alert-danger border-danger d-flex align-items-center" role="alert">
+                                <i class="fas fa-exclamation-triangle fs-2 me-3"></i>
+                                <div>
+                                    <h5 class="alert-heading">Delete this group?</h5>
+                                    <p class="mb-0">Once you delete a group, there is no going back. Please be certain.</p>
+                                </div>
+                            </div>
+                            <div class="text-end" id="owner-actions-area">
+                                <button class="btn btn-outline-danger" id="delete-group-btn">
+                                    <i class="fas fa-trash-alt me-2"></i>Delete Group
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
