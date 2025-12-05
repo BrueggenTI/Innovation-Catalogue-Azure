@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let usersCache = [];
 
     function loadUsers(query = '') {
-        const url = query ? `/api/users/search?q=${encodeURIComponent(query)}` : '/api/users/search?q=a'; // Default search 'a' to show some users
+        // If query is empty, fetch all/default users. Backend handles empty 'q' now.
+        const url = `/api/users/search?q=${encodeURIComponent(query)}`;
 
         fetch(url)
             .then(response => response.json())
@@ -80,9 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     userSearchInput.addEventListener('input', function(e) {
         const query = e.target.value.trim();
-        if (query.length >= 1) {
-            loadUsers(query);
-        }
+        loadUsers(query);
     });
 
     // --- Groups Tab Logic ---
