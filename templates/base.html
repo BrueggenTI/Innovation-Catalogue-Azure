@@ -249,9 +249,9 @@
 
     <!-- Social Sidebar Overlay -->
     <div class="offcanvas offcanvas-end social-sidebar" tabindex="-1" id="socialSidebar" aria-labelledby="socialSidebarLabel">
-        <div class="offcanvas-header bg-primary text-white">
+        <div class="offcanvas-header">
             <h5 class="offcanvas-title" id="socialSidebarLabel">
-                <i class="fas fa-users me-2"></i>Community
+                Community
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
@@ -260,50 +260,52 @@
             <ul class="nav nav-tabs nav-fill" id="socialTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button" role="tab">
-                        <i class="fas fa-user me-2"></i>Users
+                        Users
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="groups-tab" data-bs-toggle="tab" data-bs-target="#groups-pane" type="button" role="tab">
-                        <i class="fas fa-users-cog me-2"></i>Groups
+                        Groups
                     </button>
                 </li>
             </ul>
 
             <div class="tab-content h-100" id="socialTabContent">
                 <!-- Users Pane -->
-                <div class="tab-pane fade show active p-3" id="users-pane" role="tabpanel">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        <input type="text" class="form-control" id="user-search-input" placeholder="Search users...">
+                <div class="tab-pane fade show active" id="users-pane" role="tabpanel">
+                    <div class="search-wrapper">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="user-search-input" placeholder="Search for colleagues...">
+                        </div>
                     </div>
 
-                    <div id="users-list-container" class="list-group list-group-flush">
+                    <div id="users-list-container" class="list-group">
                         <!-- User items injected via JS -->
-                        <div class="text-center py-4 text-muted">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                            <span class="ms-2">Loading users...</span>
+                        <div class="social-loading">
+                            <div class="spinner-border" role="status"></div>
+                            <span>Loading community...</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Groups Pane -->
-                <div class="tab-pane fade p-3" id="groups-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="input-group me-2">
+                <div class="tab-pane fade" id="groups-pane" role="tabpanel">
+                    <div class="search-wrapper d-flex align-items-center gap-2">
+                        <div class="input-group flex-grow-1">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
                             <input type="text" class="form-control" id="group-search-input" placeholder="Search groups...">
                         </div>
-                        <button class="btn btn-primary btn-sm" id="create-group-btn" title="Create New Group">
+                        <button class="social-fab" id="create-group-btn" title="Create New Group">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
 
-                    <div id="groups-list-container" class="list-group list-group-flush">
+                    <div id="groups-list-container" class="list-group">
                          <!-- Group items injected via JS -->
-                        <div class="text-center py-4 text-muted">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                            <span class="ms-2">Loading groups...</span>
+                        <div class="social-loading">
+                            <div class="spinner-border" role="status"></div>
+                            <span>Loading groups...</span>
                         </div>
                     </div>
                 </div>
