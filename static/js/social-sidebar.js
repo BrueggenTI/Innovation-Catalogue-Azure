@@ -20,8 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add User to Group Elements
     const addToGroupModal = new bootstrap.Modal(document.getElementById('addToGroupModal'));
     const addUserTargetName = document.getElementById('add-user-target-name');
-    const selectGroupList = document.getElementById('select-group-list');
+    const selectGroupGrid = document.getElementById('select-group-grid');
+    const addUserGroupSearch = document.getElementById('add-user-group-search');
     let userToAddId = null;
+    let myAdminGroupsCache = []; // Cache for filtering in modal
 
     // Toggle Sidebar
     sidebarToggleBtn.addEventListener('click', function() {
@@ -229,9 +231,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 settingsGroupName.disabled = !isAdmin;
                 settingsGroupDesc.disabled = !isAdmin;
                 updateGroupInfoBtn.disabled = !isAdmin;
-                deleteGroupBtn.style.display = isOwner ? 'block' : 'none';
+
+                // Hide Danger Tab if not Owner
+                const dangerTab = document.getElementById('danger-tab');
+                if (dangerTab) {
+                    dangerTab.style.display = isOwner ? 'block' : 'none';
+                }
 
                 renderGroupMembers(data.members, data.my_role, data.id);
+
+                // Reset to first tab
+                const firstTab = document.getElementById('general-tab');
+                if (firstTab) {
+                    const tabTrigger = new bootstrap.Tab(firstTab);
+                    tabTrigger.show();
+                }
+
                 groupSettingsModal.show();
             })
             .catch(err => console.error('Error loading details:', err));
@@ -381,46 +396,66 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/groups')
             .then(response => response.json())
             .then(groups => {
-                selectGroupList.innerHTML = '';
-
-                // 1. Add "Create New Group with User" option
-                const createBtn = document.createElement('button');
-                createBtn.className = 'list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center fw-bold mb-2';
-                createBtn.innerHTML = `<span><i class="fas fa-plus-circle me-2"></i>Create new group with this user</span>`;
-                createBtn.onclick = () => {
-                    addToGroupModal.hide();
-
-                    // Reset fields
-                    document.getElementById('new-group-name').value = '';
-                    document.getElementById('new-group-desc').value = '';
-
-                    // Set context for save button
-                    saveNewGroupBtn.dataset.initialMember = userToAddId;
-
-                    const createModal = new bootstrap.Modal(document.getElementById('createGroupModal'));
-                    createModal.show();
-                };
-                selectGroupList.appendChild(createBtn);
-
                 // Filter only groups where I am admin or owner
-                const myAdminGroups = groups.filter(g => ['owner', 'admin'].includes(g.role));
-
-                if (myAdminGroups.length === 0) {
-                    const info = document.createElement('div');
-                    info.className = 'text-center text-muted small mt-2';
-                    info.textContent = 'You are not an admin of any existing group.';
-                    selectGroupList.appendChild(info);
-                    return;
-                }
-
-                myAdminGroups.forEach(group => {
-                    const btn = document.createElement('button');
-                    btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
-                    btn.innerHTML = `<span>${group.name}</span> <i class="fas fa-plus"></i>`;
-                    btn.onclick = () => addUserToGroup(group.id);
-                    selectGroupList.appendChild(btn);
-                });
+                myAdminGroupsCache = groups.filter(g => ['owner', 'admin'].includes(g.role));
+                renderGroupSelectionGrid(myAdminGroupsCache);
             });
+    }
+
+    function renderGroupSelectionGrid(groups) {
+        selectGroupGrid.innerHTML = '';
+
+        // 1. Always Add "Create New Group" Card
+        const createCard = document.createElement('div');
+        createCard.className = 'group-grid-card create-new';
+        createCard.innerHTML = `
+            <div class="group-grid-icon">
+                <i class="fas fa-plus"></i>
+            </div>
+            <div class="group-grid-name">New Group</div>
+        `;
+        createCard.onclick = () => {
+            addToGroupModal.hide();
+            // Reset fields
+            document.getElementById('new-group-name').value = '';
+            document.getElementById('new-group-desc').value = '';
+            // Set context for save button
+            saveNewGroupBtn.dataset.initialMember = userToAddId;
+            const createModal = new bootstrap.Modal(document.getElementById('createGroupModal'));
+            createModal.show();
+        };
+        selectGroupGrid.appendChild(createCard);
+
+        if (groups.length === 0) {
+            // No other groups to show? Maybe show a hint, but the create card is always there.
+            return;
+        }
+
+        groups.forEach(group => {
+            const card = document.createElement('div');
+            card.className = 'group-grid-card';
+
+            // Initials
+            const initials = group.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            card.innerHTML = `
+                <div class="group-grid-icon">
+                    ${initials}
+                </div>
+                <div class="group-grid-name" title="${group.name}">${group.name}</div>
+            `;
+            card.onclick = () => addUserToGroup(group.id);
+            selectGroupGrid.appendChild(card);
+        });
+    }
+
+    // Filter Groups in "Add User" Modal
+    if (addUserGroupSearch) {
+        addUserGroupSearch.addEventListener('input', function(e) {
+            const query = e.target.value.trim().toLowerCase();
+            const filtered = myAdminGroupsCache.filter(g => g.name.toLowerCase().includes(query));
+            renderGroupSelectionGrid(filtered);
+        });
     }
 
     function addUserToGroup(groupId) {
