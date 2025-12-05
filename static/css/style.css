@@ -6702,3 +6702,167 @@ body.modal-open {
     opacity: 0.3;
     color: var(--brg-color-primary);
 }
+
+/* ============================================
+   SOCIAL MODALS MAKEOVER
+   Consistent Glassmorphism Theme
+   ============================================ */
+
+/* Modal Content - Glassmorphism */
+#createGroupModal .modal-content,
+#addToGroupModal .modal-content,
+#groupSettingsModal .modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+}
+
+/* Modal Header - Gradient */
+#createGroupModal .modal-header,
+#addToGroupModal .modal-header,
+#groupSettingsModal .modal-header {
+    background: linear-gradient(135deg, var(--brg-color-primary) 0%, var(--brg-color-secondary) 100%);
+    color: white;
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 24px;
+}
+
+#createGroupModal .modal-title,
+#addToGroupModal .modal-title,
+#groupSettingsModal .modal-title {
+    font-family: var(--brg-font-heading);
+    font-weight: 700;
+    font-size: 22px;
+}
+
+#createGroupModal .btn-close,
+#addToGroupModal .btn-close,
+#groupSettingsModal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    opacity: 0.8;
+}
+
+#createGroupModal .btn-close:hover,
+#addToGroupModal .btn-close:hover,
+#groupSettingsModal .btn-close:hover {
+    opacity: 1;
+}
+
+/* Modal Body - Spacing */
+#createGroupModal .modal-body,
+#addToGroupModal .modal-body,
+#groupSettingsModal .modal-body {
+    padding: 24px;
+}
+
+/* Modal Form Controls - Modern Pill Style */
+#createGroupModal .form-control,
+#addToGroupModal .form-control,
+#groupSettingsModal .form-control {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    transition: var(--brg-transition);
+}
+
+#createGroupModal .form-control:focus,
+#addToGroupModal .form-control:focus,
+#groupSettingsModal .form-control:focus {
+    border-color: var(--brg-color-secondary);
+    box-shadow: 0 0 0 4px rgba(255, 65, 67, 0.15);
+}
+
+#createGroupModal .form-label,
+#addToGroupModal .form-label,
+#groupSettingsModal .form-label {
+    font-weight: 600;
+    color: var(--brg-color-text-secondary);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Modal Footer - Clean */
+#createGroupModal .modal-footer,
+#addToGroupModal .modal-footer,
+#groupSettingsModal .modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 16px 24px;
+}
+
+/* Specific List Group Styling in Modals */
+#select-group-list .list-group-item {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    padding: 12px 16px;
+    transition: var(--brg-transition);
+}
+
+#select-group-list .list-group-item:hover {
+    background-color: var(--brg-color-background-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--btn-shadow-sm);
+    border-color: var(--brg-color-secondary);
+    z-index: 1;
+}
+
+#select-group-list .list-group-item-primary {
+    background-color: rgba(102, 28, 49, 0.05);
+    color: var(--brg-color-primary);
+    border-color: rgba(102, 28, 49, 0.1);
+}
+
+#select-group-list .list-group-item-primary:hover {
+    background-color: rgba(102, 28, 49, 0.1);
+}
+
+/* Table in Group Settings */
+#groupSettingsModal .table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+#groupSettingsModal .table thead th {
+    border-bottom: none;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--brg-color-text-secondary);
+    padding: 0 12px;
+}
+
+#groupSettingsModal .table tbody tr {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: var(--brg-transition);
+}
+
+#groupSettingsModal .table tbody tr:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+#groupSettingsModal .table td {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-style: solid none;
+    padding: 12px;
+    vertical-align: middle;
+}
+
+#groupSettingsModal .table td:first-child {
+    border-left-style: solid;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+#groupSettingsModal .table td:last-child {
+    border-right-style: solid;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}

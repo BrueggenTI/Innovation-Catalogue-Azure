@@ -49,19 +49,32 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderUsers(users) {
         usersListContainer.innerHTML = '';
         if (users.length === 0) {
-            usersListContainer.innerHTML = '<div class="text-center py-3 text-muted">No users found</div>';
+            usersListContainer.innerHTML = `
+                <div class="social-empty">
+                    <i class="fas fa-user-slash"></i>
+                    <p>No users found</p>
+                </div>`;
             return;
         }
 
         users.forEach(user => {
             const item = document.createElement('div');
-            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+            item.className = 'social-card';
+
+            // Get initials for avatar
+            const initials = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
             item.innerHTML = `
-                <div>
-                    <div class="fw-bold">${user.name}</div>
-                    <small class="text-muted">${user.position || user.department || ''}</small>
+                <div class="social-avatar">
+                    <span>${initials}</span>
                 </div>
-                <button class="btn btn-outline-primary btn-sm add-user-to-group-btn" data-id="${user.id}" data-name="${user.name}">
+                <div class="social-info">
+                    <div class="social-name">${user.name}</div>
+                    <div class="social-meta">
+                        <i class="fas fa-briefcase"></i> ${user.position || user.department || 'User'}
+                    </div>
+                </div>
+                <button class="social-action-btn add-user-to-group-btn" data-id="${user.id}" data-name="${user.name}" title="Add to Group">
                     <i class="fas fa-user-plus"></i>
                 </button>
             `;
@@ -100,19 +113,32 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderGroups(groups) {
         groupsListContainer.innerHTML = '';
         if (groups.length === 0) {
-            groupsListContainer.innerHTML = '<div class="text-center py-3 text-muted">No groups found</div>';
+            groupsListContainer.innerHTML = `
+                <div class="social-empty">
+                    <i class="fas fa-users-slash"></i>
+                    <p>No groups found</p>
+                </div>`;
             return;
         }
 
         groups.forEach(group => {
             const item = document.createElement('div');
-            item.className = 'list-group-item d-flex justify-content-between align-items-center';
+            item.className = 'social-card';
+
+            // Get initials for avatar
+            const initials = group.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
             item.innerHTML = `
-                <div>
-                    <div class="fw-bold">${group.name}</div>
-                    <small class="text-muted">${group.member_count} members • ${group.role}</small>
+                <div class="social-avatar" style="background: linear-gradient(135deg, #661c31 0%, #ff4143 100%); color: white; border: none;">
+                    <span>${initials}</span>
                 </div>
-                <button class="btn btn-outline-secondary btn-sm group-settings-btn" data-id="${group.id}">
+                <div class="social-info">
+                    <div class="social-name">${group.name}</div>
+                    <div class="social-meta">
+                        <i class="fas fa-users"></i> ${group.member_count} members • <span class="badge bg-light text-dark border ms-1">${group.role}</span>
+                    </div>
+                </div>
+                <button class="social-action-btn group-settings-btn" data-id="${group.id}" title="Settings">
                     <i class="fas fa-cog"></i>
                 </button>
             `;
