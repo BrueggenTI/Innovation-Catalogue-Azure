@@ -5,7 +5,7 @@ Initialize sample data for the Brüggen Innovation Catalogue
 
 import json
 from app import app, db
-from models import Product, Trend
+from models import Product, Trend, User
 
 def init_sample_data():
     """Initialize sample data for testing"""
@@ -15,6 +15,39 @@ def init_sample_data():
         Product.query.delete()
         Trend.query.delete()
         
+        # Ensure we have some users for the social features
+        # Check if master user exists, if not create one (though master login handles this)
+        master_email = 'master@brueggen.com'
+        if not User.query.filter_by(email=master_email).first():
+            master_user = User(
+                email=master_email,
+                name='Master User',
+                position='System Administrator',
+                department='IT & Innovation',
+                is_master_user=True
+            )
+            db.session.add(master_user)
+
+        # Create sample colleagues
+        sample_users = [
+            {"name": "Alice Wonderland", "email": "alice@brueggen.com", "position": "Product Developer", "department": "R&D"},
+            {"name": "Bob Builder", "email": "bob@brueggen.com", "position": "Packaging Specialist", "department": "Production"},
+            {"name": "Charlie Chocolate", "email": "charlie@brueggen.com", "position": "Sales Manager", "department": "Sales"},
+            {"name": "Diana Dreamer", "email": "diana@brueggen.com", "position": "Marketing Lead", "department": "Marketing"},
+            {"name": "Evan Engineer", "email": "evan@brueggen.com", "position": "Process Engineer", "department": "Engineering"}
+        ]
+
+        for u in sample_users:
+            if not User.query.filter_by(email=u['email']).first():
+                new_user = User(
+                    name=u['name'],
+                    email=u['email'],
+                    position=u['position'],
+                    department=u['department'],
+                    is_master_user=False
+                )
+                db.session.add(new_user)
+
         # Sample products
         products = [
             {
